@@ -14,6 +14,7 @@ const BlogEditor = () => {
     const [selectedBlog, setSelectedBlog] = useState(null);
 
     const [title, setTitle] = useState('');
+    const [slug, setSlug] = useState('');
     const [excerpt, setExcerpt] = useState('');
     const [coverImage, setCoverImage] = useState('');
     const [category, setCategory] = useState('Hướng Dẫn');
@@ -27,10 +28,11 @@ const BlogEditor = () => {
     // Load blog data if editing
     useEffect(() => {
         if (isEditMode && blogs.length > 0) {
-            const blogToEdit = blogs.find(b => b.id === id);
+            const blogToEdit = blogs.find(b => b.id == id); // Loose equality
             if (blogToEdit) {
                 setSelectedBlog(blogToEdit);
                 setTitle(blogToEdit.title || '');
+                setSlug(blogToEdit.slug || '');
                 setExcerpt(blogToEdit.excerpt || '');
                 setCoverImage(blogToEdit.coverImage || '');
                 setCategory(blogToEdit.category || 'Hướng Dẫn');
@@ -49,12 +51,21 @@ const BlogEditor = () => {
         }
     }, [isEditMode, id, blogs, navigate]);
 
+    const handleTitleChange = (e) => {
+        const newTitle = e.target.value;
+        setTitle(newTitle);
+        // Auto generate slug if slug is empty or matches previous auto-gen
+        if (!slug || slug === title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')) {
+            setSlug(newTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''));
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         const blogData = {
             title,
-            slug: title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
+            slug: slug || title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
             excerpt,
             coverImage: coverImage || 'https://images.unsplash.com/photo-1593062096033-9a26b09da705?w=1200',
             content,
@@ -81,6 +92,16 @@ const BlogEditor = () => {
             }
         }
     };
+
+    // ... (keep existing helper functions command, etc) ...
+    // Note: I need to explicitly preserve the execCommand etc functions if I am replacing the block containing them
+    // But I am replacing lines 16-200 (approx) which covers state + useEffect + handleSubmit + form start.
+    // I need to be careful about where I stop replacement.
+
+    // Actually, I'll stop BEFORE helper functions (line 85).
+    // And THEN replace the form part.
+    // Wait, replacing lines 16 to 83.
+
 
     const execCommand = (command, value = null) => {
         document.execCommand(command, false, value);
@@ -177,9 +198,21 @@ const BlogEditor = () => {
                                 type="text"
                                 className="input"
                                 value={title}
-                                onChange={(e) => setTitle(e.target.value)}
+                                onChange={handleTitleChange}
                                 placeholder="Nhập tiêu đề bài viết"
                                 required
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="slug">URL / Slug</label>
+                            <input
+                                id="slug"
+                                type="text"
+                                className="input"
+                                value={slug}
+                                onChange={(e) => setSlug(e.target.value)}
+                                placeholder="tu-dong-tao-tu-tieu-de"
                             />
                         </div>
 

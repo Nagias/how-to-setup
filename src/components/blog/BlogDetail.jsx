@@ -59,7 +59,18 @@ const BlogDetail = () => {
     }, [blog?.id]);
 
     if (!blog) {
-        return <div className="container" style={{ padding: '2rem', textAlign: 'center' }}>Đang tải bài viết...</div>;
+        return (
+            <div className="container" style={{ padding: '2rem', textAlign: 'center', minHeight: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <h3>Đang tải bài viết...</h3>
+                <div style={{ color: '#666', marginTop: '1rem', fontSize: '0.9rem', textAlign: 'left', background: '#f5f5f5', padding: '1rem', borderRadius: '8px' }}>
+                    <p><strong>Debug Info:</strong></p>
+                    <p>Requested ID: {id}</p>
+                    <p>Context Blogs Loaded: {blogs.length}</p>
+                    <p>Sample Data Size: {sampleBlogs?.length || 'undefined'}</p>
+                    <p style={{ marginTop: '0.5rem', fontStyle: 'italic', fontSize: '0.8rem' }}>Nếu số liệu trên = 0, vui lòng kiểm tra lại kết nối mạng hoặc thử lại sau.</p>
+                </div>
+            </div>
+        );
     }
 
     const handleBack = () => {
