@@ -11,6 +11,8 @@ const AuthModal = () => {
     const [displayName, setDisplayName] = useState('');
     const [username, setUsername] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [successMsg, setSuccessMsg] = useState('');
 
     if (!showAuthModal) return null;
 
@@ -26,23 +28,35 @@ const AuthModal = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setSuccessMsg('');
+        setLoading(true);
 
         try {
             if (mode === 'login') {
                 await api.login(email, password);
-                // Simple feedback before closing
-                setError('');
-                handleClose();
+                setSuccessMsg('Đăng nhập thành công!');
+                setTimeout(() => {
+                    handleClose();
+                    setSuccessMsg('');
+                    setLoading(false);
+                }, 1000);
             } else {
                 if (!displayName) {
                     setError('Vui lòng nhập tên hiển thị');
+                    setLoading(false);
                     return;
                 }
-                const result = await api.register({ email, password, displayName, username });
-                handleClose();
+                await api.register({ email, password, displayName, username });
+                setSuccessMsg('Đăng ký thành công!');
+                setTimeout(() => {
+                    handleClose();
+                    setSuccessMsg('');
+                    setLoading(false);
+                }, 1000);
             }
         } catch (err) {
             console.error(err);
+            setLoading(false);
             if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
                 setError('Email hoặc mật khẩu không đúng');
             } else if (err.code === 'auth/email-already-in-use') {
@@ -71,6 +85,7 @@ const AuthModal = () => {
                     </p>
 
                     {error && <div className="auth-error">{error}</div>}
+                    {successMsg && <div className="auth-error" style={{ color: '#059669', borderColor: '#059669', backgroundColor: '#ecfdf5' }}>{successMsg}</div>}
 
                     <form onSubmit={handleSubmit} className="auth-form">
                         <div className="form-group">
@@ -127,8 +142,8 @@ const AuthModal = () => {
                             </>
                         )}
 
-                        <button type="submit" className="btn btn-primary auth-submit">
-                            {mode === 'login' ? 'Đăng Nhập' : 'Đăng Ký'}
+                        <button type="submit" className="btn btn-primary auth-submit" disabled={loading} style={{ opacity: loading ? 0.7 : 1, cursor: loading ? 'wait' : 'pointer' }}>
+                            {loading ? 'Đang xử lý...' : (mode === 'login' ? 'Đăng Nhập' : 'Đăng Ký')}
                         </button>
                     </form>
 

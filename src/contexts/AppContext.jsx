@@ -357,7 +357,10 @@ export const AppProvider = ({ children }) => {
             .slice(0, limit);
     };
 
+    const refreshData = loadData;
+
     const value = {
+        refreshData,
         theme,
         toggleTheme,
         setups,

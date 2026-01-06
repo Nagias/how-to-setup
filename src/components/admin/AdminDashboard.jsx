@@ -4,7 +4,7 @@ import AddSetupModal from './AddSetupModal';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
-    const { setups, blogs, getComments, currentUser, addSetup, updateSetup, deleteSetup } = useApp();
+    const { setups, blogs, getComments, currentUser, addSetup, updateSetup, deleteSetup, refreshData } = useApp();
     const [editingSetup, setEditingSetup] = useState(null);
     const [dateRange, setDateRange] = useState({
         startDate: '',
@@ -141,6 +141,7 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="header-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <button className="btn" onClick={async () => { if (confirm('Tải lại dữ liệu từ server/local?')) { await refreshData(); alert('Đã cập nhật!'); } }} style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', cursor: 'pointer' }}>🔄 Khôi phục Dữ liệu</button>
                     <div className="dashboard-filter">
                         <span className="filter-label">Lọc:</span>
                         <input
