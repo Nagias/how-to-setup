@@ -255,6 +255,21 @@ export const AppProvider = ({ children }) => {
         return { success: false, message: 'Thêm setup thất bại' };
     };
 
+    // Delete setup (admin only)
+    const deleteSetup = async (setupId) => {
+        const user = getCurrentUser();
+        if (user?.role !== 'admin') {
+            return { success: false, message: 'Chỉ Admin mới có thể xóa setup!' };
+        }
+
+        const res = await api.deleteSetup(setupId);
+        if (res.success) {
+            setSetups(prev => prev.filter(s => s.id !== setupId));
+            return { success: true };
+        }
+        return { success: false, message: 'Xóa thất bại' };
+    };
+
     // Get similar setups
     const getSimilarSetups = (setupId, limit = 4) => {
         const currentSetup = setups.find(s => s.id === setupId);
@@ -315,6 +330,7 @@ export const AppProvider = ({ children }) => {
         updateBlog,
         deleteBlog,
         addSetup,
+        deleteSetup,
         getSimilarSetups,
         setBlogs
     };

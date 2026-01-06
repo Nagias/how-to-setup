@@ -147,6 +147,13 @@ export const api = {
         return { success: true, setup: newSetup };
     },
 
+    deleteSetup: async (setupId) => {
+        let setups = getLS('deskhub_setups', []);
+        setups = setups.filter(s => s.id !== setupId);
+        setLS('deskhub_setups', setups);
+        return { success: true };
+    },
+
     // Blog Management
     addBlog: async (blog) => {
         const blogs = getLS('deskhub_blogs', []);

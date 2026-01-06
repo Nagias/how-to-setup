@@ -4,7 +4,7 @@ import AddSetupModal from './AddSetupModal';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
-    const { setups, blogs, getComments, currentUser, addSetup } = useApp();
+    const { setups, blogs, getComments, currentUser, addSetup, deleteSetup } = useApp();
     const [showAddModal, setShowAddModal] = useState(false);
     const [dateRange, setDateRange] = useState({
         startDate: '',
@@ -18,6 +18,17 @@ const AdminDashboard = () => {
             alert('Đã thêm setup thành công!');
         } else {
             alert(res.message || 'Có lỗi xảy ra');
+        }
+    };
+
+    const handleDeleteSetup = async (id, title) => {
+        if (window.confirm(`Bạn có chắc muốn xóa setup "${title}" không?`)) {
+            const res = await deleteSetup(id);
+            if (res.success) {
+                // UI updates automatically via context
+            } else {
+                alert(res.message || 'Xóa thất bại');
+            }
         }
     };
 
@@ -39,7 +50,7 @@ const AdminDashboard = () => {
         return true;
     };
 
-    // Calculate Stats based on Interaction Timestamps
+    // Calculate Stats
     const stats = useMemo(() => {
         const totalSetups = setups.filter(s => isDateInRange(s.createdAt)).length;
         const totalBlogs = blogs.filter(b => isDateInRange(b.publishedAt)).length;
@@ -185,18 +196,57 @@ const AdminDashboard = () => {
             </div>
 
             <div className="dashboard-layout">
+                {/* MANAGE ALL SETUPS SECTION (NEW) */}
+                <div className="dashboard-section manage-section">
+                    <h2>📁 Quản Lý Tất Cả Setup ({setups.length})</h2>
+                    <div className="ranking-table-wrapper" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                        <table className="ranking-table">
+                            <thead>
+                                <tr>
+                                    <th>Setup</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Thống kê (Like/Save/Cmt)</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {setups.map((setup) => (
+                                    <tr key={setup.id}>
+                                        <td>
+                                            <div className="setup-cell">
+                                                <img src={setup.mainImage} alt="" className="setup-thumb" />
+                                                <span className="setup-title" title={setup.title}>{setup.title}</span>
+                                            </div>
+                                        </td>
+                                        <td>{new Date(setup.createdAt).toLocaleDateString('vi-VN')}</td>
+                                        <td>
+                                            {setup.likes?.length || 0} / {setup.saves?.length || 0} / {setup.comments || 0}
+                                        </td>
+                                        <td>
+                                            <button
+                                                className="btn-delete"
+                                                onClick={() => handleDeleteSetup(setup.id, setup.title)}
+                                                title="Xóa setup này"
+                                            >
+                                                🗑️
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 {/* Ranking Section */}
                 <div className="dashboard-section ranking-section">
-                    <h2>🏆 BXH Tương Tác</h2>
+                    <h2>🏆 BXH Tương Tác Top 5</h2>
                     <div className="ranking-table-wrapper">
                         <table className="ranking-table">
                             <thead>
                                 <tr>
                                     <th>Rank</th>
                                     <th>Setup</th>
-                                    <th>Thích</th>
-                                    <th>Lưu</th>
-                                    <th>CMT</th>
                                     <th>Điểm</th>
                                 </tr>
                             </thead>
@@ -210,9 +260,6 @@ const AdminDashboard = () => {
                                                 <span className="setup-title">{setup.title}</span>
                                             </div>
                                         </td>
-                                        <td>{setup.rangeLikeCount}</td>
-                                        <td>{setup.rangeSaveCount}</td>
-                                        <td>{setup.rangeCommentCount}</td>
                                         <td><strong>{setup.engagement}</strong></td>
                                     </tr>
                                 ))}
