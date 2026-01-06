@@ -35,7 +35,7 @@ const newsletterCol = collection(db, 'newsletter');
 // ==========================================
 // DANH SÁCH ADMIN (Thêm email của bạn vào đây)
 // ==========================================
-const ADMIN_EMAILS = [
+export const ADMIN_EMAILS = [
     'admin@deskhub.com',
     'thanhdat.rces@gmail.com' // <-- Thay bằng email của bạn
 ];
@@ -68,6 +68,12 @@ export const api = {
                 setups = newSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             } else {
                 setups = setupSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            }
+
+            // Hard fallback: If setups is still empty after all attempts, use local sample data
+            if (!setups || setups.length === 0) {
+                console.warn("No setups found in Firestore. Using local sample data.");
+                setups = sampleSetups;
             }
 
             // Blogs

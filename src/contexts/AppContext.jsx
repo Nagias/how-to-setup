@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { getCurrentUser } from '../utils/ipUtils'; // Keep for legacy or remove later
-import { api } from '../utils/api';
+import { api, ADMIN_EMAILS } from '../utils/api';
 import { auth, db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
@@ -47,12 +47,13 @@ export const AppProvider = ({ children }) => {
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
             if (user) {
                 // Optimistic update: Set user immediately with basic info
+                const isAdmin = ADMIN_EMAILS.includes(user.email);
                 const basicUser = {
                     id: user.uid,
                     email: user.email,
                     displayName: user.displayName || user.email?.split('@')[0],
                     photoURL: user.photoURL,
-                    role: 'user' // Default role, will update if admin
+                    role: isAdmin ? 'admin' : 'user' // Force admin role immediately if whitelisted
                 };
                 setCurrentUser(basicUser);
 
