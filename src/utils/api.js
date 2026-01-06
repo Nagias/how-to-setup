@@ -101,8 +101,13 @@ export const api = {
 
             return { setups, blogs, comments };
         } catch (error) {
-            console.error("Error getting data:", error);
-            return { setups: [], blogs: [], comments: {} };
+            console.error("Error getting data (using fallback):", error);
+            // Fallback to local data if Firestore fails
+            return {
+                setups: sampleSetups,
+                blogs: sampleBlogs,
+                comments: {}
+            };
         }
     },
 
