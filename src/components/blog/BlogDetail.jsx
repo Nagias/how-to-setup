@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
+import { sampleBlogs } from '../../data/sampleData';
 import SeoHead from '../common/SeoHead';
 import './BlogDetail.css';
 
@@ -13,15 +14,21 @@ const BlogDetail = () => {
     const { blogs, setBlogs, deleteBlog, currentUser } = useApp();
     const [blog, setBlog] = useState(null);
 
-    // Find blog from ID (wait for blogs to load)
+    // Find blog from ID using loose equality to handle both string and number IDs
     useEffect(() => {
-        if (blogs.length > 0) {
-            const foundBlog = blogs.find(b => b.id === id);
-            if (foundBlog) {
-                setBlog(foundBlog);
-            } else {
-                // If not found after load, maybe redirect or show 404
-            }
+        // Try to find in current blogs state
+        let foundBlog = blogs.find(b => b.id == id); // Loose equality
+
+        // If not found in state, try looking directly in sampleBlogs (fallback)
+        if (!foundBlog) {
+            foundBlog = sampleBlogs.find(b => b.id == id);
+        }
+
+        if (foundBlog) {
+            setBlog(foundBlog);
+        } else if (blogs.length > 0) {
+            // Only consider it "not found" if we have loaded data and still can't find it
+            // Maybe set error state here
         }
     }, [id, blogs]);
 
