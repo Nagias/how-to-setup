@@ -28,6 +28,12 @@
     gap: var(--space-xl);
 }
 
+.blog-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
 .blog-card {
     background: var(--color-surface);
     border-radius: var(--radius-xl);
@@ -37,6 +43,7 @@
     transition: all var(--transition-base);
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .blog-card:hover {

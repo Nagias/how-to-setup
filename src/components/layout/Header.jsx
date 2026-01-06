@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
 import './Header.css';
 
@@ -6,36 +7,32 @@ const Header = () => {
     const {
         theme,
         toggleTheme,
-        currentView,
-        setCurrentView,
         filters,
         setFilters,
         currentUser,
         setShowAuthModal,
         setShowProfileModal,
         setShowNewsletterModal,
-        setShowCollectionsModal
+        setShowCollectionsModal,
+        setShowAddSetupModal
     } = useApp();
     const [searchExpanded, setSearchExpanded] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const handleSearch = (e) => {
         setFilters({ ...filters, search: e.target.value });
-    };
-
-    const handleBlogEditorClick = () => {
-        if (currentUser?.role !== 'admin') {
-            alert('Chỉ Admin mới có thể viết blog!');
-            return;
+        if (location.pathname !== '/' && location.pathname !== '/gallery') {
+            navigate('/');
         }
-        setCurrentView('blog-editor');
     };
 
     return (
         <header className="header">
             <div className="container header-container">
                 {/* Logo */}
-                <div className="header-logo" onClick={() => setCurrentView('gallery')}>
+                <Link to="/" className="header-logo">
                     <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
                         <rect width="32" height="32" rx="8" fill="url(#logo-gradient)" />
                         <path d="M8 12h16M8 16h16M8 20h12" stroke="white" strokeWidth="2" strokeLinecap="round" />
@@ -47,34 +44,51 @@ const Header = () => {
                         </defs>
                     </svg>
                     <span className="header-logo-text">DeskHub</span>
-                </div>
+                </Link>
 
                 {/* Navigation */}
                 <nav className="header-nav">
-                    <button
-                        className={`nav-link ${currentView === 'gallery' ? 'active' : ''}`}
-                        onClick={() => setCurrentView('gallery')}
-                    >
+                    <Link to="/" className={`nav-link ${location.pathname === '/' || location.pathname === '/gallery' ? 'active' : ''}`}>
                         Bộ Sưu Tập
-                    </button>
-                    <button
-                        className={`nav-link ${currentView === 'blog' || currentView === 'blog-detail' ? 'active' : ''}`}
-                        onClick={() => setCurrentView('blog')}
-                    >
+                    </Link>
+                    <Link to="/blog" className={`nav-link ${location.pathname.startsWith('/blog') ? 'active' : ''}`}>
                         Blog
-                    </button>
-                    {currentUser?.role === 'admin' && (
-                        <button
-                            className={`nav-link ${currentView === 'blog-editor' ? 'active' : ''}`}
-                            onClick={handleBlogEditorClick}
-                        >
-                            ✍️ Viết Blog
-                        </button>
-                    )}
+                    </Link>
                 </nav>
 
                 {/* Actions */}
                 <div className="header-actions">
+                    {/* Admin Post Button */}
+                    {currentUser?.role === 'admin' && (
+                        <>
+                            <Link
+                                to="/blog/new"
+                                className="btn"
+                                style={{
+                                    padding: '0.5rem 1rem',
+                                    fontSize: '0.9rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    backgroundColor: 'var(--bg-secondary)',
+                                    color: 'var(--text-primary)',
+                                    marginRight: '0.5rem',
+                                    textDecoration: 'none',
+                                    borderRadius: '8px'
+                                }}
+                            >
+                                ✍️ Blog
+                            </Link>
+                            <button
+                                className="btn btn-primary"
+                                style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                                onClick={() => setShowAddSetupModal(true)}
+                            >
+                                <span>+</span> Đăng Góc
+                            </button>
+                        </>
+                    )}
+
                     {/* Search */}
                     <div className={`search-container ${searchExpanded ? 'expanded' : ''}`}>
                         <input
@@ -116,36 +130,26 @@ const Header = () => {
                         )}
                     </button>
 
-                    {/* Newsletter */}
-                    <button
-                        className="btn btn-primary newsletter-btn"
-                        onClick={() => setShowNewsletterModal(true)}
-                    >
-                        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                            <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                        </svg>
-                        <span className="newsletter-text">Đăng Ký</span>
-                    </button>
-
                     {/* User Menu */}
                     <div className="user-menu-container">
                         <button
                             className="user-avatar-btn"
                             onClick={() => setShowUserMenu(!showUserMenu)}
                         >
-                            <img src={currentUser?.avatar} alt={currentUser?.displayName} />
-                            <span className="user-name">{currentUser?.displayName}</span>
+                            <img src={currentUser?.avatar || `https://ui-avatars.com/api/?name=${currentUser?.displayName || 'Guest'}`} alt="" />
+                            {/* <span className="user-name">{currentUser?.displayName}</span> */}
                         </button>
 
                         {showUserMenu && (
                             <div className="user-menu">
                                 <div className="user-menu-header">
-                                    <img src={currentUser?.avatar} alt={currentUser?.displayName} />
+                                    <img src={currentUser?.avatar || `https://ui-avatars.com/api/?name=${currentUser?.displayName || 'Guest'}`} alt="" />
                                     <div>
-                                        <p className="user-menu-name">{currentUser?.displayName}</p>
+                                        <p className="user-menu-name">{currentUser?.displayName || 'Khách'}</p>
                                         <p className="user-menu-role">
-                                            {currentUser?.isGuest ? 'Tài khoản Khách' :
-                                                currentUser?.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}
+                                            {/* Logic for role display */}
+                                            {!currentUser ? 'Chưa đăng nhập' :
+                                                currentUser.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}
                                         </p>
                                     </div>
                                 </div>
@@ -158,7 +162,7 @@ const Header = () => {
                                         Hồ Sơ
                                     </button>
                                     {currentUser?.role === 'admin' && (
-                                        <button onClick={() => { setCurrentView('admin-dashboard'); setShowUserMenu(false); }}>
+                                        <Link to="/admin" className="menu-link" onClick={() => setShowUserMenu(false)}>
                                             <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                                                 <rect x="3" y="3" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="2" />
                                                 <rect x="11" y="3" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="2" />
@@ -166,7 +170,7 @@ const Header = () => {
                                                 <rect x="11" y="11" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="2" />
                                             </svg>
                                             Dashboard
-                                        </button>
+                                        </Link>
                                     )}
                                     <button onClick={() => { setShowCollectionsModal(true); setShowUserMenu(false); }}>
                                         <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
@@ -174,12 +178,12 @@ const Header = () => {
                                         </svg>
                                         Setup Đã Lưu
                                     </button>
-                                    {currentUser?.isGuest && (
+                                    {!currentUser && (
                                         <button onClick={() => { setShowAuthModal(true); setShowUserMenu(false); }}>
                                             <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                                                 <path d="M10 3v14M3 10h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                                             </svg>
-                                            Tạo Tài Khoản
+                                            Đăng Nhập / Đăng Ký
                                         </button>
                                     )}
                                 </div>
@@ -189,7 +193,7 @@ const Header = () => {
                 </div>
             </div>
 
-            {/* Overlay to close user menu */}
+            {/* Overlay */}
             {showUserMenu && (
                 <div className="user-menu-overlay" onClick={() => setShowUserMenu(false)} />
             )}

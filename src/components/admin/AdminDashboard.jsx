@@ -5,7 +5,6 @@ import './AdminDashboard.css';
 
 const AdminDashboard = () => {
     const { setups, blogs, getComments, currentUser, addSetup, updateSetup, deleteSetup } = useApp();
-    const [showAddModal, setShowAddModal] = useState(false);
     const [editingSetup, setEditingSetup] = useState(null);
     const [dateRange, setDateRange] = useState({
         startDate: '',
@@ -142,25 +141,6 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="header-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <button
-                        className="btn-add-setup"
-                        onClick={() => setShowAddModal(true)}
-                        style={{
-                            padding: '0.75rem 1.25rem',
-                            backgroundColor: 'var(--accent-color)',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem'
-                        }}
-                    >
-                        <span>+</span> Mới
-                    </button>
-
                     <div className="dashboard-filter">
                         <span className="filter-label">Lọc:</span>
                         <input
@@ -316,14 +296,6 @@ const AdminDashboard = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Add Setup Modal */}
-            {showAddModal && (
-                <AddSetupModal
-                    onClose={() => setShowAddModal(false)}
-                    onSave={handleSaveSetup}
-                />
-            )}
 
             {/* Edit Setup Modal */}
             {editingSetup && (

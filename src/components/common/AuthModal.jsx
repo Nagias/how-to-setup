@@ -9,6 +9,7 @@ const AuthModal = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [displayName, setDisplayName] = useState('');
+    const [username, setUsername] = useState('');
     const [error, setError] = useState('');
 
     if (!showAuthModal) return null;
@@ -19,6 +20,7 @@ const AuthModal = () => {
         setEmail('');
         setPassword('');
         setDisplayName('');
+        setUsername('');
     };
 
     const handleSubmit = async (e) => {
@@ -35,7 +37,7 @@ const AuthModal = () => {
                     setError('Vui lòng nhập tên hiển thị');
                     return;
                 }
-                const result = await api.register({ email, password, displayName, username: email.split('@')[0] });
+                const result = await api.register({ email, password, displayName, username });
                 handleClose();
                 alert('Đăng ký thành công!');
             }
@@ -97,17 +99,32 @@ const AuthModal = () => {
                         </div>
 
                         {mode === 'register' && (
-                            <div className="form-group">
-                                <label>Tên hiển thị</label>
-                                <input
-                                    type="text"
-                                    className="input"
-                                    value={displayName}
-                                    onChange={(e) => setDisplayName(e.target.value)}
-                                    placeholder="Tên của bạn"
-                                    required
-                                />
-                            </div>
+                            <>
+                                <div className="form-group">
+                                    <label>Tên hiển thị</label>
+                                    <input
+                                        type="text"
+                                        className="input"
+                                        value={displayName}
+                                        onChange={(e) => setDisplayName(e.target.value)}
+                                        placeholder="Tên của bạn"
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Username</label>
+                                    <input
+                                        type="text"
+                                        className="input"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        placeholder="username"
+                                        required
+                                        pattern="[a-zA-Z0-9_-]+"
+                                        title="Chỉ chứa chữ cái, số, gạch ngang và gạch dưới"
+                                    />
+                                </div>
+                            </>
                         )}
 
                         <button type="submit" className="btn btn-primary auth-submit">

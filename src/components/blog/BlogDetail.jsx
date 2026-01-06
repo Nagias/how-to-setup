@@ -1,5 +1,6 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
 import SeoHead from '../common/SeoHead';
 import './BlogDetail.css';
@@ -7,7 +8,22 @@ import './BlogDetail.css';
 import { api } from '../../utils/api';
 
 const BlogDetail = () => {
-    const { selectedBlog, setSelectedBlog, setCurrentView, setBlogs, deleteBlog, currentUser } = useApp();
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { blogs, setBlogs, deleteBlog, currentUser } = useApp();
+    const [blog, setBlog] = useState(null);
+
+    // Find blog from ID (wait for blogs to load)
+    useEffect(() => {
+        if (blogs.length > 0) {
+            const foundBlog = blogs.find(b => b.id === id);
+            if (foundBlog) {
+                setBlog(foundBlog);
+            } else {
+                // If not found after load, maybe redirect or show 404
+            }
+        }
+    }, [id, blogs]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -15,59 +31,43 @@ const BlogDetail = () => {
 
     // Increment View Count after 5 seconds
     useEffect(() => {
-        if (!selectedBlog) return;
+        if (!blog) return;
 
-        console.log('BlogDetail: Setting up view timer for blog:', selectedBlog.id);
+        console.log('BlogDetail: Setting up view timer for blog:', blog.id);
 
         const timer = setTimeout(async () => {
-            console.log('BlogDetail: 5 seconds elapsed, incrementing view for blog:', selectedBlog.id);
+            console.log('BlogDetail: 5 seconds elapsed, incrementing view for blog:', blog.id);
             try {
-                const res = await api.incrementBlogView(selectedBlog.id);
-                console.log('BlogDetail: View increment response:', res);
-
-                if (res.success && res.views !== undefined) {
-                    console.log('BlogDetail: Updating views from', selectedBlog.views, 'to', res.views);
-                    // Update Current View immediately
-                    setSelectedBlog(prev => ({ ...prev, views: res.views }));
-                    // Update Global List (works for all users, no auth needed)
-                    setBlogs(prev => prev.map(b =>
-                        b.id === selectedBlog.id ? { ...b, views: res.views } : b
-                    ));
-                } else {
-                    console.error('BlogDetail: Failed to increment view:', res);
+                const res = await api.incrementBlogView(blog.id);
+                if (res.success) {
+                    // Update Local State if view count returned (optional) or just re-fetch
+                    // For simplicity, we assume generic update logic or ignore specific view number update unless returned
                 }
             } catch (error) {
                 console.error('BlogDetail: Error incrementing view:', error);
             }
         }, 5000);
 
-        return () => {
-            console.log('BlogDetail: Clearing view timer for blog:', selectedBlog.id);
-            clearTimeout(timer);
-        };
-    }, [selectedBlog?.id]);
+        return () => clearTimeout(timer);
+    }, [blog?.id]);
 
-    if (!selectedBlog) {
-        // Fallback if no blog is selected, go back to list
-        setCurrentView('blog');
-        return null;
+    if (!blog) {
+        return <div className="container" style={{ padding: '2rem', textAlign: 'center' }}>Đang tải bài viết...</div>;
     }
 
     const handleBack = () => {
-        setCurrentView('blog');
-        setSelectedBlog(null);
+        navigate('/blog');
     };
 
     const handleEdit = () => {
-        // Navigate to blog editor with the current blog data
-        setCurrentView('blog-editor');
+        navigate(`/blog/edit/${blog.id}`);
     };
 
     const handleDelete = async () => {
         if (window.confirm('Bạn có chắc chắn muốn xóa bài viết này không?')) {
-            const res = await deleteBlog(selectedBlog.id);
+            const res = await deleteBlog(blog.id);
             if (res.success) {
-                handleBack();
+                navigate('/blog');
             } else {
                 alert(res.message || 'Có lỗi xảy ra');
             }
@@ -77,11 +77,11 @@ const BlogDetail = () => {
     const schema = {
         "@context": "https://schema.org",
         "@type": "BlogPosting",
-        "headline": selectedBlog.title,
-        "image": selectedBlog.coverImage,
+        "headline": blog.title,
+        "image": blog.coverImage,
         "author": {
             "@type": "Person",
-            "name": selectedBlog.author.name
+            "name": blog.author.name
         },
         "publisher": {
             "@type": "Organization",
@@ -91,16 +91,16 @@ const BlogDetail = () => {
                 "url": "https://deskhub.demo/logo.png"
             }
         },
-        "datePublished": selectedBlog.publishedAt,
-        "description": selectedBlog.excerpt
+        "datePublished": blog.publishedAt,
+        "description": blog.excerpt
     };
 
     return (
         <div className="blog-detail-page">
             <SeoHead
-                title={selectedBlog.title}
-                description={selectedBlog.excerpt}
-                image={selectedBlog.coverImage}
+                title={blog.title}
+                description={blog.excerpt}
+                image={blog.coverImage}
                 type="article"
                 schema={schema}
             />
@@ -134,22 +134,22 @@ const BlogDetail = () => {
             <article className="blog-article">
                 {/* Cover Image */}
                 <div className="blog-cover">
-                    <img src={selectedBlog.coverImage} alt={selectedBlog.title} />
+                    <img src={blog.coverImage} alt={blog.title} />
                     <div className="blog-cover-overlay">
-                        <span className="blog-category-large">{selectedBlog.category}</span>
+                        <span className="blog-category-large">{blog.category}</span>
                     </div>
                 </div>
 
                 {/* Article Header */}
                 <header className="blog-header">
-                    <h1 className="blog-title">{selectedBlog.title}</h1>
+                    <h1 className="blog-title">{blog.title}</h1>
                     <div className="blog-meta-large">
                         <div className="blog-author-large">
-                            <img src={selectedBlog.author.avatar} alt={selectedBlog.author.name} />
+                            <img src={blog.author.avatar} alt={blog.author.name} />
                             <div>
-                                <p className="author-name">{selectedBlog.author.name}</p>
+                                <p className="author-name">{blog.author.name}</p>
                                 <p className="publish-date">
-                                    {new Date(selectedBlog.publishedAt).toLocaleDateString('vi-VN', {
+                                    {new Date(blog.publishedAt).toLocaleDateString('vi-VN', {
                                         year: 'numeric',
                                         month: 'long',
                                         day: 'numeric'
@@ -163,14 +163,14 @@ const BlogDetail = () => {
                                     <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" />
                                     <path d="M10 6v4l3 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                                 </svg>
-                                {selectedBlog.readTime} phút đọc
+                                {blog.readTime} phút đọc
                             </span>
                             <span className="stat">
                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                                     <path d="M1 10s3-7 9-7 9 7 9 7-3 7-9 7-9-7-9-7z" stroke="currentColor" strokeWidth="1.5" />
                                     <circle cx="10" cy="10" r="3" stroke="currentColor" strokeWidth="1.5" />
                                 </svg>
-                                {selectedBlog.views} lượt xem
+                                {blog.views} lượt xem
                             </span>
                         </div>
                     </div>
@@ -179,12 +179,12 @@ const BlogDetail = () => {
                 {/* Article Content */}
                 <div
                     className="blog-content"
-                    dangerouslySetInnerHTML={{ __html: selectedBlog.content }}
+                    dangerouslySetInnerHTML={{ __html: blog.content }}
                 />
 
                 {/* Tags */}
                 <div className="blog-tags">
-                    {selectedBlog.tags.map(tag => (
+                    {blog.tags.map(tag => (
                         <span key={tag} className="blog-tag">#{tag}</span>
                     ))}
                 </div>

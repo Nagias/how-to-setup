@@ -1,10 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
 import './BlogEditor.css';
 
 const BlogEditor = () => {
-    const { addBlog, updateBlog, selectedBlog, setCurrentView } = useApp();
-    const isEditMode = !!selectedBlog;
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { addBlog, updateBlog, blogs } = useApp();
+
+    // Determine edit mode based on URL param
+    const isEditMode = !!id;
+    // We need to fetch the blog if editing. For local state, we can find it in 'blogs'.
+    const [selectedBlog, setSelectedBlog] = useState(null);
 
     const [title, setTitle] = useState('');
     const [excerpt, setExcerpt] = useState('');
@@ -15,23 +22,32 @@ const BlogEditor = () => {
     const [content, setContent] = useState('');
     const contentRef = useRef(null);
     const fileInputRef = useRef(null);
-    const [uploadType, setUploadType] = useState('image'); // 'image' or 'video'
+    const [uploadType, setUploadType] = useState('image');
 
-    // Pre-fill form when editing
+    // Load blog data if editing
     useEffect(() => {
-        if (isEditMode && selectedBlog) {
-            setTitle(selectedBlog.title || '');
-            setExcerpt(selectedBlog.excerpt || '');
-            setCoverImage(selectedBlog.coverImage || '');
-            setCategory(selectedBlog.category || 'Hướng Dẫn');
-            setTags(selectedBlog.tags?.join(', ') || '');
-            setReadTime(selectedBlog.readTime || 5);
-            setContent(selectedBlog.content || '');
-            if (contentRef.current) {
-                contentRef.current.innerHTML = selectedBlog.content || '';
+        if (isEditMode && blogs.length > 0) {
+            const blogToEdit = blogs.find(b => b.id === id);
+            if (blogToEdit) {
+                setSelectedBlog(blogToEdit);
+                setTitle(blogToEdit.title || '');
+                setExcerpt(blogToEdit.excerpt || '');
+                setCoverImage(blogToEdit.coverImage || '');
+                setCategory(blogToEdit.category || 'Hướng Dẫn');
+                setTags(blogToEdit.tags?.join(', ') || '');
+                setReadTime(blogToEdit.readTime || 5);
+                setContent(blogToEdit.content || '');
+                if (contentRef.current) {
+                    contentRef.current.innerHTML = blogToEdit.content || '';
+                }
+            } else {
+                // Not found locally? Maybe fetch or 404.
+                // For now, redirect or alert
+                alert("Không tìm thấy bài viết!");
+                navigate('/blog');
             }
         }
-    }, [isEditMode, selectedBlog]);
+    }, [isEditMode, id, blogs, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -47,11 +63,11 @@ const BlogEditor = () => {
             readTime: parseInt(readTime)
         };
 
-        if (isEditMode) {
+        if (isEditMode && selectedBlog) {
             const res = await updateBlog(selectedBlog.id, blogData);
             if (res.success) {
                 alert('Đã cập nhật bài viết thành công!');
-                setCurrentView('blog');
+                navigate(`/blog/${selectedBlog.id}`);
             } else {
                 alert(res.message || 'Có lỗi xảy ra khi cập nhật!');
             }
@@ -59,18 +75,7 @@ const BlogEditor = () => {
             const res = await addBlog(blogData);
             if (res.success) {
                 alert('Đã đăng bài viết thành công!');
-                // Reset form
-                setTitle('');
-                setExcerpt('');
-                setCoverImage('');
-                setCategory('Hướng Dẫn');
-                setTags('');
-                setReadTime(5);
-                setContent('');
-                if (contentRef.current) {
-                    contentRef.current.innerHTML = '';
-                }
-                setCurrentView('blog');
+                navigate('/blog');
             } else {
                 alert(res.message || 'Có lỗi xảy ra!');
             }
@@ -334,7 +339,7 @@ const BlogEditor = () => {
 
                 {/* Actions */}
                 <div className="editor-actions">
-                    <button type="button" className="btn btn-secondary" onClick={() => setCurrentView('blog')}>
+                    <button type="button" className="btn btn-secondary" onClick={() => navigate('/blog')}>
                         Hủy
                     </button>
                     <button type="submit" className="btn btn-primary">

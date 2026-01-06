@@ -34,6 +34,7 @@ export const AppProvider = ({ children }) => {
     const [showProfileModal, setShowProfileModal] = useState(false);
     const [showNewsletterModal, setShowNewsletterModal] = useState(false);
     const [showCollectionsModal, setShowCollectionsModal] = useState(false);
+    const [showAddSetupModal, setShowAddSetupModal] = useState(false);
     const [allComments, setAllComments] = useState({});
 
     // Initialize data on mount
@@ -360,6 +361,8 @@ export const AppProvider = ({ children }) => {
         setShowNewsletterModal,
         showCollectionsModal,
         setShowCollectionsModal,
+        showAddSetupModal,
+        setShowAddSetupModal,
         getFilteredSetups,
         toggleLike,
         toggleSave,
