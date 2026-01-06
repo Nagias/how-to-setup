@@ -1,38 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { api } from '../../utils/api';
 import './AddSetupModal.css';
-
-/* ADDED STYLES FOR IMAGE UPLOAD */
-/*
-.image-input-group {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-.input-url {
-    flex: 1;
-}
-.btn-upload {
-    padding: 0.6rem 1rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    cursor: pointer;
-    font-size: 0.9rem;
-    white-space: nowrap;
-    transition: all 0.2s;
-}
-.btn-upload:hover {
-    background: var(--color-surface-hover);
-    border-color: var(--color-primary);
-}
-*/
 import { filterOptions } from '../../data/sampleData';
 
 const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
     const [formData, setFormData] = useState({
         title: initialData?.title || '',
         caption: initialData?.caption || '',
-        mainImage: initialData?.images?.[0]?.url || initialData?.image || '', // Fallback for various formats
         filters: initialData?.filters || {
             colorTone: 'neutral',
             budget: 'mid-range',
@@ -43,18 +17,46 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
         tags: initialData?.tags?.join(', ') || ''
     });
 
-    // Products state: { id, x, y, name, type, price, link }
-    // x, y in percentages
-    const [products, setProducts] = useState(
-        initialData?.images?.[0]?.products || initialData?.products || []
-    );
+    // Media State management
+    // items: { id, type: 'image'|'video', url, file, products: [] }
+    const [mediaList, setMediaList] = useState(() => {
+        if (initialData?.media && initialData.media.length > 0) {
+            return initialData.media;
+        }
+        // Fallback for legacy data (single image)
+        if (initialData?.image) {
+            return [{
+                id: Date.now().toString(),
+                type: 'image',
+                url: initialData.image,
+                products: initialData.products || []
+            }];
+        }
+        return [];
+    });
+
+    const [activeMediaId, setActiveMediaId] = useState(null);
+    const [uploading, setUploading] = useState(false);
+
+    // Set first media as active on load
+    useEffect(() => {
+        if (mediaList.length > 0 && !activeMediaId) {
+            setActiveMediaId(mediaList[0].id);
+        }
+    }, [mediaList, activeMediaId]);
+
+    const activeMedia = mediaList.find(m => m.id === activeMediaId);
 
     // Tagging state
-    const [activeTag, setActiveTag] = useState(null); // Tag being edited or created
+    const [activeTag, setActiveTag] = useState(null); // Tag being edited
     const [showTagPopup, setShowTagPopup] = useState(false);
     const imageRef = useRef(null);
 
-    // Handle form changes
+    // Helper to update specific media item
+    const updateMediaItem = (id, updates) => {
+        setMediaList(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         if (name.startsWith('filter.')) {
@@ -68,15 +70,50 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
         }
     };
 
-    // Handle Image Click to Add Tag
-    const handleImageClick = (e) => {
-        if (!formData.mainImage) return;
+    const handleFileUpload = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
 
-        // If clicking background while editing, allow creating new tag (or focus logic)
-        // But preventing accidental clicks is good. 
-        // User wants to add "more links". He probably adds one, saves it, adds another.
-        // If he fails to click "Save" in popup, he might be stuck?
-        // Let's remove the block so he can always click new spots.
+        const newItems = files.map(file => {
+            const isVideo = file.type.startsWith('video/');
+            // Size check: Video < 500MB, Image < 10MB
+            if (isVideo && file.size > 500 * 1024 * 1024) {
+                alert(`Video ${file.name} quá lớn (>500MB).`);
+                return null;
+            }
+            if (!isVideo && file.size > 10 * 1024 * 1024) {
+                alert(`Ảnh ${file.name} quá lớn (>10MB).`);
+                return null;
+            }
+
+            return {
+                id: Date.now() + Math.random().toString(),
+                type: isVideo ? 'video' : 'image',
+                url: URL.createObjectURL(file), // Preview URL
+                file: file,
+                products: []
+            };
+        }).filter(Boolean);
+
+        setMediaList(prev => [...prev, ...newItems]);
+        if (!activeMediaId && newItems.length > 0) {
+            setActiveMediaId(newItems[0].id);
+        }
+    };
+
+    const handleRemoveMedia = (id, e) => {
+        e.stopPropagation();
+        const newList = mediaList.filter(m => m.id !== id);
+        setMediaList(newList);
+        if (activeMediaId === id) {
+            setActiveMediaId(newList[0]?.id || null);
+        }
+    };
+
+    // --- Tagging Logic (Only for Images) ---
+
+    const handleImageClick = (e) => {
+        if (!activeMedia || activeMedia.type !== 'image') return;
 
         const rect = imageRef.current.getBoundingClientRect();
         const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -84,74 +121,99 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
 
         const newTag = {
             id: Date.now().toString(),
-            x,
-            y,
-            name: '',
-            type: 'Monitor',
-            price: '',
-            link: ''
+            x, y,
+            name: '', type: 'Monitor', price: '', link: ''
         };
 
         setActiveTag(newTag);
         setShowTagPopup(true);
     };
 
-    // Handle Click on Existing Tag
     const handleTagClick = (e, product) => {
         e.stopPropagation();
         setActiveTag(product);
         setShowTagPopup(true);
     };
 
-    // Save Tag
     const handleSaveTag = () => {
         if (!activeTag.name) return alert('Vui lòng nhập tên sản phẩm');
 
-        setProducts(prev => {
-            const exists = prev.find(p => p.id === activeTag.id);
-            if (exists) {
-                return prev.map(p => p.id === activeTag.id ? activeTag : p);
-            }
-            return [...prev, activeTag];
-        });
+        const currentProducts = activeMedia.products || [];
+        const exists = currentProducts.find(p => p.id === activeTag.id);
 
-        setActiveTag(null);
-        setShowTagPopup(false);
-    };
-
-    // Delete Tag
-    const handleDeleteTag = () => {
-        setProducts(prev => prev.filter(p => p.id !== activeTag.id));
-        setActiveTag(null);
-        setShowTagPopup(false);
-    };
-
-    // Submit Main Form
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(t => t);
-
-        const setupData = {
-            ...formData,
-            tags: tagsArray,
-            // Standardize structure
-            image: formData.mainImage,
-            products: products,
-            // Also support complex images structure if needed by detailed views
-            images: [
-                {
-                    url: formData.mainImage,
-                    products: products
-                }
-            ],
-            updatedAt: new Date().toISOString()
-        };
-
-        if (initialData) {
-            onSave(initialData.id, setupData);
+        let newProducts;
+        if (exists) {
+            newProducts = currentProducts.map(p => p.id === activeTag.id ? activeTag : p);
         } else {
-            onSave(setupData);
+            newProducts = [...currentProducts, activeTag];
+        }
+
+        updateMediaItem(activeMediaId, { products: newProducts });
+        setActiveTag(null);
+        setShowTagPopup(false);
+    };
+
+    const handleDeleteTag = () => {
+        const currentProducts = activeMedia.products || [];
+        const newProducts = currentProducts.filter(p => p.id !== activeTag.id);
+        updateMediaItem(activeMediaId, { products: newProducts });
+        setActiveTag(null);
+        setShowTagPopup(false);
+    };
+
+    // --- Submit ---
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setUploading(true);
+
+        try {
+            // Upload files first
+            const processedMedia = await Promise.all(mediaList.map(async (item) => {
+                if (item.file) {
+                    try {
+                        const downloadUrl = await api.uploadFile(item.file);
+                        return {
+                            id: item.id,
+                            type: item.type,
+                            url: downloadUrl,
+                            products: item.products
+                        };
+                    } catch (err) {
+                        console.error('Failed to upload', item.file.name, err);
+                        throw new Error(`Lỗi tải lên file ${item.file.name}`);
+                    }
+                }
+                // Keep existing (no file means it's already a URL)
+                return {
+                    id: item.id,
+                    type: item.type,
+                    url: item.url,
+                    products: item.products
+                };
+            }));
+
+            const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(t => t);
+
+            const setupData = {
+                ...formData,
+                tags: tagsArray,
+                media: processedMedia, // Save full media array
+                // Legacy fields for backward compatibility
+                image: processedMedia[0]?.url || '',
+                products: processedMedia[0]?.products || [],
+                updatedAt: new Date().toISOString()
+            };
+
+            if (initialData?.id) {
+                await onSave(initialData.id, setupData);
+            } else {
+                await onSave(setupData);
+            }
+        } catch (err) {
+            alert(err.message || 'Có lỗi xảy ra khi lưu setup.');
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -160,74 +222,67 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
             <div className="modal-content add-setup-modal" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2>{initialData ? 'Chỉnh Sửa Setup' : 'Thêm Góc Setup Mới'}</h2>
-                    <button className="close-btn" onClick={onClose}>&times;</button>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                        {uploading && <span style={{ color: 'var(--accent-color)' }}>⏳ Đang tải lên... Vui lòng chờ</span>}
+                        <button className="close-btn" onClick={onClose}>&times;</button>
+                    </div>
                 </div>
 
                 <div className="add-setup-body">
                     <form id="setupForm" onSubmit={handleSubmit} className="setup-form-layout">
                         {/* Left Column: Info */}
                         <div className="form-column">
+                            {/* Standard Fields (Title, Caption) */}
                             <div className="form-group">
                                 <label>Tiêu đề</label>
                                 <input
-                                    type="text"
-                                    name="title"
-                                    value={formData.title}
-                                    onChange={handleChange}
-                                    required
+                                    type="text" name="title"
+                                    value={formData.title} onChange={handleChange} required
                                     placeholder="Ví dụ: Góc làm việc tối giản"
                                 />
                             </div>
-
                             <div className="form-group">
                                 <label>Mô tả ngắn</label>
                                 <textarea
                                     name="caption"
-                                    value={formData.caption}
-                                    onChange={handleChange}
-                                    required
+                                    value={formData.caption} onChange={handleChange} required
                                     placeholder="Mô tả về setup này..."
                                 />
                             </div>
 
+                            {/* Media List & Upload */}
                             <div className="form-group">
-                                <label>Hình ảnh</label>
-                                <div className="image-input-group">
-                                    <input
-                                        type="url"
-                                        name="mainImage"
-                                        value={formData.mainImage}
-                                        onChange={handleChange}
-                                        placeholder="Dán link ảnh (URL)..."
-                                        className="input-url"
-                                    />
-                                    <div className="file-upload-wrapper">
-                                        <label htmlFor="file-upload" className="btn-upload">
-                                            📂 Tải ảnh lên
-                                        </label>
+                                <label>Media (Ảnh/Video)</label>
+                                <div className="media-gallery-preview">
+                                    {mediaList.map(item => (
+                                        <div
+                                            key={item.id}
+                                            className={`media-thumb ${activeMediaId === item.id ? 'active' : ''}`}
+                                            onClick={() => setActiveMediaId(item.id)}
+                                        >
+                                            {item.type === 'video' ? (
+                                                <div className="video-icon">▶️</div>
+                                            ) : (
+                                                <img src={item.url} alt="thumb" />
+                                            )}
+                                            <button type="button" className="btn-remove-media" onClick={(e) => handleRemoveMedia(item.id, e)}>×</button>
+                                        </div>
+                                    ))}
+
+                                    <label className="add-media-btn">
                                         <input
-                                            id="file-upload"
                                             type="file"
-                                            accept="image/*"
-                                            onChange={(e) => {
-                                                const file = e.target.files[0];
-                                                if (file) {
-                                                    if (file.size > 5000000) { // Limit 5MB
-                                                        alert('Ảnh quá lớn (>5MB). Vui lòng chọn ảnh nhỏ hơn.');
-                                                        return;
-                                                    }
-                                                    const reader = new FileReader();
-                                                    reader.onloadend = () => {
-                                                        setFormData(prev => ({ ...prev, mainImage: reader.result }));
-                                                    };
-                                                    reader.readAsDataURL(file);
-                                                }
-                                            }}
+                                            multiple
+                                            accept="image/*,video/*"
+                                            onChange={handleFileUpload}
                                             style={{ display: 'none' }}
                                         />
-                                    </div>
+                                        <span>+ Thêm</span>
+                                    </label>
                                 </div>
-                                <small style={{ marginTop: '5px', color: '#888', display: 'block' }}>Hỗ trợ JPG, PNG. Tối đa 5MB.</small>
+                                <small style={{ display: 'block', marginTop: '5px', color: '#888' }}>
+                                    Hỗ trợ nhiều ảnh & video (Max 400MB/Video).
+                                </small>
                             </div>
 
                             <div className="form-row">
@@ -244,7 +299,7 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                     </select>
                                 </div>
                             </div>
-
+                            {/* More filters... */}
                             <div className="form-row">
                                 <div className="form-group">
                                     <label>Phong cách</label>
@@ -261,51 +316,42 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                             </div>
 
                             <div className="form-group">
-                                <label>Tags</label>
+                                <label>Tags (ngăn cách bởi dấu phẩy)</label>
                                 <input
-                                    type="text"
-                                    name="tags"
-                                    value={formData.tags}
-                                    onChange={handleChange}
-                                    placeholder="tối-giản, gaming, rgb..."
+                                    type="text" name="tags"
+                                    value={formData.tags} onChange={handleChange}
+                                    placeholder="gaming, minimal, rgb..."
                                 />
-                            </div>
-
-                            {/* Product List Summary */}
-                            <div className="product-list-preview">
-                                <h4>Sản phẩm đã gán ({products.length})</h4>
-                                {products.length === 0 && <small>Chưa có sản phẩm. Click vào ảnh bên phải để thêm.</small>}
-                                {products.map(p => (
-                                    <div key={p.id} className="product-item-preview">
-                                        <span>{p.name}</span>
-                                        <small>{p.price}</small>
-                                        <button type="button" onClick={() => {
-                                            setActiveTag(p);
-                                            setShowTagPopup(true);
-                                        }} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>✏️</button>
-                                    </div>
-                                ))}
                             </div>
                         </div>
 
-                        {/* Right Column: Image & Tagging */}
+                        {/* Right Column: Preview & Tagging */}
                         <div className="form-column">
-                            <label style={{ marginBottom: '0.5rem', display: 'block', fontWeight: '500' }}>Gắn Thẻ Sản Phẩm (Click vào ảnh)</label>
-                            <div
-                                className="image-tagging-area"
-                                onClick={handleImageClick}
-                            >
-                                {formData.mainImage ? (
-                                    <>
-                                        <img
-                                            ref={imageRef}
-                                            src={formData.mainImage}
-                                            alt="Tagging Area"
-                                            className="tagging-image"
-                                        />
+                            <label style={{ marginBottom: '0.5rem', display: 'block', fontWeight: '500' }}>
+                                {activeMedia ? (activeMedia.type === 'video' ? 'Xem Video (Không hỗ trợ gắn thẻ)' : 'Gắn Thẻ Sản Phẩm (Click vào ảnh)') : 'Xem trước'}
+                            </label>
 
-                                        {/* Render Existing Tags */}
-                                        {products.map(p => (
+                            <div className="image-tagging-area" onClick={handleImageClick}>
+                                {activeMedia ? (
+                                    <>
+                                        {activeMedia.type === 'video' ? (
+                                            <video
+                                                src={activeMedia.url}
+                                                controls
+                                                className="tagging-image"
+                                                style={{ maxHeight: '100%' }}
+                                            />
+                                        ) : (
+                                            <img
+                                                ref={imageRef}
+                                                src={activeMedia.url}
+                                                alt="Tagging Area"
+                                                className="tagging-image"
+                                            />
+                                        )}
+
+                                        {/* Render Tags (Only for Image) */}
+                                        {activeMedia.type === 'image' && activeMedia.products.map(p => (
                                             <div
                                                 key={p.id}
                                                 className={`tag-marker ${activeTag?.id === p.id ? 'active' : ''}`}
@@ -316,40 +362,30 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                             </div>
                                         ))}
 
-                                        {/* Render New Temp Tag */}
-                                        {activeTag && !products.find(p => p.id === activeTag.id) && (
+                                        {/* New Temp Tag */}
+                                        {activeTag && activeMedia.type === 'image' && !activeMedia.products.find(p => p.id === activeTag.id) && (
                                             <div
                                                 className="tag-marker active"
                                                 style={{ left: `${activeTag.x}%`, top: `${activeTag.y}%` }}
-                                            >
-                                                +
-                                            </div>
+                                            > + </div>
                                         )}
 
-                                        {/* Tag Popup Form */}
+                                        {/* Tag Popup */}
                                         {showTagPopup && activeTag && (
                                             <div
                                                 className="tag-popup"
                                                 style={{
-                                                    left: `${Math.min(activeTag.x, 60)}%`, // Prevent overflowing right 
+                                                    left: `${Math.min(activeTag.x, 60)}%`,
                                                     top: `${Math.min(activeTag.y + 5, 80)}%`
                                                 }}
                                                 onClick={e => e.stopPropagation()}
                                             >
-                                                <h4>{products.find(p => p.id === activeTag.id) ? 'Sửa Sản Phẩm' : 'Thêm Sản Phẩm'}</h4>
+                                                <h4>{activeMedia.products.find(p => p.id === activeTag.id) ? 'Sửa Sản Phẩm' : 'Thêm Sản Phẩm'}</h4>
                                                 <div className="form-group">
-                                                    <input
-                                                        autoFocus
-                                                        placeholder="Tên sản phẩm"
-                                                        value={activeTag.name}
-                                                        onChange={e => setActiveTag({ ...activeTag, name: e.target.value })}
-                                                    />
+                                                    <input autoFocus placeholder="Tên sản phẩm" value={activeTag.name} onChange={e => setActiveTag({ ...activeTag, name: e.target.value })} />
                                                 </div>
                                                 <div className="form-group">
-                                                    <select
-                                                        value={activeTag.type}
-                                                        onChange={e => setActiveTag({ ...activeTag, type: e.target.value })}
-                                                    >
+                                                    <select value={activeTag.type} onChange={e => setActiveTag({ ...activeTag, type: e.target.value })}>
                                                         <option value="Monitor">Màn hình</option>
                                                         <option value="Keyboard">Bàn phím</option>
                                                         <option value="Mouse">Chuột</option>
@@ -362,37 +398,23 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                                     </select>
                                                 </div>
                                                 <div className="form-group">
-                                                    <input
-                                                        placeholder="Giá (VD: $100 hoặc 2tr)"
-                                                        value={activeTag.price}
-                                                        onChange={e => setActiveTag({ ...activeTag, price: e.target.value })}
-                                                    />
+                                                    <input placeholder="Giá" value={activeTag.price} onChange={e => setActiveTag({ ...activeTag, price: e.target.value })} />
                                                 </div>
                                                 <div className="form-group">
-                                                    <input
-                                                        placeholder="Link sản phẩm (tùy chọn)"
-                                                        value={activeTag.link}
-                                                        onChange={e => setActiveTag({ ...activeTag, link: e.target.value })}
-                                                    />
+                                                    <input placeholder="Link (tùy chọn)" value={activeTag.link} onChange={e => setActiveTag({ ...activeTag, link: e.target.value })} />
                                                 </div>
                                                 <div className="popup-actions">
                                                     <button type="button" className="btn-small btn-delete" onClick={() => {
-                                                        if (products.find(p => p.id === activeTag.id)) {
-                                                            handleDeleteTag();
-                                                        } else {
-                                                            setActiveTag(null);
-                                                            setShowTagPopup(false);
-                                                        }
-                                                    }}>Xóa/Hủy</button>
-                                                    <button type="button" className="btn-small btn-submit" onClick={handleSaveTag}>
-                                                        Lưu
-                                                    </button>
+                                                        if (activeMedia.products.find(p => p.id === activeTag.id)) handleDeleteTag();
+                                                        else { setActiveTag(null); setShowTagPopup(false); }
+                                                    }}>Xóa</button>
+                                                    <button type="button" className="btn-small btn-submit" onClick={handleSaveTag}>Lưu</button>
                                                 </div>
                                             </div>
                                         )}
                                     </>
                                 ) : (
-                                    <div className="placeholder-text">Nhập URL ảnh bên trái để bắt đầu gắn thẻ</div>
+                                    <div className="placeholder-text">Chọn hoặc tải lên media để bắt đầu custom</div>
                                 )}
                             </div>
                         </div>
@@ -401,7 +423,9 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
 
                 <div className="form-actions">
                     <button type="button" className="btn-cancel" onClick={onClose}>Hủy</button>
-                    <button type="submit" form="setupForm" className="btn-submit">Đăng Setup</button>
+                    <button type="submit" form="setupForm" className="btn-submit" disabled={uploading}>
+                        {uploading ? 'Đang Upload...' : 'Đăng Setup'}
+                    </button>
                 </div>
             </div>
         </div>

@@ -22,7 +22,12 @@ import {
     signOut,
     updateProfile
 } from 'firebase/auth';
-import { db, auth } from '../firebase';
+import {
+    ref,
+    uploadBytesResumable,
+    getDownloadURL
+} from 'firebase/storage';
+import { db, auth, storage } from '../firebase';
 import { sampleSetups, sampleBlogs } from '../data/sampleData';
 
 // Collections References
@@ -374,5 +379,30 @@ export const api = {
         } catch (error) {
             return { success: false };
         }
+    },
+
+    uploadFile: async (file, onProgress) => {
+        return new Promise((resolve, reject) => {
+            // Create a reference
+            const storageRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    if (onProgress) {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        onProgress(progress);
+                    }
+                },
+                (error) => {
+                    console.error("Upload failed:", error);
+                    reject(error);
+                },
+                async () => {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    resolve(downloadURL);
+                }
+            );
+        });
     }
 };
