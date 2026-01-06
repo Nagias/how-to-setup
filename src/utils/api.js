@@ -25,6 +25,7 @@ import {
 import {
     ref,
     uploadBytesResumable,
+    uploadBytes,
     getDownloadURL
 } from 'firebase/storage';
 import { db, auth, storage } from '../firebase';
@@ -381,28 +382,22 @@ export const api = {
         }
     },
 
-    uploadFile: async (file, onProgress) => {
-        return new Promise((resolve, reject) => {
-            // Create a reference
+    uploadFile: async (file) => {
+        try {
             const storageRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
-            const uploadTask = uploadBytesResumable(storageRef, file);
+            const metadata = { contentType: file.type };
 
-            uploadTask.on('state_changed',
-                (snapshot) => {
-                    if (onProgress) {
-                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        onProgress(progress);
-                    }
-                },
-                (error) => {
-                    console.error("Upload failed:", error);
-                    reject(error);
-                },
-                async () => {
-                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                    resolve(downloadURL);
-                }
-            );
-        });
+            console.log(`Starting simple upload for ${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file, metadata);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+            console.log("Upload success:", downloadURL);
+            return downloadURL;
+        } catch (error) {
+            console.error("Upload failed:", error);
+            if (error.code === 'storage/unauthorized') {
+                throw new Error("Không có quyền tải lên (Lỗi Storage Rules)");
+            }
+            throw error;
+        }
     }
 };
