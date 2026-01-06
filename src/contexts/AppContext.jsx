@@ -47,14 +47,22 @@ export const AppProvider = ({ children }) => {
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
             if (user) {
                 // Get role from Firestore
-                const docRef = doc(db, 'users', user.uid);
-                const docSnap = await getDoc(docRef);
-                const userData = docSnap.exists() ? docSnap.data() : {};
+                let userData = {};
+                try {
+                    const docRef = doc(db, 'users', user.uid);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        userData = docSnap.data();
+                    }
+                } catch (err) {
+                    console.warn("Failed to fetch user profile in AppContext:", err);
+                    // Continue with basic auth info
+                }
 
                 setCurrentUser({
                     id: user.uid,
                     email: user.email,
-                    displayName: user.displayName || userData.displayName,
+                    displayName: user.displayName || userData.displayName || user.email?.split('@')[0], // Fallback display name
                     photoURL: user.photoURL || userData.avatar,
                     role: userData.role || 'user'
                 });
