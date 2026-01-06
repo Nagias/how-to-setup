@@ -379,6 +379,102 @@ export const sampleSetups = [
             avatar: "https://i.pravatar.cc/150?img=13"
         },
         createdAt: "2026-01-06T12:00:00Z"
+    },
+    {
+        id: 13,
+        title: "Góc Làm Việc Ban Đêm",
+        caption: "Ánh sáng dịu nhẹ và không gian yên tĩnh cho những đêm làm việc muộn",
+        mainImage: "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=800",
+        images: [
+            {
+                url: "https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=800",
+                products: [
+                    { x: 50, y: 40, name: "Đèn LED Strip", link: "#", price: "500.000đ" },
+                    { x: 40, y: 60, name: "Bàn Phím Gaming RGB", link: "#", price: "3.500.000đ" }
+                ]
+            }
+        ],
+        filters: {
+            colorTone: "cool",
+            budget: "mid-range",
+            gender: "masculine",
+            purpose: "gaming",
+            size: "medium"
+        },
+        likes: [],
+        comments: 0,
+        saves: [],
+        tags: ["đêm", "rgb", "ambient", "gaming"],
+        thumbnailVideo: "https://videos.pexels.com/video-files/5752729/5752729-hd_1920_1080_30fps.mp4",
+        author: {
+            name: "Hoàng Long",
+            avatar: "https://i.pravatar.cc/150?img=14"
+        },
+        createdAt: "2026-01-05T20:00:00Z"
+    },
+    {
+        id: 14,
+        title: "Workspace Xanh Mát",
+        caption: "Cây xanh và thiên nhiên mang lại sự thư giãn trong công việc",
+        mainImage: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800",
+        images: [
+            {
+                url: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800",
+                products: [
+                    { x: 60, y: 35, name: "Cây Xanh Mini", link: "#", price: "350.000đ" },
+                    { x: 45, y: 55, name: "Bàn Gỗ Tre", link: "#", price: "7.500.000đ" }
+                ]
+            }
+        ],
+        filters: {
+            colorTone: "warm",
+            budget: "mid-range",
+            gender: "feminine",
+            purpose: "creative",
+            size: "small"
+        },
+        likes: [],
+        comments: 0,
+        saves: [],
+        tags: ["xanh", "thiên-nhiên", "thư-giãn", "eco"],
+        thumbnailVideo: "https://videos.pexels.com/video-files/4065924/4065924-hd_1920_1080_25fps.mp4",
+        author: {
+            name: "Mai Anh",
+            avatar: "https://i.pravatar.cc/150?img=15"
+        },
+        createdAt: "2026-01-05T14:30:00Z"
+    },
+    {
+        id: 15,
+        title: "Góc Developer Hiệu Suất Cao",
+        caption: "Ba màn hình và bàn phím cơ cho những dòng code không ngừng nghỉ",
+        mainImage: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800",
+        images: [
+            {
+                url: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800",
+                products: [
+                    { x: 30, y: 40, name: "Ultrawide Monitor 34\"", link: "#", price: "18.000.000đ" },
+                    { x: 55, y: 70, name: "Keychron K8 Pro", link: "#", price: "3.200.000đ" }
+                ]
+            }
+        ],
+        filters: {
+            colorTone: "cool",
+            budget: "premium",
+            gender: "neutral",
+            purpose: "productivity",
+            size: "large"
+        },
+        likes: [],
+        comments: 0,
+        saves: [],
+        tags: ["developer", "coding", "multi-screen", "productivity"],
+        thumbnailVideo: "https://videos.pexels.com/video-files/3255275/3255275-hd_1920_1080_25fps.mp4",
+        author: {
+            name: "Việt Hùng",
+            avatar: "https://i.pravatar.cc/150?img=16"
+        },
+        createdAt: "2026-01-05T09:00:00Z"
     }
 ];
 
