@@ -101,7 +101,7 @@ const AppContent = () => {
                     <Route path="/" element={<GalleryPage />} />
                     <Route path="/gallery" element={<GalleryPage />} />
                     <Route path="/blog" element={<BlogView />} />
-                    <Route path="/blog/:id" element={<BlogDetail />} />
+                    <Route path="/blog/:slug" element={<BlogDetail />} />
                     <Route path="/blog/new" element={<BlogEditor />} />
                     <Route path="/blog/edit/:id" element={<BlogEditor />} />
                     <Route path="/admin" element={<AdminDashboard />} />

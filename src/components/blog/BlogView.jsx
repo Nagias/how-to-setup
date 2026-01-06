@@ -20,7 +20,7 @@ const BlogView = () => {
 
             <div className="blog-grid">
                 {blogs.map(blog => (
-                    <Link to={`/blog/${blog.id}`} key={blog.id} className="blog-card-link">
+                    <Link to={`/blog/${blog.slug || blog.id}`} key={blog.id} className="blog-card-link">
                         <article className="blog-card">
                             <div className="blog-card-image">
                                 <img src={blog.coverImage} alt={blog.title} />

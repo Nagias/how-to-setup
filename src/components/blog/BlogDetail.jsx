@@ -9,28 +9,27 @@ import './BlogDetail.css';
 import { api } from '../../utils/api';
 
 const BlogDetail = () => {
-    const { id } = useParams();
+    // Changed id to slug to support both
+    const { slug } = useParams();
     const navigate = useNavigate();
     const { blogs, setBlogs, deleteBlog, currentUser } = useApp();
     const [blog, setBlog] = useState(null);
 
-    // Find blog from ID using loose equality to handle both string and number IDs
+    // Find blog from Slug or ID
     useEffect(() => {
         // Try to find in current blogs state
-        let foundBlog = blogs.find(b => b.id == id); // Loose equality
+        // Match either slug (exact) or id (loose equality - in case slug is actually an ID)
+        let foundBlog = blogs.find(b => b.slug === slug || b.id == slug);
 
         // If not found in state, try looking directly in sampleBlogs (fallback)
         if (!foundBlog) {
-            foundBlog = sampleBlogs.find(b => b.id == id);
+            foundBlog = sampleBlogs.find(b => b.slug === slug || b.id == slug);
         }
 
         if (foundBlog) {
             setBlog(foundBlog);
-        } else if (blogs.length > 0) {
-            // Only consider it "not found" if we have loaded data and still can't find it
-            // Maybe set error state here
         }
-    }, [id, blogs]);
+    }, [slug, blogs]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -46,10 +45,7 @@ const BlogDetail = () => {
             console.log('BlogDetail: 5 seconds elapsed, incrementing view for blog:', blog.id);
             try {
                 const res = await api.incrementBlogView(blog.id);
-                if (res.success) {
-                    // Update Local State if view count returned (optional) or just re-fetch
-                    // For simplicity, we assume generic update logic or ignore specific view number update unless returned
-                }
+                // View increment logic...
             } catch (error) {
                 console.error('BlogDetail: Error incrementing view:', error);
             }
@@ -64,7 +60,7 @@ const BlogDetail = () => {
                 <h3>Đang tải bài viết...</h3>
                 <div style={{ color: '#666', marginTop: '1rem', fontSize: '0.9rem', textAlign: 'left', background: '#f5f5f5', padding: '1rem', borderRadius: '8px' }}>
                     <p><strong>Debug Info:</strong></p>
-                    <p>Requested ID: {id}</p>
+                    <p>Requested Slug/ID: {slug}</p>
                     <p>Context Blogs Loaded: {blogs.length}</p>
                     <p>Sample Data Size: {sampleBlogs?.length || 'undefined'}</p>
                     <p style={{ marginTop: '0.5rem', fontStyle: 'italic', fontSize: '0.8rem' }}>Nếu số liệu trên = 0, vui lòng kiểm tra lại kết nối mạng hoặc thử lại sau.</p>
