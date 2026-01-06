@@ -46,26 +46,34 @@ export const AppProvider = ({ children }) => {
         // Listen for Auth changes
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
             if (user) {
-                // Get role from Firestore
-                let userData = {};
-                try {
-                    const docRef = doc(db, 'users', user.uid);
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        userData = docSnap.data();
-                    }
-                } catch (err) {
-                    console.warn("Failed to fetch user profile in AppContext:", err);
-                    // Continue with basic auth info
-                }
-
-                setCurrentUser({
+                // Optimistic update: Set user immediately with basic info
+                const basicUser = {
                     id: user.uid,
                     email: user.email,
-                    displayName: user.displayName || userData.displayName || user.email?.split('@')[0], // Fallback display name
-                    photoURL: user.photoURL || userData.avatar,
-                    role: userData.role || 'user'
-                });
+                    displayName: user.displayName || user.email?.split('@')[0],
+                    photoURL: user.photoURL,
+                    role: 'user' // Default role, will update if admin
+                };
+                setCurrentUser(basicUser);
+
+                // Fetch extra info from Firestore in background
+                try {
+                    const docRef = doc(db, 'users', user.uid);
+                    getDoc(docRef).then(docSnap => {
+                        if (docSnap.exists()) {
+                            const userData = docSnap.data();
+                            // Update state with full data including role
+                            setCurrentUser(prev => ({
+                                ...prev,
+                                displayName: userData.displayName || prev.displayName,
+                                photoURL: userData.avatar || prev.photoURL,
+                                role: userData.role || prev.role
+                            }));
+                        }
+                    }).catch(err => console.warn("Background user fetch failed:", err));
+                } catch (err) {
+                    console.warn("Failed to initiate user fetch:", err);
+                }
             } else {
                 setCurrentUser(null);
             }
