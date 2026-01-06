@@ -4,7 +4,7 @@ import { updateGuestProfile, logoutUser, getCurrentUser } from '../../utils/ipUt
 import './ProfileModal.css';
 
 const ProfileModal = () => {
-    const { showProfileModal, setShowProfileModal, refreshUser, currentUser } = useApp();
+    const { showProfileModal, setShowProfileModal, refreshUser, currentUser, logout } = useApp();
     const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
     const [message, setMessage] = useState('');
 
@@ -25,10 +25,9 @@ const ProfileModal = () => {
         }
     };
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         if (confirm('Bạn có chắc muốn đăng xuất?')) {
-            logoutUser();
-            refreshUser();
+            await logout();
             handleClose();
         }
     };

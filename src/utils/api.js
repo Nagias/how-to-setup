@@ -1,219 +1,340 @@
 
+import {
+    collection,
+    getDocs,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    doc,
+    query,
+    where,
+    orderBy,
+    getDoc,
+    setDoc,
+    serverTimestamp,
+    arrayUnion,
+    arrayRemove,
+    increment
+} from 'firebase/firestore';
+import {
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signOut,
+    updateProfile
+} from 'firebase/auth';
+import { db, auth } from '../firebase';
 import { sampleSetups, sampleBlogs } from '../data/sampleData';
 
-// Helper to simulate network delay
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-// Helper to get from LS
-const getLS = (key, defaultVal) => {
-    const val = localStorage.getItem(key);
-    return val ? JSON.parse(val) : defaultVal;
-};
-
-// Helper to set LS
-const setLS = (key, val) => {
-    localStorage.setItem(key, JSON.stringify(val));
-};
+// Collections References
+const setupsCol = collection(db, 'setups');
+const blogsCol = collection(db, 'blogs');
+const usersCol = collection(db, 'users');
+const commentsCol = collection(db, 'comments');
+const newsletterCol = collection(db, 'newsletter');
 
 export const api = {
     // Fetch all initial data
     getData: async () => {
-        await delay(500); // Simulate loading
+        try {
+            // Check if setups exist, if not seed them
+            const setupSnapshot = await getDocs(setupsCol);
+            let setups = [];
 
-        // Ensure data exists
-        let setups = getLS('deskhub_setups', null);
-        let blogs = getLS('deskhub_blogs', null);
+            if (setupSnapshot.empty) {
+                console.log("Seeding sample setups...");
+                const seedPromises = sampleSetups.map(s => {
+                    // Remove ID to let Firestore generate it, or use custom ID
+                    const { id, ...data } = s;
+                    // Add timestamps
+                    return addDoc(setupsCol, {
+                        ...data,
+                        createdAt: data.createdAt || new Date().toISOString(),
+                        likes: [],
+                        saves: [],
+                        comments: 0
+                    });
+                });
+                await Promise.all(seedPromises);
+                // Re-fetch
+                const newSnapshot = await getDocs(setupsCol);
+                setups = newSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } else {
+                setups = setupSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            }
 
-        if (!setups) {
-            setups = sampleSetups;
-            setLS('deskhub_setups', setups);
+            // Blogs
+            const blogSnapshot = await getDocs(blogsCol);
+            let blogs = [];
+            if (blogSnapshot.empty) {
+                console.log("Seeding sample blogs...");
+                const seedPromises = sampleBlogs.map(b => {
+                    const { id, ...data } = b;
+                    return addDoc(blogsCol, {
+                        ...data,
+                        publishedAt: data.publishedAt || new Date().toISOString(),
+                        views: data.views || 0
+                    });
+                });
+                await Promise.all(seedPromises);
+                const newSnapshot = await getDocs(blogsCol);
+                blogs = newSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } else {
+                blogs = blogSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            }
+
+            // Comments (Simple fetch all for now, optimized later)
+            const commentSnapshot = await getDocs(commentsCol);
+            const comments = {};
+            commentSnapshot.docs.forEach(doc => {
+                const data = doc.data();
+                if (!comments[data.setupId]) comments[data.setupId] = [];
+                comments[data.setupId].push({ id: doc.id, ...data });
+            });
+
+            return { setups, blogs, comments };
+        } catch (error) {
+            console.error("Error getting data:", error);
+            return { setups: [], blogs: [], comments: {} };
         }
-
-        if (!blogs) {
-            blogs = sampleBlogs;
-            setLS('deskhub_blogs', blogs);
-        }
-
-        const comments = getLS('deskhub_comments', {});
-
-        return { setups, blogs, comments };
     },
 
-    // Auth (Mock)
-    login: async (username, password) => {
-        await delay(300);
-        const users = getLS('deskhub_users', []);
-        const user = users.find(u => u.username === username && u.password === password);
-        if (!user) throw new Error('Login failed');
-        // Don't return password
-        const { password: _, ...userInfo } = user;
-        return userInfo;
+    // Auth
+    login: async (email, password) => {
+        try {
+            // Check if trying to login as admin hardcoded fallback
+            // Firebase Auth doesn't have "username" login by default, usually Email
+            // But for compatibility with existing UI (username input), we might need to adjust.
+            // For now, assume username is email or append domain
+            const emailToUse = email.includes('@') ? email : `${email}@deskhub.com`;
+
+            const userCredential = await signInWithEmailAndPassword(auth, emailToUse, password);
+            const user = userCredential.user;
+
+            // Get extra user info from Firestore
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            let userData = userDoc.exists() ? userDoc.data() : {};
+
+            return {
+                id: user.uid,
+                email: user.email,
+                displayName: user.displayName || userData.displayName || email,
+                photoURL: user.photoURL || userData.avatar,
+                role: userData.role || 'user'
+            };
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
     },
 
-    register: async (user) => {
-        await delay(300);
-        const users = getLS('deskhub_users', []);
-        if (users.find(u => u.username === user.username)) {
-            throw new Error('Username already exists');
+    register: async (userData) => {
+        try {
+            const { email, password, username, displayName } = userData;
+            // Create Auth User
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            await updateProfile(user, {
+                displayName: displayName
+            });
+
+            // Create Firestore User Doc
+            const newUserDoc = {
+                username,
+                displayName,
+                email,
+                role: 'user', // Default role
+                avatar: `https://ui-avatars.com/api/?name=${displayName}`,
+                createdAt: new Date().toISOString()
+            };
+
+            await setDoc(doc(db, 'users', user.uid), newUserDoc);
+
+            return { success: true, user: { id: user.uid, ...newUserDoc } };
+        } catch (error) {
+            console.error(error);
+            throw error;
         }
-        const newUser = {
-            ...user,
-            id: Date.now().toString(),
-            role: 'user',
-            createdAt: new Date().toISOString()
-        };
-        users.push(newUser);
-        setLS('deskhub_users', users);
-        return { success: true, user: newUser };
+    },
+
+    logout: async () => {
+        await signOut(auth);
     },
 
     // Interactions
     toggleLike: async (setupId, userId) => {
-        const setups = getLS('deskhub_setups', []);
-        const setupIndex = setups.findIndex(s => s.id === setupId);
-        if (setupIndex === -1) return { success: false };
+        try {
+            const setupRef = doc(db, 'setups', setupId);
+            const setupSnap = await getDoc(setupRef);
 
-        let likes = setups[setupIndex].likes || [];
-        const exists = likes.some(l => (l.userId === userId || l === userId));
+            if (setupSnap.exists()) {
+                const data = setupSnap.data();
+                const likes = data.likes || [];
+                const alreadyLiked = likes.some(l => (l.userId === userId || l === userId));
 
-        if (exists) {
-            likes = likes.filter(l => (l.userId !== userId && l !== userId));
-        } else {
-            likes.push({ userId, timestamp: new Date().toISOString() });
+                let newLikes;
+                if (alreadyLiked) {
+                    newLikes = likes.filter(l => (l.userId !== userId && l !== userId));
+                } else {
+                    newLikes = [...likes, { userId, timestamp: new Date().toISOString() }];
+                }
+
+                await updateDoc(setupRef, { likes: newLikes });
+                return { success: true, likes: newLikes };
+            }
+        } catch (error) {
+            console.error(error);
         }
-
-        setups[setupIndex].likes = likes;
-        setLS('deskhub_setups', setups);
-        return { success: true, likes };
+        return { success: false };
     },
 
     toggleSave: async (setupId, userId) => {
-        const setups = getLS('deskhub_setups', []);
-        const setupIndex = setups.findIndex(s => s.id === setupId);
-        if (setupIndex === -1) return { success: false };
+        try {
+            const setupRef = doc(db, 'setups', setupId);
+            const setupSnap = await getDoc(setupRef);
 
-        let saves = setups[setupIndex].saves || [];
-        const exists = saves.some(s => (s.userId === userId || s === userId));
+            if (setupSnap.exists()) {
+                const data = setupSnap.data();
+                const saves = data.saves || [];
+                const alreadySaved = saves.some(s => (s.userId === userId || s === userId));
 
-        if (exists) {
-            saves = saves.filter(s => (s.userId !== userId && s !== userId));
-        } else {
-            saves.push({ userId, timestamp: new Date().toISOString() });
+                let newSaves;
+                if (alreadySaved) {
+                    newSaves = saves.filter(s => (s.userId !== userId && s !== userId));
+                } else {
+                    newSaves = [...saves, { userId, timestamp: new Date().toISOString() }];
+                }
+
+                await updateDoc(setupRef, { saves: newSaves });
+                return { success: true, saves: newSaves };
+            }
+        } catch (error) {
+            console.error(error);
         }
-
-        setups[setupIndex].saves = saves;
-        setLS('deskhub_setups', setups);
-        return { success: true, saves };
+        return { success: false };
     },
 
-    addComment: async (setupId, comment) => {
-        const comments = getLS('deskhub_comments', {});
-        if (!comments[setupId]) comments[setupId] = [];
+    addComment: async (setupId, commentData) => {
+        try {
+            const newComment = {
+                setupId,
+                text: commentData.text,
+                author: commentData.author,
+                userId: commentData.userId,
+                avatar: commentData.avatar,
+                timestamp: new Date().toISOString()
+            };
 
-        const newComment = {
-            ...comment,
-            id: Date.now().toString(),
-            timestamp: new Date().toISOString()
-        };
+            const docRef = await addDoc(commentsCol, newComment);
 
-        comments[setupId].push(newComment);
-        setLS('deskhub_comments', comments);
+            // Increment comment count
+            const setupRef = doc(db, 'setups', setupId);
+            await updateDoc(setupRef, {
+                comments: increment(1)
+            });
 
-        // Update comment count in setup
-        const setups = getLS('deskhub_setups', []);
-        const setupIndex = setups.findIndex(s => s.id === setupId);
-        if (setupIndex > -1) {
-            setups[setupIndex].comments = (setups[setupIndex].comments || 0) + 1;
-            setLS('deskhub_setups', setups);
+            return { id: docRef.id, ...newComment };
+        } catch (error) {
+            console.error(error);
+            throw error;
         }
-
-        return newComment;
     },
 
     // Setup Management
     addSetup: async (setupData) => {
-        await delay(500);
-        const setups = getLS('deskhub_setups', []);
-        const newSetup = {
-            ...setupData,
-            id: Date.now(),
-            likes: [],
-            saves: [],
-            comments: 0,
-            createdAt: new Date().toISOString()
-        };
-        setups.unshift(newSetup); // Add to beginning
-        setLS('deskhub_setups', setups);
-        return { success: true, setup: newSetup };
+        try {
+            const newSetup = {
+                ...setupData,
+                likes: [],
+                saves: [],
+                comments: 0,
+                createdAt: new Date().toISOString()
+            };
+            const docRef = await addDoc(setupsCol, newSetup);
+            return { success: true, setup: { id: docRef.id, ...newSetup } };
+        } catch (error) {
+            console.error(error);
+            return { success: false, message: error.message };
+        }
     },
 
     deleteSetup: async (setupId) => {
-        let setups = getLS('deskhub_setups', []);
-        setups = setups.filter(s => s.id !== setupId);
-        setLS('deskhub_setups', setups);
-        return { success: true };
+        try {
+            await deleteDoc(doc(db, 'setups', setupId));
+            return { success: true };
+        } catch (error) {
+            return { success: false, message: error.message };
+        }
     },
 
     updateSetup: async (setupId, updates) => {
-        const setups = getLS('deskhub_setups', []);
-        const index = setups.findIndex(s => s.id === setupId);
-        if (index > -1) {
-            setups[index] = { ...setups[index], ...updates };
-            setLS('deskhub_setups', setups);
-            return { success: true, setup: setups[index] };
+        try {
+            const setupRef = doc(db, 'setups', setupId);
+            await updateDoc(setupRef, updates);
+            // Return updated data manually roughly as updateDoc doesn't return it
+            return { success: true, setup: { id: setupId, ...updates } };
+        } catch (error) {
+            return { success: false, message: error.message };
         }
-        return { success: false };
     },
 
     // Blog Management
     addBlog: async (blog) => {
-        const blogs = getLS('deskhub_blogs', []);
-        const newBlog = {
-            ...blog,
-            id: Date.now(),
-            views: 0,
-            publishedAt: new Date().toISOString()
-        };
-        blogs.unshift(newBlog);
-        setLS('deskhub_blogs', blogs);
-        return newBlog;
+        try {
+            const newBlog = {
+                ...blog,
+                views: 0,
+                publishedAt: new Date().toISOString()
+            };
+            const docRef = await addDoc(blogsCol, newBlog);
+            return { ...newBlog, id: docRef.id };
+        } catch (error) {
+            throw error;
+        }
     },
 
     subscribeNewsletter: async (sub) => {
-        const subs = getLS('deskhub_newsletter', []);
-        if (!subs.find(s => s.email === sub.email)) {
-            subs.push({ ...sub, timestamp: new Date().toISOString() });
-            setLS('deskhub_newsletter', subs);
+        try {
+            await addDoc(newsletterCol, {
+                ...sub,
+                timestamp: new Date().toISOString()
+            });
+            return { success: true };
+        } catch (error) {
+            console.error(error);
+            return { success: false };
         }
-        return { success: true };
     },
 
     incrementBlogView: async (blogId) => {
-        const blogs = getLS('deskhub_blogs', []);
-        const index = blogs.findIndex(b => b.id === blogId);
-        if (index > -1) {
-            blogs[index].views = (blogs[index].views || 0) + 1;
-            setLS('deskhub_blogs', blogs);
-            return { success: true, views: blogs[index].views };
+        try {
+            const blogRef = doc(db, 'blogs', blogId);
+            await updateDoc(blogRef, {
+                views: increment(1)
+            });
+            return { success: true };
+        } catch (error) {
+            return { success: false };
         }
-        return { success: false };
     },
 
     deleteBlog: async (blogId) => {
-        let blogs = getLS('deskhub_blogs', []);
-        blogs = blogs.filter(b => b.id !== blogId);
-        setLS('deskhub_blogs', blogs);
-        return { success: true };
+        try {
+            await deleteDoc(doc(db, 'blogs', blogId));
+            return { success: true };
+        } catch (error) {
+            console.error(error);
+            return { success: false };
+        }
     },
 
     updateBlog: async (blogId, updates) => {
-        const blogs = getLS('deskhub_blogs', []);
-        const index = blogs.findIndex(b => b.id === blogId);
-        if (index > -1) {
-            blogs[index] = { ...blogs[index], ...updates };
-            setLS('deskhub_blogs', blogs);
-            return { success: true, blog: blogs[index] };
+        try {
+            const blogRef = doc(db, 'blogs', blogId);
+            await updateDoc(blogRef, updates);
+            return { success: true, blog: { id: blogId, ...updates } };
+        } catch (error) {
+            return { success: false };
         }
-        return { success: false };
     }
 };

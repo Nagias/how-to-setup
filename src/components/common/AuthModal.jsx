@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
-import { loginUser, registerUser, logoutUser } from '../../utils/ipUtils';
+import { api } from '../../utils/api';
 import './AuthModal.css';
 
 const AuthModal = () => {
-    const { showAuthModal, setShowAuthModal, refreshUser } = useApp();
+    const { showAuthModal, setShowAuthModal } = useApp();
     const [mode, setMode] = useState('login'); // 'login' or 'register'
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [displayName, setDisplayName] = useState('');
     const [error, setError] = useState('');
@@ -16,36 +16,37 @@ const AuthModal = () => {
     const handleClose = () => {
         setShowAuthModal(false);
         setError('');
-        setUsername('');
+        setEmail('');
         setPassword('');
         setDisplayName('');
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
-        if (mode === 'login') {
-            const result = loginUser(username, password);
-            if (result.success) {
-                refreshUser();
+        try {
+            if (mode === 'login') {
+                await api.login(email, password);
                 handleClose();
                 alert('Đăng nhập thành công!');
             } else {
-                setError(result.error);
-            }
-        } else {
-            if (!displayName) {
-                setError('Vui lòng nhập tên hiển thị');
-                return;
-            }
-            const result = registerUser(username, password, displayName);
-            if (result.success) {
-                refreshUser();
+                if (!displayName) {
+                    setError('Vui lòng nhập tên hiển thị');
+                    return;
+                }
+                const result = await api.register({ email, password, displayName, username: email.split('@')[0] });
                 handleClose();
                 alert('Đăng ký thành công!');
+            }
+        } catch (err) {
+            console.error(err);
+            if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+                setError('Email hoặc mật khẩu không đúng');
+            } else if (err.code === 'auth/email-already-in-use') {
+                setError('Email đã được sử dụng');
             } else {
-                setError(result.error);
+                setError('Đã có lỗi xảy ra: ' + err.message);
             }
         }
     };
@@ -71,13 +72,13 @@ const AuthModal = () => {
 
                     <form onSubmit={handleSubmit} className="auth-form">
                         <div className="form-group">
-                            <label>Tên đăng nhập</label>
+                            <label>Email</label>
                             <input
-                                type="text"
+                                type="email"
                                 className="input"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                placeholder="username"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="name@example.com"
                                 required
                             />
                         </div>
@@ -91,6 +92,7 @@ const AuthModal = () => {
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
                                 required
+                                minLength={6}
                             />
                         </div>
 

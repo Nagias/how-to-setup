@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getCurrentUser, initializeAdmin } from '../utils/ipUtils';
+import { getCurrentUser } from '../utils/ipUtils'; // Keep for legacy or remove later
 import { api } from '../utils/api';
+import { auth, db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 const AppContext = createContext();
 
@@ -36,10 +38,31 @@ export const AppProvider = ({ children }) => {
 
     // Initialize data on mount
     useEffect(() => {
-        initializeAdmin();
+        // initializeAdmin(); // No longer needed with real Auth
         loadData();
         loadTheme();
-        setCurrentUser(getCurrentUser());
+
+        // Listen for Auth changes
+        const unsubscribe = auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                // Get role from Firestore
+                const docRef = doc(db, 'users', user.uid);
+                const docSnap = await getDoc(docRef);
+                const userData = docSnap.exists() ? docSnap.data() : {};
+
+                setCurrentUser({
+                    id: user.uid,
+                    email: user.email,
+                    displayName: user.displayName || userData.displayName,
+                    photoURL: user.photoURL || userData.avatar,
+                    role: userData.role || 'user'
+                });
+            } else {
+                setCurrentUser(null);
+            }
+        });
+
+        return () => unsubscribe();
     }, []);
 
     // Load data from Backend API
@@ -131,6 +154,11 @@ export const AppProvider = ({ children }) => {
             // Check formatted save object { userId, timestamp } or string ID
             return saves.some(s => (s.userId === user.id || s === user.id));
         });
+    };
+
+    const logout = async () => {
+        await api.logout();
+        // State update handled by onAuthStateChanged
     };
 
     // Check if user liked/saved
@@ -347,6 +375,7 @@ export const AppProvider = ({ children }) => {
         addSetup,
         updateSetup,
         deleteSetup,
+        logout,
         getSimilarSetups,
         setBlogs
     };
