@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AppProvider, useApp } from './contexts/AppContext';
 import Header from './components/layout/Header';
@@ -26,6 +26,52 @@ const GalleryPage = () => (
         </div>
     </div>
 );
+
+const NewsletterSection = () => {
+    const { subscribeNewsletter } = useApp();
+    const [email, setEmail] = useState('');
+    const [status, setStatus] = useState('idle'); // idle, loading, success, error
+
+    const handleSubscribe = async (e) => {
+        e.preventDefault();
+        setStatus('loading');
+        const res = await subscribeNewsletter({ email });
+        if (res.success) {
+            setStatus('success');
+            setEmail('');
+            setTimeout(() => setStatus('idle'), 3000);
+        } else {
+            setStatus('error');
+            setTimeout(() => setStatus('idle'), 3000);
+        }
+    };
+
+    return (
+        <div className="newsletter-section">
+            <div className="container">
+                <div className="newsletter-box">
+                    <div className="newsletter-content-inner">
+                        <h3>✨ Đăng Ký Nhận Tin</h3>
+                        <p>Nhận thông báo về những setup đẹp nhất hàng tuần.</p>
+                    </div>
+                    <form className="newsletter-form-inline" onSubmit={handleSubscribe}>
+                        <input
+                            type="email"
+                            placeholder="Nhập email của bạn..."
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                            required
+                            disabled={status === 'loading' || status === 'success'}
+                        />
+                        <button type="submit" className={`btn-newsletter ${status}`} disabled={status === 'loading'}>
+                            {status === 'loading' ? '⏳' : status === 'success' ? '✓ Đã Gửi' : 'Đăng Ký'}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const AppContent = () => {
     const {
@@ -84,6 +130,7 @@ const AppContent = () => {
 
             {/* Footer */}
             <footer className="footer">
+                <NewsletterSection />
                 <div className="container footer-content">
                     <div className="footer-section">
                         <h4>DeskHub</h4>
@@ -94,7 +141,7 @@ const AppContent = () => {
                         <ul>
                             <li><a href="/">Bộ Sưu Tập</a></li>
                             <li><a href="/blog">Blog</a></li>
-                            <li><button onClick={() => setShowNewsletterModal(true)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0, font: 'inherit' }}>Đăng Ký Nhận Tin</button></li>
+
                             <li><a href="#">Giới Thiệu</a></li>
                             <li><a href="#">Liên Hệ</a></li>
                         </ul>
