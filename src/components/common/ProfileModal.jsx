@@ -30,20 +30,27 @@ const ProfileModal = () => {
             setTimeout(() => handleClose(), 1500);
         } else {
             try {
+                // Check for Base64 image (too long for Firebase Auth profile, limit ~2kb)
+                const isBase64 = avatar && avatar.startsWith('data:');
+
                 if (auth.currentUser) {
-                    await updateProfile(auth.currentUser, {
-                        displayName: displayName,
-                        photoURL: avatar
-                    });
+                    const authUpdates = { displayName };
+                    // Skip photoURL update in Auth if it's Base64
+                    if (!isBase64) {
+                        authUpdates.photoURL = avatar;
+                    }
+                    await updateProfile(auth.currentUser, authUpdates);
                 }
+
+                // Update Firestore (supports large Base64 strings)
                 const userRef = doc(db, 'users', currentUser.id);
-                // Only update provided fields
                 await updateDoc(userRef, {
                     displayName: displayName,
                     avatar: avatar
                 });
+
                 setMessage('Cập nhật thành công! Đang tải lại...');
-                setTimeout(() => window.location.reload(), 1000);
+                setTimeout(() => window.location.reload(), 500); // Faster reload
             } catch (error) {
                 console.error(error);
                 setMessage('Lỗi: ' + error.message);

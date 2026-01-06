@@ -19,16 +19,23 @@ const NewsletterModal = () => {
         setIsSuccess(false);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const result = subscribeNewsletter(email, name);
-        setMessage(result.message);
-        setIsSuccess(result.success);
-
-        if (result.success) {
-            setTimeout(() => {
-                handleClose();
-            }, 2000);
+        try {
+            const result = await subscribeNewsletter({ email, name });
+            if (result.success) {
+                setMessage('Đăng ký thành công! Cảm ơn bạn.');
+                setIsSuccess(true);
+                setTimeout(() => {
+                    handleClose();
+                }, 2000);
+            } else {
+                setMessage('Đã có lỗi xảy ra. Vui lòng thử lại.');
+                setIsSuccess(false);
+            }
+        } catch (error) {
+            setMessage('Lỗi: ' + error.message);
+            setIsSuccess(false);
         }
     };
 

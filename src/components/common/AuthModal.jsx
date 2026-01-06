@@ -39,7 +39,7 @@ const AuthModal = () => {
                     handleClose();
                     setSuccessMsg('');
                     setLoading(false);
-                }, 1000);
+                }, 500);
             } else {
                 if (!displayName) {
                     setError('Vui lòng nhập tên hiển thị');
@@ -52,7 +52,7 @@ const AuthModal = () => {
                     handleClose();
                     setSuccessMsg('');
                     setLoading(false);
-                }, 1000);
+                }, 500);
             }
         } catch (err) {
             console.error(err);
