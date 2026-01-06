@@ -30,6 +30,8 @@ const AuthModal = () => {
         try {
             if (mode === 'login') {
                 await api.login(email, password);
+                // Simple feedback before closing
+                setError('');
                 handleClose();
             } else {
                 if (!displayName) {

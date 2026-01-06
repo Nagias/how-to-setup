@@ -63,12 +63,14 @@ export const AppProvider = ({ children }) => {
                     getDoc(docRef).then(docSnap => {
                         if (docSnap.exists()) {
                             const userData = docSnap.data();
-                            // Update state with full data including role
+                            // Update state with full data
+                            // IMPORTANT: Enforce admin role if whitelisted, even if Firestore says 'user'
+                            const isStillAdmin = ADMIN_EMAILS.includes(user.email);
                             setCurrentUser(prev => ({
                                 ...prev,
                                 displayName: userData.displayName || prev.displayName,
                                 photoURL: userData.avatar || prev.photoURL,
-                                role: userData.role || prev.role
+                                role: isStillAdmin ? 'admin' : (userData.role || prev.role)
                             }));
                         }
                     }).catch(err => console.warn("Background user fetch failed:", err));
