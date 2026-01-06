@@ -270,6 +270,21 @@ export const AppProvider = ({ children }) => {
         return { success: false, message: 'Xóa thất bại' };
     };
 
+    // Update setup (admin only)
+    const updateSetup = async (setupId, setupData) => {
+        const user = getCurrentUser();
+        if (user?.role !== 'admin') {
+            return { success: false, message: 'Chỉ Admin mới có thể sửa setup!' };
+        }
+
+        const res = await api.updateSetup(setupId, setupData);
+        if (res.success) {
+            setSetups(prev => prev.map(s => s.id === setupId ? res.setup : s));
+            return { success: true, setup: res.setup };
+        }
+        return { success: false, message: 'Cập nhật thất bại' };
+    };
+
     // Get similar setups
     const getSimilarSetups = (setupId, limit = 4) => {
         const currentSetup = setups.find(s => s.id === setupId);
@@ -330,6 +345,7 @@ export const AppProvider = ({ children }) => {
         updateBlog,
         deleteBlog,
         addSetup,
+        updateSetup,
         deleteSetup,
         getSimilarSetups,
         setBlogs

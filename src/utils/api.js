@@ -154,6 +154,17 @@ export const api = {
         return { success: true };
     },
 
+    updateSetup: async (setupId, updates) => {
+        const setups = getLS('deskhub_setups', []);
+        const index = setups.findIndex(s => s.id === setupId);
+        if (index > -1) {
+            setups[index] = { ...setups[index], ...updates };
+            setLS('deskhub_setups', setups);
+            return { success: true, setup: setups[index] };
+        }
+        return { success: false };
+    },
+
     // Blog Management
     addBlog: async (blog) => {
         const blogs = getLS('deskhub_blogs', []);

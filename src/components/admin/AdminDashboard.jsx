@@ -4,21 +4,38 @@ import AddSetupModal from './AddSetupModal';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
-    const { setups, blogs, getComments, currentUser, addSetup, deleteSetup } = useApp();
+    const { setups, blogs, getComments, currentUser, addSetup, updateSetup, deleteSetup } = useApp();
     const [showAddModal, setShowAddModal] = useState(false);
+    const [editingSetup, setEditingSetup] = useState(null);
     const [dateRange, setDateRange] = useState({
         startDate: '',
         endDate: ''
     });
 
-    const handleSaveSetup = async (setupData) => {
-        const res = await addSetup(setupData);
-        if (res.success) {
-            setShowAddModal(false);
-            alert('Đã thêm setup thành công!');
+    const handleSaveSetup = async (idOrData, data) => {
+        // If data is present, it's an update (id, data)
+        // If only idOrData is present, it's a create (data)
+        if (data) {
+            const res = await updateSetup(idOrData, data);
+            if (res.success) {
+                setEditingSetup(null);
+                alert('Đã cập nhật setup thành công!');
+            } else {
+                alert(res.message || 'Lỗi cập nhật');
+            }
         } else {
-            alert(res.message || 'Có lỗi xảy ra');
+            const res = await addSetup(idOrData);
+            if (res.success) {
+                setShowAddModal(false);
+                alert('Đã thêm setup thành công!');
+            } else {
+                alert(res.message || 'Có lỗi xảy ra');
+            }
         }
+    };
+
+    const handleEditSetup = (setup) => {
+        setEditingSetup(setup);
     };
 
     const handleDeleteSetup = async (id, title) => {
@@ -224,6 +241,14 @@ const AdminDashboard = () => {
                                         </td>
                                         <td>
                                             <button
+                                                className="btn-edit"
+                                                onClick={() => handleEditSetup(setup)}
+                                                title="Sửa setup này"
+                                                style={{ marginRight: '0.5rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
+                                            >
+                                                ✏️
+                                            </button>
+                                            <button
                                                 className="btn-delete"
                                                 onClick={() => handleDeleteSetup(setup.id, setup.title)}
                                                 title="Xóa setup này"
@@ -296,6 +321,15 @@ const AdminDashboard = () => {
             {showAddModal && (
                 <AddSetupModal
                     onClose={() => setShowAddModal(false)}
+                    onSave={handleSaveSetup}
+                />
+            )}
+
+            {/* Edit Setup Modal */}
+            {editingSetup && (
+                <AddSetupModal
+                    initialData={editingSetup}
+                    onClose={() => setEditingSetup(null)}
                     onSave={handleSaveSetup}
                 />
             )}

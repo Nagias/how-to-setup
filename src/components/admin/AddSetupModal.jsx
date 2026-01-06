@@ -2,20 +2,20 @@ import React, { useState } from 'react';
 import './AddSetupModal.css';
 import { filterOptions } from '../../data/sampleData';
 
-const AddSetupModal = ({ onClose, onSave }) => {
+const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
     const [formData, setFormData] = useState({
-        title: '',
-        caption: '',
-        mainImage: '',
-        filters: {
+        title: initialData?.title || '',
+        caption: initialData?.caption || '',
+        mainImage: initialData?.images?.[0]?.url || '',
+        filters: initialData?.filters || {
             colorTone: 'neutral',
             budget: 'mid-range',
             gender: 'neutral',
             purpose: 'productivity',
             size: 'medium'
         },
-        tags: '',
-        products: [] // Simplified for now, can be expanded later
+        tags: initialData?.tags?.join(', ') || '',
+        products: initialData?.images?.[0]?.products || []
     });
 
     const handleChange = (e) => {
@@ -40,25 +40,29 @@ const AddSetupModal = ({ onClose, onSave }) => {
         // Process tags
         const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(t => t);
 
-        const newSetup = {
+        const setupData = {
             ...formData,
             tags: tagsArray,
             images: [
                 {
                     url: formData.mainImage,
-                    products: [] // Empty products for now
+                    products: formData.products
                 }
             ]
         };
 
-        onSave(newSetup);
+        if (initialData) {
+            onSave(initialData.id, setupData);
+        } else {
+            onSave(setupData);
+        }
     };
 
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content add-setup-modal" onClick={e => e.stopPropagation()}>
                 <button className="close-btn" onClick={onClose}>&times;</button>
-                <h2>Thêm Góc Setup Mới</h2>
+                <h2>{initialData ? 'Chỉnh Sửa Setup' : 'Thêm Góc Setup Mới'}</h2>
 
                 <form onSubmit={handleSubmit} className="setup-form">
                     <div className="form-group">
