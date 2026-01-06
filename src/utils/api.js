@@ -32,6 +32,14 @@ const usersCol = collection(db, 'users');
 const commentsCol = collection(db, 'comments');
 const newsletterCol = collection(db, 'newsletter');
 
+// ==========================================
+// DANH SÁCH ADMIN (Thêm email của bạn vào đây)
+// ==========================================
+const ADMIN_EMAILS = [
+    'admin@deskhub.com',
+    'your-email@gmail.com' // <-- Thay bằng email của bạn
+];
+
 export const api = {
     // Fetch all initial data
     getData: async () => {
@@ -114,6 +122,14 @@ export const api = {
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             let userData = userDoc.exists() ? userDoc.data() : {};
 
+            // Tự động cấp quyền Admin nếu email nằm trong danh sách whitelist
+            const isAdminEmail = ADMIN_EMAILS.includes(user.email) || ADMIN_EMAILS.includes(emailToUse);
+            if (isAdminEmail && userData.role !== 'admin') {
+                console.log(`Auto-promoting ${user.email} to Admin`);
+                await updateDoc(doc(db, 'users', user.uid), { role: 'admin' });
+                userData.role = 'admin';
+            }
+
             return {
                 id: user.uid,
                 email: user.email,
@@ -143,7 +159,7 @@ export const api = {
                 username,
                 displayName,
                 email,
-                role: 'user', // Default role
+                role: ADMIN_EMAILS.includes(email) ? 'admin' : 'user', // Tự động set role admin nếu email trong whitelist
                 avatar: `https://ui-avatars.com/api/?name=${displayName}`,
                 createdAt: new Date().toISOString()
             };
