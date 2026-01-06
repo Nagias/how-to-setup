@@ -31,7 +31,6 @@ const AuthModal = () => {
             if (mode === 'login') {
                 await api.login(email, password);
                 handleClose();
-                alert('Đăng nhập thành công!');
             } else {
                 if (!displayName) {
                     setError('Vui lòng nhập tên hiển thị');
@@ -39,7 +38,6 @@ const AuthModal = () => {
                 }
                 const result = await api.register({ email, password, displayName, username });
                 handleClose();
-                alert('Đăng ký thành công!');
             }
         } catch (err) {
             console.error(err);

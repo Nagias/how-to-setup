@@ -119,15 +119,26 @@ export const api = {
             const user = userCredential.user;
 
             // Get extra user info from Firestore
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            let userData = userDoc.exists() ? userDoc.data() : {};
+            let userData = {};
+            try {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists()) {
+                    userData = userDoc.data();
+                }
 
-            // Tự động cấp quyền Admin nếu email nằm trong danh sách whitelist
-            const isAdminEmail = ADMIN_EMAILS.includes(user.email) || ADMIN_EMAILS.includes(emailToUse);
-            if (isAdminEmail && userData.role !== 'admin') {
-                console.log(`Auto-promoting ${user.email} to Admin`);
-                await updateDoc(doc(db, 'users', user.uid), { role: 'admin' });
-                userData.role = 'admin';
+                // Tự động cấp quyền Admin nếu email nằm trong danh sách whitelist
+                const isAdminEmail = ADMIN_EMAILS.includes(user.email) || ADMIN_EMAILS.includes(emailToUse);
+                if (isAdminEmail && userData.role !== 'admin') {
+                    console.log(`Auto-promoting ${user.email} to Admin`);
+                    await updateDoc(doc(db, 'users', user.uid), { role: 'admin' });
+                    userData.role = 'admin';
+                }
+            } catch (firestoreError) {
+                console.warn("Firestore access failed (offline?):", firestoreError);
+                // Fallback: Check admin email purely based on Auth email if Firestore fails
+                if (ADMIN_EMAILS.includes(user.email) || ADMIN_EMAILS.includes(emailToUse)) {
+                    userData.role = 'admin';
+                }
             }
 
             return {
