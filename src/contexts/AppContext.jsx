@@ -3,6 +3,7 @@ import { getCurrentUser } from '../utils/ipUtils'; // Keep for legacy or remove 
 import { api, ADMIN_EMAILS } from '../utils/api';
 import { auth, db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { sampleSetups, sampleBlogs } from '../data/sampleData';
 
 const AppContext = createContext();
 
@@ -19,6 +20,30 @@ export const AppProvider = ({ children }) => {
     const [setups, setSetups] = useState([]);
     const [blogs, setBlogs] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            const data = await api.getData();
+            // FALLBACK STRICT
+            if (!data.setups || data.setups.length === 0) {
+                console.log("Empty setups from API, using imported sampleSetups");
+                setSetups(sampleSetups);
+                setBlogs(sampleBlogs);
+            } else {
+                setSetups(data.setups);
+                setBlogs(data.blogs);
+            }
+            setAllComments(data.comments);
+        } catch (error) {
+            console.error(error);
+            setSetups(sampleSetups); // Error fallback
+            setBlogs(sampleBlogs);
+        } finally {
+            setLoading(false);
+        }
+    };
     const [filters, setFilters] = useState({
         colorTone: [],
         budget: [],
@@ -85,18 +110,7 @@ export const AppProvider = ({ children }) => {
         return () => unsubscribe();
     }, []);
 
-    // Load data from Backend API
-    const loadData = async () => {
-        const data = await api.getData();
-        if (data) {
-            setSetups(data.setups || []);
-            setBlogs(data.blogs || []);
-            setAllComments(data.comments || {});
-        } else {
-            // Error handling or local fallback if strictly needed
-            // console.error("Could not load data from backend");
-        }
-    };
+
 
     // Load theme preference
     const loadTheme = () => {
@@ -229,8 +243,13 @@ export const AppProvider = ({ children }) => {
     };
 
     // Newsletter subscription
-    const subscribeNewsletter = async (email, name) => {
-        const res = await api.subscribeNewsletter({ email, name: name || 'Khách' });
+    const subscribeNewsletter = async (data) => {
+        // Handle object passed from Modal
+        const payload = {
+            email: data.email,
+            name: data.name || 'Khách'
+        };
+        const res = await api.subscribeNewsletter(payload);
         return res;
     };
 
