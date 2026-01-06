@@ -172,7 +172,7 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
             const processedMedia = await Promise.all(mediaList.map(async (item) => {
                 if (item.file) {
                     try {
-                        // Create a timeout promise
+                        // Create a timeout promise to prevent hanging
                         const timeoutPromise = new Promise((_, reject) =>
                             setTimeout(() => reject(new Error('Upload timed out after 60s')), 60000)
                         );
@@ -191,10 +191,29 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                         };
                     } catch (err) {
                         console.error('Failed to upload', item.file.name, err);
-                        throw new Error(`Lỗi tải lên file ${item.file.name}: ${err.message}`);
+
+                        // Fallback: If upload fails and it's an IMAGE, use Base64
+                        if (item.type === 'image') {
+                            console.log('Falling back to Base64 for image:', item.file.name);
+                            return new Promise((resolve) => {
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                    resolve({
+                                        id: item.id,
+                                        type: item.type,
+                                        url: reader.result,
+                                        products: item.products
+                                    });
+                                };
+                                reader.readAsDataURL(item.file);
+                            });
+                        }
+
+                        throw new Error(`Lỗi tải lên file ${item.file.name}: ${err.message}. (Video không thể dùng offline/base64)`);
                     }
                 }
-                // Keep existing (no file means it's already a URL)
+
+                // Keep existing (no file)
                 return {
                     id: item.id,
                     type: item.type,
