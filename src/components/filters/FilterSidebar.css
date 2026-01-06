@@ -1,0 +1,338 @@
+.filter-sidebar {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-lg));
+    max-height: calc(100vh - var(--header-height) - var(--space-2xl));
+    width: var(--sidebar-width);
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    transition: all var(--transition-base);
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-sidebar.collapsed {
+    width: 70px;
+}
+
+/* Sidebar structure changes for collapsed state */
+.filter-sidebar.collapsed .filter-groups,
+.filter-sidebar.collapsed .sidebar-title,
+.filter-sidebar.collapsed .btn-clear-all {
+    opacity: 0;
+    pointer-events: none;
+    display: none;
+    /* Hide fully so button centers */
+}
+
+/* Sidebar Toggle - Now Flex Item */
+.sidebar-toggle {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    cursor: pointer;
+    border: none;
+}
+
+.sidebar-toggle:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-primary);
+}
+
+/* Sidebar Content */
+.sidebar-content {
+    padding: var(--space-lg);
+    overflow-y: auto;
+    flex: 1;
+    transition: opacity var(--transition-base);
+    /* No longer hiding this entirely */
+}
+
+.filter-sidebar.collapsed .sidebar-content {
+    padding: var(--space-md);
+    /* Reduce padding when collapsed */
+    overflow: hidden;
+}
+
+/* Header */
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    /* Left align everything */
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+    min-height: 40px;
+}
+
+.filter-sidebar.collapsed .sidebar-header {
+    justify-content: center;
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+}
+
+.sidebar-title {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    white-space: nowrap;
+    /* Prevent wrap */
+    flex: 1;
+}
+
+.filter-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 var(--space-xs);
+    background: var(--gradient-primary);
+    color: white;
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    border-radius: var(--radius-full);
+}
+
+.btn-clear-all {
+    font-size: var(--font-size-sm);
+    color: var(--color-primary);
+    font-weight: 600;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.btn-clear-all:hover {
+    background: var(--color-surface-hover);
+}
+
+/* Filter Groups */
+.filter-groups {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    opacity: 1;
+    transition: opacity 0.2s;
+}
+
+.filter-group {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-md);
+}
+
+.filter-group:last-child {
+    border-bottom: none;
+}
+
+.filter-group-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) 0;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    background: none;
+    border: none;
+}
+
+.filter-group-header:hover .filter-group-title {
+    color: var(--color-primary);
+}
+
+.filter-group-title {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--color-text-primary);
+    transition: color var(--transition-fast);
+}
+
+.expand-icon {
+    color: var(--color-text-tertiary);
+    transition: transform var(--transition-fast);
+}
+
+.expand-icon.expanded {
+    transform: rotate(180deg);
+}
+
+/* Filter Options */
+.filter-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+    animation: slideDown var(--transition-base);
+}
+
+.filter-option {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.filter-option:hover {
+    background: var(--color-surface-hover);
+}
+
+.filter-checkbox {
+    margin-top: 2px;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    appearance: none;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.filter-checkbox:checked {
+    background: var(--gradient-primary);
+    border-color: var(--color-primary);
+}
+
+.filter-checkbox:checked::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 5px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.filter-option-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.filter-option-label {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.filter-option-description {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .filter-sidebar {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        height: calc(100vh - var(--header-height));
+        z-index: 90;
+        transform: translateX(-100%);
+        border-radius: 0;
+        width: 280px;
+        /* Fixed width for mobile drawer */
+    }
+
+    .filter-sidebar.collapsed {
+        transform: translateX(-100%);
+        /* Completely hide when collapsed on mobile */
+        width: 280px;
+    }
+
+    .filter-sidebar:not(.collapsed) {
+        transform: translateX(0);
+    }
+
+    /* Toggle button behavior for mobile: It likely needs to exist OUTSIDE sidebar to open it? 
+       Actually user scenario might differ. If mobile, we usually have a Fab or header button.
+       For now, let's assume the previous logic: "sidebar-toggle" was "fixed" on mobile.
+       Since we moved it INSIDE, we lose the external toggle.
+       We might need an EXTERNAL toggle for mobile.
+       However, checking previous code, the sidebar-toggle was inside ASIDE.
+       If ASIDE is hidden (translateX -100%), the button is hidden too!
+       Previous CSS: .sidebar-toggle { position: fixed ... @media }
+       So it was popping out of the sidebar.
+       
+       We need to restore that "Pop out" behavior on mobile OR keep it inside and assume there's another trigger.
+       Let's assume we need to restore the fixed toggle on mobile.
+    */
+    .sidebar-toggle {
+        display: none;
+        /* Hide internal toggle on mobile if we use external */
+    }
+
+    /* We need to make the internal toggle work as a Close button on mobile? 
+       Or just stick to the desktop requirement for now. 
+       Let's make sure the toggle is visible.
+    */
+
+    .sidebar-header .sidebar-toggle {
+        display: flex;
+        /* Ensure it is flex inside header */
+    }
+
+    /* Revert to Fixed Toggle for Mobile Access if needed? 
+       Wait, if sidebar is hidden, how do you open it?
+       Previously: .sidebar-toggle { position: fixed ... }
+    */
+}
+
+/* Extra fix for Mobile Toggle visibility if sidebar is hidden */
+@media (max-width: 1024px) {
+
+    /* If we want an external toggle, we need it outside. 
+      But I moved it inside.
+      To support mobile, I might need to make THIS toggle fixed again ONLY on mobile.
+   */
+    .sidebar-toggle {
+        display: flex;
+        position: fixed;
+        top: calc(var(--header-height) + var(--space-md));
+        left: var(--space-md);
+        z-index: 100;
+        border: 1px solid var(--color-border);
+        box-shadow: var(--shadow-md);
+    }
+
+    /* When sidebar is OPEN (not collapsed), maybe move it inside? 
+      Or keep it fixed.
+      If Sidebar is open (transform 0), it covers the fixed button?
+      Sidebar z-index 90. Button z-index 100. Button is on top.
+      Clicking it toggles collapsed -> Hide sidebar.
+      This works.
+   */
+
+    .filter-sidebar:not(.collapsed) .sidebar-toggle {
+        /* Style when sidebar is visible? */
+        background: var(--color-primary);
+        color: white;
+    }
+}
