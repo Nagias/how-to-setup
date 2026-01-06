@@ -235,6 +235,26 @@ export const AppProvider = ({ children }) => {
         return { success: false, message: 'Xóa thất bại' };
     };
 
+    // Add setup (admin only)
+    const addSetup = async (setupData) => {
+        const user = getCurrentUser();
+        if (user?.role !== 'admin') {
+            return { success: false, message: 'Chỉ Admin mới có thể thêm setup!' };
+        }
+
+        const setupToSave = {
+            ...setupData,
+            author: { name: user.displayName, avatar: user.avatar }
+        };
+
+        const res = await api.addSetup(setupToSave);
+        if (res.success) {
+            setSetups(prev => [res.setup, ...prev]);
+            return { success: true, setup: res.setup };
+        }
+        return { success: false, message: 'Thêm setup thất bại' };
+    };
+
     // Get similar setups
     const getSimilarSetups = (setupId, limit = 4) => {
         const currentSetup = setups.find(s => s.id === setupId);
@@ -294,6 +314,7 @@ export const AppProvider = ({ children }) => {
         addBlog,
         updateBlog,
         deleteBlog,
+        addSetup,
         getSimilarSetups,
         setBlogs
     };
