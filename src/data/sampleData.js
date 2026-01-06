@@ -193,6 +193,192 @@ export const sampleSetups = [
             avatar: "https://i.pravatar.cc/150?img=6"
         },
         createdAt: "2026-01-05T15:30:00Z"
+    },
+    {
+        id: 7,
+        title: "Góc Streamer Chuyên Nghiệp",
+        caption: "Setup hoàn hảo cho live streaming và content creation",
+        mainImage: "https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=800",
+        images: [
+            {
+                url: "https://images.unsplash.com/photo-1598550476439-6847785fcea6?w=800",
+                products: [
+                    { x: 45, y: 35, name: "Camera Logitech C920", link: "#", price: "2.800.000đ" },
+                    { x: 65, y: 55, name: "Microphone Blue Yeti", link: "#", price: "3.500.000đ" }
+                ]
+            }
+        ],
+        filters: {
+            colorTone: "cool",
+            budget: "mid-range",
+            gender: "neutral",
+            purpose: "creative",
+            size: "medium"
+        },
+        likes: [],
+        comments: 0,
+        saves: [],
+        tags: ["streamer", "content-creator", "youtube", "twitch"],
+        author: {
+            name: "Minh Tuấn",
+            avatar: "https://i.pravatar.cc/150?img=7"
+        },
+        createdAt: "2026-01-05T18:00:00Z"
+    },
+    {
+        id: 8,
+        title: "Không Gian Làm Việc Nhỏ Gọn",
+        caption: "Tối ưu hóa cho căn hộ nhỏ với thiết kế thông minh",
+        mainImage: "https://images.unsplash.com/photo-1616627988170-6c1a3f9b5ce9?w=800",
+        images: [
+            {
+                url: "https://images.unsplash.com/photo-1616627988170-6c1a3f9b5ce9?w=800",
+                products: [
+                    { x: 50, y: 45, name: "Laptop Stand", link: "#", price: "1.200.000đ" },
+                    { x: 70, y: 65, name: "Chuột Không Dây", link: "#", price: "800.000đ" }
+                ]
+            }
+        ],
+        filters: {
+            colorTone: "warm",
+            budget: "budget",
+            gender: "neutral",
+            purpose: "productivity",
+            size: "small"
+        },
+        likes: [],
+        comments: 0,
+        saves: [],
+        tags: ["nhỏ-gọn", "căn-hộ", "tiết-kiệm-không-gian", "laptop"],
+        author: {
+            name: "Thanh Hà",
+            avatar: "https://i.pravatar.cc/150?img=8"
+        },
+        createdAt: "2026-01-05T20:15:00Z"
+    },
+    {
+        id: 9,
+        title: "Studio Designer Sáng Tạo",
+        caption: "Không gian thiết kế đồ họa với màu sắc và cảm hứng",
+        mainImage: "https://images.unsplash.com/photo-1600494603989-9650cf6ddd3d?w=800",
+        images: [
+            {
+                url: "https://images.unsplash.com/photo-1600494603989-9650cf6ddd3d?w=800",
+                products: [
+                    { x: 40, y: 40, name: "Wacom Tablet", link: "#", price: "12.000.000đ" },
+                    { x: 60, y: 50, name: "iMac 27\"", link: "#", price: "55.000.000đ" }
+                ]
+            }
+        ],
+        filters: {
+            colorTone: "neutral",
+            budget: "premium",
+            gender: "feminine",
+            purpose: "creative",
+            size: "medium"
+        },
+        likes: [],
+        comments: 0,
+        saves: [],
+        tags: ["designer", "đồ-họa", "sáng-tạo", "apple"],
+        author: {
+            name: "Linh Chi",
+            avatar: "https://i.pravatar.cc/150?img=9"
+        },
+        createdAt: "2026-01-05T22:30:00Z"
+    },
+    {
+        id: 10,
+        title: "Góc Gaming RGB Minimalist",
+        caption: "Phong cách tối giản nhưng vẫn nổi bật với đèn RGB",
+        mainImage: "https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=800",
+        images: [
+            {
+                url: "https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=800",
+                products: [
+                    { x: 50, y: 45, name: "Màn Hình Curved 32\"", link: "#", price: "12.000.000đ" },
+                    { x: 35, y: 70, name: "Bàn Phím Cơ Custom", link: "#", price: "6.000.000đ" }
+                ]
+            }
+        ],
+        filters: {
+            colorTone: "cool",
+            budget: "mid-range",
+            gender: "masculine",
+            purpose: "gaming",
+            size: "medium"
+        },
+        likes: [],
+        comments: 0,
+        saves: [],
+        tags: ["gaming", "rgb", "minimalist", "custom"],
+        author: {
+            name: "Đức Anh",
+            avatar: "https://i.pravatar.cc/150?img=11"
+        },
+        createdAt: "2026-01-06T08:00:00Z"
+    },
+    {
+        id: 11,
+        title: "Home Office Sang Trọng",
+        caption: "Phòng làm việc tại nhà với nội thất cao cấp",
+        mainImage: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800",
+        images: [
+            {
+                url: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800",
+                products: [
+                    { x: 55, y: 50, name: "Bàn Gỗ Óc Chó", link: "#", price: "25.000.000đ" },
+                    { x: 45, y: 35, name: "Ghế Herman Miller", link: "#", price: "45.000.000đ" }
+                ]
+            }
+        ],
+        filters: {
+            colorTone: "warm",
+            budget: "premium",
+            gender: "neutral",
+            purpose: "work-from-home",
+            size: "large"
+        },
+        likes: [],
+        comments: 0,
+        saves: [],
+        tags: ["sang-trọng", "cao-cấp", "nội-thất", "herman-miller"],
+        author: {
+            name: "Quốc Bảo",
+            avatar: "https://i.pravatar.cc/150?img=12"
+        },
+        createdAt: "2026-01-06T10:30:00Z"
+    },
+    {
+        id: 12,
+        title: "Setup Học Sinh Sinh Viên",
+        caption: "Góc học tập hiệu quả với ngân sách hợp lý",
+        mainImage: "https://images.unsplash.com/photo-1453928582365-b6ad33cbcf64?w=800",
+        images: [
+            {
+                url: "https://images.unsplash.com/photo-1453928582365-b6ad33cbcf64?w=800",
+                products: [
+                    { x: 50, y: 40, name: "Màn Hình 24\"", link: "#", price: "4.000.000đ" },
+                    { x: 65, y: 60, name: "Đèn Học LED", link: "#", price: "500.000đ" }
+                ]
+            }
+        ],
+        filters: {
+            colorTone: "neutral",
+            budget: "budget",
+            gender: "neutral",
+            purpose: "productivity",
+            size: "small"
+        },
+        likes: [],
+        comments: 0,
+        saves: [],
+        tags: ["học-sinh", "sinh-viên", "học-tập", "tiết-kiệm"],
+        author: {
+            name: "Thu Hương",
+            avatar: "https://i.pravatar.cc/150?img=13"
+        },
+        createdAt: "2026-01-06T12:00:00Z"
     }
 ];
 

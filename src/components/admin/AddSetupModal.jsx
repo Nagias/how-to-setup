@@ -122,7 +122,7 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
         const newTag = {
             id: Date.now().toString(),
             x, y,
-            name: '', type: 'Monitor', price: '', link: ''
+            name: '', price: '', link: ''
         };
 
         setActiveTag(newTag);
@@ -331,88 +331,78 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                 {activeMedia ? (activeMedia.type === 'video' ? 'Xem Video (Không hỗ trợ gắn thẻ)' : 'Gắn Thẻ Sản Phẩm (Click vào ảnh)') : 'Xem trước'}
                             </label>
 
-                            <div className="image-tagging-area" onClick={handleImageClick}>
+                            <div className="image-tagging-area">
                                 {activeMedia ? (
-                                    <>
-                                        {activeMedia.type === 'video' ? (
-                                            <video
-                                                src={activeMedia.url}
-                                                controls
-                                                className="tagging-image"
-                                                style={{ maxHeight: '100%' }}
-                                            />
-                                        ) : (
+                                    activeMedia.type === 'video' ? (
+                                        <video
+                                            src={activeMedia.url}
+                                            controls
+                                            className="tagging-image"
+                                            style={{ maxHeight: '100%' }}
+                                        />
+                                    ) : (
+                                        <div
+                                            className="image-wrapper"
+                                            ref={imageRef}
+                                            onClick={handleImageClick}
+                                        >
                                             <img
-                                                ref={imageRef}
                                                 src={activeMedia.url}
                                                 alt="Tagging Area"
                                                 className="tagging-image"
                                             />
-                                        )}
 
-                                        {/* Render Tags (Only for Image) */}
-                                        {activeMedia.type === 'image' && activeMedia.products.map(p => (
-                                            <div
-                                                key={p.id}
-                                                className={`tag-marker ${activeTag?.id === p.id ? 'active' : ''}`}
-                                                style={{ left: `${p.x}%`, top: `${p.y}%` }}
-                                                onClick={(e) => handleTagClick(e, p)}
-                                            >
-                                                +
-                                            </div>
-                                        ))}
+                                            {/* Render Tags */}
+                                            {activeMedia.products.map(p => (
+                                                <div
+                                                    key={p.id}
+                                                    className={`tag-marker ${activeTag?.id === p.id ? 'active' : ''}`}
+                                                    style={{ left: `${p.x}%`, top: `${p.y}%` }}
+                                                    onClick={(e) => handleTagClick(e, p)}
+                                                >
+                                                    +
+                                                </div>
+                                            ))}
 
-                                        {/* New Temp Tag */}
-                                        {activeTag && activeMedia.type === 'image' && !activeMedia.products.find(p => p.id === activeTag.id) && (
-                                            <div
-                                                className="tag-marker active"
-                                                style={{ left: `${activeTag.x}%`, top: `${activeTag.y}%` }}
-                                            > + </div>
-                                        )}
+                                            {/* New Temp Tag */}
+                                            {activeTag && !activeMedia.products.find(p => p.id === activeTag.id) && (
+                                                <div
+                                                    className="tag-marker active"
+                                                    style={{ left: `${activeTag.x}%`, top: `${activeTag.y}%` }}
+                                                > + </div>
+                                            )}
 
-                                        {/* Tag Popup */}
-                                        {showTagPopup && activeTag && (
-                                            <div
-                                                className="tag-popup"
-                                                style={{
-                                                    left: `${Math.min(activeTag.x, 60)}%`,
-                                                    top: `${Math.min(activeTag.y + 5, 80)}%`
-                                                }}
-                                                onClick={e => e.stopPropagation()}
-                                            >
-                                                <h4>{activeMedia.products.find(p => p.id === activeTag.id) ? 'Sửa Sản Phẩm' : 'Thêm Sản Phẩm'}</h4>
-                                                <div className="form-group">
-                                                    <input autoFocus placeholder="Tên sản phẩm" value={activeTag.name} onChange={e => setActiveTag({ ...activeTag, name: e.target.value })} />
+                                            {/* Tag Popup */}
+                                            {showTagPopup && activeTag && (
+                                                <div
+                                                    className="tag-popup"
+                                                    style={{
+                                                        left: `${Math.min(activeTag.x, 60)}%`,
+                                                        top: `${Math.min(activeTag.y + 5, 80)}%`
+                                                    }}
+                                                    onClick={e => e.stopPropagation()}
+                                                >
+                                                    <h4>{activeMedia.products.find(p => p.id === activeTag.id) ? 'Sửa Sản Phẩm' : 'Thêm Sản Phẩm'}</h4>
+                                                    <div className="form-group">
+                                                        <input autoFocus placeholder="Tên sản phẩm" value={activeTag.name} onChange={e => setActiveTag({ ...activeTag, name: e.target.value })} />
+                                                    </div>
+                                                    <div className="form-group">
+                                                        <input placeholder="Giá" value={activeTag.price} onChange={e => setActiveTag({ ...activeTag, price: e.target.value })} />
+                                                    </div>
+                                                    <div className="form-group">
+                                                        <input placeholder="Link (tùy chọn)" value={activeTag.link} onChange={e => setActiveTag({ ...activeTag, link: e.target.value })} />
+                                                    </div>
+                                                    <div className="popup-actions">
+                                                        <button type="button" className="btn-small btn-delete" onClick={() => {
+                                                            if (activeMedia.products.find(p => p.id === activeTag.id)) handleDeleteTag();
+                                                            else { setActiveTag(null); setShowTagPopup(false); }
+                                                        }}>Xóa</button>
+                                                        <button type="button" className="btn-small btn-submit" onClick={handleSaveTag}>Lưu</button>
+                                                    </div>
                                                 </div>
-                                                <div className="form-group">
-                                                    <select value={activeTag.type} onChange={e => setActiveTag({ ...activeTag, type: e.target.value })}>
-                                                        <option value="Monitor">Màn hình</option>
-                                                        <option value="Keyboard">Bàn phím</option>
-                                                        <option value="Mouse">Chuột</option>
-                                                        <option value="Audio">Loa/Tai nghe</option>
-                                                        <option value="Chair">Ghế</option>
-                                                        <option value="Desk">Bàn</option>
-                                                        <option value="PC">PC/Laptop</option>
-                                                        <option value="Light">Đèn</option>
-                                                        <option value="Other">Khác</option>
-                                                    </select>
-                                                </div>
-                                                <div className="form-group">
-                                                    <input placeholder="Giá" value={activeTag.price} onChange={e => setActiveTag({ ...activeTag, price: e.target.value })} />
-                                                </div>
-                                                <div className="form-group">
-                                                    <input placeholder="Link (tùy chọn)" value={activeTag.link} onChange={e => setActiveTag({ ...activeTag, link: e.target.value })} />
-                                                </div>
-                                                <div className="popup-actions">
-                                                    <button type="button" className="btn-small btn-delete" onClick={() => {
-                                                        if (activeMedia.products.find(p => p.id === activeTag.id)) handleDeleteTag();
-                                                        else { setActiveTag(null); setShowTagPopup(false); }
-                                                    }}>Xóa</button>
-                                                    <button type="button" className="btn-small btn-submit" onClick={handleSaveTag}>Lưu</button>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </>
+                                            )}
+                                        </div>
+                                    )
                                 ) : (
                                     <div className="placeholder-text">Chọn hoặc tải lên media để bắt đầu custom</div>
                                 )}

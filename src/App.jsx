@@ -27,10 +27,11 @@ const GalleryPage = () => (
     </div>
 );
 
-const NewsletterSection = () => {
+// Newsletter inline component for footer
+const FooterNewsletter = () => {
     const { subscribeNewsletter } = useApp();
     const [email, setEmail] = useState('');
-    const [status, setStatus] = useState('idle'); // idle, loading, success, error
+    const [status, setStatus] = useState('idle');
 
     const handleSubscribe = async (e) => {
         e.preventDefault();
@@ -47,28 +48,21 @@ const NewsletterSection = () => {
     };
 
     return (
-        <div className="newsletter-section">
-            <div className="container">
-                <div className="newsletter-box">
-                    <div className="newsletter-content-inner">
-                        <h3>✨ Đăng Ký Nhận Tin</h3>
-                        <p>Nhận thông báo về những setup đẹp nhất hàng tuần.</p>
-                    </div>
-                    <form className="newsletter-form-inline" onSubmit={handleSubscribe}>
-                        <input
-                            type="email"
-                            placeholder="Nhập email của bạn..."
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            required
-                            disabled={status === 'loading' || status === 'success'}
-                        />
-                        <button type="submit" className={`btn-newsletter ${status}`} disabled={status === 'loading'}>
-                            {status === 'loading' ? '⏳' : status === 'success' ? '✓ Đã Gửi' : 'Đăng Ký'}
-                        </button>
-                    </form>
-                </div>
-            </div>
+        <div className="footer-newsletter">
+            <p className="newsletter-label">📬 Nhận tin mới:</p>
+            <form className="newsletter-inline-form" onSubmit={handleSubscribe}>
+                <input
+                    type="email"
+                    placeholder="Email của bạn..."
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                    disabled={status === 'loading' || status === 'success'}
+                />
+                <button type="submit" className={`btn-newsletter-small ${status}`} disabled={status === 'loading'}>
+                    {status === 'loading' ? '...' : status === 'success' ? '✓' : 'Đăng ký'}
+                </button>
+            </form>
         </div>
     );
 };
@@ -130,11 +124,11 @@ const AppContent = () => {
 
             {/* Footer */}
             <footer className="footer">
-                <NewsletterSection />
                 <div className="container footer-content">
                     <div className="footer-section">
                         <h4>DeskHub</h4>
                         <p>Khám phá và chia sẻ những góc làm việc đẹp nhất từ khắp nơi trên thế giới.</p>
+                        <FooterNewsletter />
                     </div>
                     <div className="footer-section">
                         <h5>Liên Kết</h5>
