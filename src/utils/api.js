@@ -384,13 +384,13 @@ export const api = {
 
     uploadFile: async (file) => {
         try {
+            // Simple upload for images
             const storageRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
             const metadata = { contentType: file.type };
 
-            console.log(`Starting simple upload for ${file.name}`);
+            console.log(`Starting image upload for ${file.name}`);
             const snapshot = await uploadBytes(storageRef, file, metadata);
             const downloadURL = await getDownloadURL(snapshot.ref);
-            console.log("Upload success:", downloadURL);
             return downloadURL;
         } catch (error) {
             console.error("Upload failed:", error);
@@ -399,5 +399,38 @@ export const api = {
             }
             throw error;
         }
+    },
+
+    uploadVideo: async (file, onProgress) => {
+        return new Promise((resolve, reject) => {
+            const storageRef = ref(storage, `videos/${Date.now()}_${file.name}`);
+            const metadata = { contentType: file.type };
+            const uploadTask = uploadBytesResumable(storageRef, file, metadata);
+
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    if (onProgress) onProgress(progress);
+                },
+                (error) => {
+                    console.error("Video upload failed:", error);
+                    if (error.code === 'storage/unauthorized') {
+                        reject(new Error("Không có quyền tải lên video (Lỗi Storage Rules)"));
+                    } else if (error.code === 'storage/canceled') {
+                        reject(new Error("Đã hủy tải lên"));
+                    } else {
+                        reject(error);
+                    }
+                },
+                async () => {
+                    try {
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        resolve(downloadURL);
+                    } catch (err) {
+                        reject(err);
+                    }
+                }
+            );
+        });
     }
 };

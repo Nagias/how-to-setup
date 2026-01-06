@@ -169,57 +169,64 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
 
         try {
             // Upload files first
+            // Upload files
             const processedMedia = await Promise.all(mediaList.map(async (item) => {
                 if (item.file) {
                     try {
-                        // Create a timeout promise to prevent hanging
-                        const timeoutPromise = new Promise((_, reject) =>
-                            setTimeout(() => reject(new Error('Upload timed out after 60s')), 60000)
-                        );
+                        if (item.type === 'video') {
+                            // --- Video Strategy: Resumable Upload + Long Timeout ---
+                            console.log(`Starting video upload: ${item.file.name}`);
 
-                        // Race between upload and timeout
-                        const downloadUrl = await Promise.race([
-                            api.uploadFile(item.file),
-                            timeoutPromise
-                        ]);
+                            // 5-minute timeout for videos
+                            const videoTimeout = new Promise((_, reject) =>
+                                setTimeout(() => reject(new Error('Video upload timed out (5 mins)')), 300000)
+                            );
 
-                        return {
-                            id: item.id,
-                            type: item.type,
-                            url: downloadUrl,
-                            products: item.products
-                        };
+                            const downloadUrl = await Promise.race([
+                                api.uploadVideo(item.file, (percent) => console.log(`Video ${item.id}: ${Math.round(percent)}%`)),
+                                videoTimeout
+                            ]);
+
+                            return { ...item, url: downloadUrl, file: null }; // Clear file obj
+                        } else {
+                            // --- Image Strategy: Simple Upload + Base64 Fallback ---
+                            const imageTimeout = new Promise((_, reject) =>
+                                setTimeout(() => reject(new Error('Image upload timed out (60s)')), 60000)
+                            );
+
+                            const downloadUrl = await Promise.race([
+                                api.uploadFile(item.file),
+                                imageTimeout
+                            ]);
+
+                            return { ...item, url: downloadUrl, file: null };
+                        }
                     } catch (err) {
                         console.error('Failed to upload', item.file.name, err);
 
-                        // Fallback: If upload fails and it's an IMAGE, use Base64
+                        // Base64 Fallback (Only for Images)
                         if (item.type === 'image') {
                             console.log('Falling back to Base64 for image:', item.file.name);
                             return new Promise((resolve) => {
                                 const reader = new FileReader();
                                 reader.onloadend = () => {
                                     resolve({
-                                        id: item.id,
-                                        type: item.type,
+                                        ...item,
                                         url: reader.result,
-                                        products: item.products
+                                        file: null
                                     });
                                 };
                                 reader.readAsDataURL(item.file);
                             });
                         }
 
-                        throw new Error(`Lỗi tải lên file ${item.file.name}: ${err.message}. (Video không thể dùng offline/base64)`);
+                        // For Videos, we must throw because Base64 is too big
+                        throw new Error(`Lỗi tải lên video ${item.file.name}: ${err.message}. Vui lòng kiểm tra mạng hoặc thử file nhỏ hơn.`);
                     }
                 }
 
-                // Keep existing (no file)
-                return {
-                    id: item.id,
-                    type: item.type,
-                    url: item.url,
-                    products: item.products
-                };
+                // Existing items
+                return item;
             }));
 
             const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(t => t);
