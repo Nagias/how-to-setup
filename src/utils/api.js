@@ -37,7 +37,7 @@ const newsletterCol = collection(db, 'newsletter');
 // ==========================================
 const ADMIN_EMAILS = [
     'admin@deskhub.com',
-    'your-email@gmail.com' // <-- Thay bằng email của bạn
+    'thanhdat.rces@gmail.com' // <-- Thay bằng email của bạn
 ];
 
 export const api = {
