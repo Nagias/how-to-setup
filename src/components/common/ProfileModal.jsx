@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { updateProfile } from 'firebase/auth';
+import { doc, updateDoc } from 'firebase/firestore';
+import { auth, db } from '../../firebase';
 import { useApp } from '../../contexts/AppContext';
 import { updateGuestProfile, logoutUser, getCurrentUser } from '../../utils/ipUtils';
 import './ProfileModal.css';
@@ -6,6 +9,7 @@ import './ProfileModal.css';
 const ProfileModal = () => {
     const { showProfileModal, setShowProfileModal, refreshUser, currentUser, logout } = useApp();
     const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
+    const [avatar, setAvatar] = useState(currentUser?.avatar || '');
     const [message, setMessage] = useState('');
 
     if (!showProfileModal) return null;
@@ -15,13 +19,47 @@ const ProfileModal = () => {
         setMessage('');
     };
 
-    const handleSave = (e) => {
+    const handleSave = async (e) => {
         e.preventDefault();
+        setMessage(''); // Clear previous messages
+
         if (currentUser?.isGuest) {
             updateGuestProfile(displayName);
             refreshUser();
             setMessage('Đã cập nhật tên hiển thị!');
             setTimeout(() => handleClose(), 1500);
+        } else {
+            try {
+                if (auth.currentUser) {
+                    await updateProfile(auth.currentUser, {
+                        displayName: displayName,
+                        photoURL: avatar
+                    });
+                }
+                const userRef = doc(db, 'users', currentUser.id);
+                // Only update provided fields
+                await updateDoc(userRef, {
+                    displayName: displayName,
+                    avatar: avatar
+                });
+                setMessage('Cập nhật thành công! Đang tải lại...');
+                setTimeout(() => window.location.reload(), 1000);
+            } catch (error) {
+                console.error(error);
+                setMessage('Lỗi: ' + error.message);
+            }
+        }
+    };
+
+    const handleAvatarUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 2000000) return alert('File quá lớn (>2MB)');
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setAvatar(reader.result);
+            };
+            reader.readAsDataURL(file);
         }
     };
 
@@ -70,18 +108,38 @@ const ProfileModal = () => {
                             </button>
                         </form>
                     ) : (
-                        <div className="profile-info">
-                            <div className="info-item">
-                                <span className="info-label">Tên đăng nhập:</span>
-                                <span className="info-value">{currentUser?.username}</span>
+                        <form onSubmit={handleSave} className="profile-form">
+                            <div className="form-group profile-avatar-edit">
+                                <label>Ảnh Đại Diện</label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <img src={avatar || currentUser.photoURL} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-color)' }} alt="Avatar" />
+                                    <div>
+                                        <label htmlFor="avatar-upload" className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>Thay đổi</label>
+                                        <input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} />
+                                    </div>
+                                </div>
                             </div>
-                            <div className="info-item">
-                                <span className="info-label">Vai trò:</span>
-                                <span className="info-value">
-                                    {currentUser?.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}
-                                </span>
+                            <div className="form-group">
+                                <label>Tên hiển thị</label>
+                                <input
+                                    type="text"
+                                    className="input"
+                                    value={displayName}
+                                    onChange={(e) => setDisplayName(e.target.value)}
+                                    placeholder="Tên của bạn"
+                                    required
+                                />
                             </div>
-                        </div>
+
+                            <div className="profile-info-readonly" style={{ margin: '1rem 0', opacity: 0.8, fontSize: '0.9rem', background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '8px' }}>
+                                <div style={{ marginBottom: '0.5rem' }}><strong>Email:</strong> {currentUser.email}</div>
+                                <div><strong>Vai trò:</strong> {currentUser?.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}</div>
+                            </div>
+
+                            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
+                                Lưu Thay Đổi
+                            </button>
+                        </form>
                     )}
 
                     {!currentUser?.isGuest && (

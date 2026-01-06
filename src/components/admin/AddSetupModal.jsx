@@ -1,5 +1,31 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './AddSetupModal.css';
+
+/* ADDED STYLES FOR IMAGE UPLOAD */
+/*
+.image-input-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.input-url {
+    flex: 1;
+}
+.btn-upload {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+.btn-upload:hover {
+    background: var(--color-surface-hover);
+    border-color: var(--color-primary);
+}
+*/
 import { filterOptions } from '../../data/sampleData';
 
 const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
@@ -159,16 +185,43 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                             </div>
 
                             <div className="form-group">
-                                <label>Link Ảnh (URL)</label>
-                                <input
-                                    type="url"
-                                    name="mainImage"
-                                    value={formData.mainImage}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="https://images.unsplash.com/..."
-                                />
-                                <small style={{ marginTop: '5px', color: '#888' }}>Dán link ảnh từ Unsplash, Imgur, v.v.</small>
+                                <label>Hình ảnh</label>
+                                <div className="image-input-group">
+                                    <input
+                                        type="url"
+                                        name="mainImage"
+                                        value={formData.mainImage}
+                                        onChange={handleChange}
+                                        placeholder="Dán link ảnh (URL)..."
+                                        className="input-url"
+                                    />
+                                    <div className="file-upload-wrapper">
+                                        <label htmlFor="file-upload" className="btn-upload">
+                                            📂 Tải ảnh lên
+                                        </label>
+                                        <input
+                                            id="file-upload"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    if (file.size > 5000000) { // Limit 5MB
+                                                        alert('Ảnh quá lớn (>5MB). Vui lòng chọn ảnh nhỏ hơn.');
+                                                        return;
+                                                    }
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = () => {
+                                                        setFormData(prev => ({ ...prev, mainImage: reader.result }));
+                                                    };
+                                                    reader.readAsDataURL(file);
+                                                }
+                                            }}
+                                            style={{ display: 'none' }}
+                                        />
+                                    </div>
+                                </div>
+                                <small style={{ marginTop: '5px', color: '#888', display: 'block' }}>Hỗ trợ JPG, PNG. Tối đa 5MB.</small>
                             </div>
 
                             <div className="form-row">
