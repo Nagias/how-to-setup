@@ -24,22 +24,29 @@ export const AppProvider = ({ children }) => {
 
     const loadData = async () => {
         setLoading(true);
+
+        // ALWAYS start with sample data to ensure something is shown
+        setSetups(sampleSetups);
+        setBlogs(sampleBlogs);
+
         try {
             const data = await api.getData();
-            // FALLBACK STRICT
-            if (!data.setups || data.setups.length === 0) {
-                console.log("Empty setups from API, using imported sampleSetups");
-                setSetups(sampleSetups);
-                setBlogs(sampleBlogs);
-            } else {
+            // Only replace if we got real data from Firestore
+            if (data.setups && data.setups.length > 0) {
+                console.log("Loaded", data.setups.length, "setups from Firestore");
                 setSetups(data.setups);
+            } else {
+                console.log("No setups from Firestore, keeping sample data");
+            }
+
+            if (data.blogs && data.blogs.length > 0) {
                 setBlogs(data.blogs);
             }
-            setAllComments(data.comments);
+
+            setAllComments(data.comments || {});
         } catch (error) {
-            console.error(error);
-            setSetups(sampleSetups); // Error fallback
-            setBlogs(sampleBlogs);
+            console.error("Error loading data, using sample data:", error);
+            // Already set to sample data above
         } finally {
             setLoading(false);
         }
