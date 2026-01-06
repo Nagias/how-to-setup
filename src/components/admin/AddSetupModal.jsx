@@ -172,7 +172,17 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
             const processedMedia = await Promise.all(mediaList.map(async (item) => {
                 if (item.file) {
                     try {
-                        const downloadUrl = await api.uploadFile(item.file);
+                        // Create a timeout promise
+                        const timeoutPromise = new Promise((_, reject) =>
+                            setTimeout(() => reject(new Error('Upload timed out after 60s')), 60000)
+                        );
+
+                        // Race between upload and timeout
+                        const downloadUrl = await Promise.race([
+                            api.uploadFile(item.file),
+                            timeoutPromise
+                        ]);
+
                         return {
                             id: item.id,
                             type: item.type,
@@ -181,7 +191,7 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                         };
                     } catch (err) {
                         console.error('Failed to upload', item.file.name, err);
-                        throw new Error(`Lỗi tải lên file ${item.file.name}`);
+                        throw new Error(`Lỗi tải lên file ${item.file.name}: ${err.message}`);
                     }
                 }
                 // Keep existing (no file means it's already a URL)
