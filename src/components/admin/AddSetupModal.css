@@ -1,17 +1,18 @@
 .add-setup-modal {
     max-width: 1000px;
-    /* Wider layout */
     width: 95%;
+    height: 90vh;
+    /* Fixed height for flex container */
     max-height: 90vh;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Hide header/footer overflow */
     padding: 0;
-    /* Reset padding for header/body structure */
     background: var(--bg-primary);
     border-radius: 12px;
     position: relative;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
 }
 
 .modal-header {
@@ -30,6 +31,8 @@
 .add-setup-body {
     padding: 2rem;
     overflow-y: auto;
+    flex: 1;
+    /* Take remaining space */
 }
 
 .setup-form-layout {
@@ -107,17 +110,15 @@
     z-index: 15;
 }
 
-/* Tag Popup */
+/* Tag Popup - High Contrast */
 .tag-popup {
     position: absolute;
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(12px);
-    padding: 1rem;
-    border-radius: 8px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
-    width: 280px;
-    z-index: 20;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    padding: 1.25rem;
+    border-radius: 12px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    z-index: 50;
     animation: fadeIn 0.2s ease;
 }
 
@@ -128,13 +129,9 @@
     justify-content: flex-end;
     gap: 1rem;
     background: var(--bg-primary);
-    /* Sticky footer */
-    position: sticky;
-    bottom: 0;
-    z-index: 100;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
+    /* Static footer in flex layout */
+    z-index: 10;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
 }
 
 .tag-popup h4 {

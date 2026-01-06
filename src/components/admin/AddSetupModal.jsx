@@ -70,7 +70,13 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
 
     // Handle Image Click to Add Tag
     const handleImageClick = (e) => {
-        if (!formData.mainImage || activeTag) return; // Prevent if no image or already editing
+        if (!formData.mainImage) return;
+
+        // If clicking background while editing, allow creating new tag (or focus logic)
+        // But preventing accidental clicks is good. 
+        // User wants to add "more links". He probably adds one, saves it, adds another.
+        // If he fails to click "Save" in popup, he might be stuck?
+        // Let's remove the block so he can always click new spots.
 
         const rect = imageRef.current.getBoundingClientRect();
         const x = ((e.clientX - rect.left) / rect.width) * 100;
