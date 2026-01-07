@@ -294,13 +294,30 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                 }));
 
             // Find first video for thumbnailVideo field (old format compatibility)
+
             const videoItem = processedMedia.find(item => item.type === 'video');
 
-            // Extract YouTube video ID if URL provided
-            const youtubeVideoId = getYouTubeId(youtubeUrl);
-            const videoThumbnail = youtubeVideoId
-                ? `https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg`
-                : null;
+            // Find YouTube item from processed media List
+            const youtubeItem = processedMedia.find(item => item.type === 'youtube');
+
+            let finalYoutubeId = null;
+            let finalVideoThumbnail = null;
+
+            if (youtubeItem) {
+                // Extract ID from the stored embed URL or thumb
+                // URL: https://www.youtube.com/embed/VID_ID
+                const embedPrefix = 'https://www.youtube.com/embed/';
+                if (youtubeItem.url.startsWith(embedPrefix)) {
+                    finalYoutubeId = youtubeItem.url.replace(embedPrefix, '');
+                }
+                finalVideoThumbnail = youtubeItem.thumb || `https://img.youtube.com/vi/${finalYoutubeId}/maxresdefault.jpg`;
+            } else {
+                // Fallback to input state if user forgot to press Enter but typed a link
+                finalYoutubeId = getYouTubeId(youtubeUrl);
+                finalVideoThumbnail = finalYoutubeId
+                    ? `https://img.youtube.com/vi/${finalYoutubeId}/maxresdefault.jpg`
+                    : null;
+            }
 
             const setupData = {
                 ...formData,
@@ -308,13 +325,13 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                 // NEW: Add both formats for maximum compatibility
                 images: imagesArray,                    // ← For SetupDetailModal (old format)
                 media: processedMedia,                  // ← Keep for future use (new format)
-                mainImage: processedMedia[0]?.url || '',
-                image: processedMedia[0]?.url || '',    // Legacy
+                mainImage: processedMedia[0]?.type === 'youtube' ? (processedMedia[0].thumb || processedMedia[0].url) : (processedMedia[0]?.url || ''),
+                image: processedMedia[0]?.type === 'youtube' ? (processedMedia[0].thumb || processedMedia[0].url) : (processedMedia[0]?.url || ''),    // Legacy
                 products: imagesArray[0]?.products || [], // Legacy - from first image
                 thumbnailVideo: videoItem?.url || null,  // ← Add video support (old format)
                 // YouTube fields
-                youtubeVideoId: youtubeVideoId || null,
-                videoThumbnail: videoThumbnail || null,
+                youtubeVideoId: finalYoutubeId || null,
+                videoThumbnail: finalVideoThumbnail || null,
                 updatedAt: new Date().toISOString()
             };
 
