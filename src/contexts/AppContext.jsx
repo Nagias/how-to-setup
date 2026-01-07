@@ -17,30 +17,27 @@ export const useApp = () => {
 
 export const AppProvider = ({ children }) => {
     const [theme, setTheme] = useState('light');
-    // Initialize with sample data immediately so something always shows
-    const [setups, setSetups] = useState(sampleSetups);
-    const [blogs, setBlogs] = useState(sampleBlogs);
+    // Initialize with empty arrays
+    const [setups, setSetups] = useState([]);
+    const [blogs, setBlogs] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     const loadData = async () => {
         setLoading(true);
 
-        // ALWAYS start with sample data to ensure something is shown
-        setSetups(sampleSetups);
-        setBlogs(sampleBlogs);
+        // Start with empty or cached data? No, let's wait for fetch.
+        // setSetups([]); // Optional: Clear while loading? No, keep prev state.
 
         try {
             const data = await api.getData();
-            // Only replace if we got real data from Firestore
-            if (data.setups && data.setups.length > 0) {
+            // Always update with fetched data (even if empty)
+            if (data.setups) {
                 console.log("Loaded", data.setups.length, "setups from Firestore");
                 setSetups(data.setups);
-            } else {
-                console.log("No setups from Firestore, keeping sample data");
             }
 
-            if (data.blogs && data.blogs.length > 0) {
+            if (data.blogs) {
                 setBlogs(data.blogs);
             }
 
