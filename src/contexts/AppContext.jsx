@@ -264,17 +264,30 @@ export const AppProvider = ({ children }) => {
 
     // Add blog (admin only)
     const addBlog = async (blogData) => {
+        console.log('🟢 AppContext.addBlog called');
+
         // Use state currentUser which contains Firestore role
         if (currentUser?.role !== 'admin') {
+            console.warn('⚠️ Non-admin user attempted to add blog');
             return { success: false, message: 'Chỉ Admin mới có thể viết blog!' };
         }
 
         const user = currentUser;
 
+        // Ensure ALL fields are defined (Firebase hates undefined)
+        const authorName = user.displayName || user.email || 'Admin';
+        const authorAvatar = user.photoURL || user.avatar ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random`;
+
         const blogToSave = {
             ...blogData,
-            author: { name: user.displayName, avatar: user.avatar }
+            author: {
+                name: authorName,
+                avatar: authorAvatar
+            }
         };
+
+        console.log('🟢 Blog data prepared:', blogToSave);
 
         const newBlog = await api.addBlog(blogToSave);
         setBlogs([newBlog, ...blogs]);
