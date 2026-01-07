@@ -282,12 +282,14 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
             }));
 
             console.log('🟡 Media processing complete:', processedMedia);
+            console.log('🔍 YouTube items in processedMedia:', processedMedia.filter(item => item.platform === 'youtube'));
 
             const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(t => t);
 
             // Convert media array to images array for backward compatibility with SetupDetailModal
+            // CRITICAL FIX: Check platform === 'youtube', not type === 'youtube'
             const imagesArray = processedMedia
-                .filter(item => item.type === 'image' || item.type === 'youtube')
+                .filter(item => item.type === 'image' || item.platform === 'youtube')
                 .map(item => ({
                     url: item.url,
                     products: item.products || []
@@ -310,6 +312,8 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                 if (youtubeItem.url.startsWith(embedPrefix)) {
                     finalYoutubeId = youtubeItem.url.replace(embedPrefix, '');
                 }
+                // Fallback: Use videoId directly if URL extraction fails
+                finalYoutubeId = finalYoutubeId || youtubeItem.videoId;
                 finalVideoThumbnail = youtubeItem.thumb || `https://img.youtube.com/vi/${finalYoutubeId}/maxresdefault.jpg`;
                 finalYoutubeUrl = `https://www.youtube.com/watch?v=${finalYoutubeId}`;
             } else {
@@ -320,6 +324,8 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                     finalYoutubeUrl = `https://www.youtube.com/watch?v=${finalYoutubeId}`;
                 }
             }
+
+            console.log('🔍 Final YouTube data:', { finalYoutubeId, finalVideoThumbnail, finalYoutubeUrl });
 
             const setupData = {
                 ...formData,
