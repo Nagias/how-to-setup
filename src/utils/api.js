@@ -50,57 +50,14 @@ export const api = {
     // Fetch all initial data
     getData: async () => {
         try {
-            // Check if setups exist, if not seed them
+            // Setups
             const setupSnapshot = await getDocs(setupsCol);
-            let setups = [];
-
-            if (setupSnapshot.empty) {
-                console.log("Seeding sample setups...");
-                const seedPromises = sampleSetups.map(s => {
-                    // Remove ID to let Firestore generate it, or use custom ID
-                    const { id, ...data } = s;
-                    // Add timestamps
-                    return addDoc(setupsCol, {
-                        ...data,
-                        createdAt: data.createdAt || new Date().toISOString(),
-                        likes: [],
-                        saves: [],
-                        comments: 0
-                    });
-                });
-                await Promise.all(seedPromises);
-                // Re-fetch
-                const newSnapshot = await getDocs(setupsCol);
-                setups = newSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            } else {
-                setups = setupSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            }
-
-            // Hard fallback: If setups is still empty after all attempts, use local sample data
-            if (!setups || setups.length === 0) {
-                console.warn("No setups found in Firestore. Using local sample data.");
-                setups = sampleSetups;
-            }
+            const setups = setupSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
             // Blogs
+            // Blogs
             const blogSnapshot = await getDocs(blogsCol);
-            let blogs = [];
-            if (blogSnapshot.empty) {
-                console.log("Seeding sample blogs...");
-                const seedPromises = sampleBlogs.map(b => {
-                    const { id, ...data } = b;
-                    return addDoc(blogsCol, {
-                        ...data,
-                        publishedAt: data.publishedAt || new Date().toISOString(),
-                        views: data.views || 0
-                    });
-                });
-                await Promise.all(seedPromises);
-                const newSnapshot = await getDocs(blogsCol);
-                blogs = newSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            } else {
-                blogs = blogSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            }
+            const blogs = blogSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
             // Comments (Simple fetch all for now, optimized later)
             const commentSnapshot = await getDocs(commentsCol);
