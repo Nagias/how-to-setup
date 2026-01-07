@@ -279,27 +279,27 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
 
                         console.log(`🟡 Starting upload (Compressed): ${compressedFile.size / 1024} KB`);
 
-                        const imageTimeout = new Promise((_, reject) =>
-                            setTimeout(() => reject(new Error('Upload quá lâu (timeout)')), 25000)
-                        );
-                        const downloadUrl = await Promise.race([
-                            api.uploadFile(compressedFile),
-                            imageTimeout
-                        ]);
-                        console.log(`✅ Image uploaded: ${downloadUrl}`);
-                        return { ...item, url: downloadUrl, file: null };
-                    } catch (err) {
-                        console.error('❌ Failed to upload', item.file.name, err);
-
-                        // Fallback: Aggressive compression for Base64 storage (< 1MB guaranteed)
-                        console.warn('⚠️ Server upload failed, using low-quality Base64 fallback');
+                        // Try upload with standard timeout (browser default or simple wait)
+                        let downloadUrl;
                         try {
-                            // Max 800px, Quality 0.5 to ensure size is small (~100-200KB)
-                            const fallbackBase64 = await compressImage(item.file, 800, 0.5);
-                            return { ...item, url: fallbackBase64, file: null };
-                        } catch (fbErr) {
-                            throw new Error(`Lỗi tải ảnh nghiêm trọng: ${err.message}`);
+                            downloadUrl = await api.uploadFile(compressedFile);
+                            console.log(`✅ Image uploaded: ${downloadUrl}`);
+                            return { ...item, url: downloadUrl, file: null };
+                        } catch (uploadErr) {
+                            console.warn("Upload failed, switching to fallback:", uploadErr);
                         }
+
+                        // If we reached here, upload failed. Use Fallback.
+                        // Silent Fallback: No Alert, just save as Base64.
+                        console.log('⚠️ Using Silent Base64 fallback');
+                        // 1024px, 0.6 quality -> Safe enough for Firestore limit (< 1MB)
+                        const fallbackBase64 = await compressImage(item.file, 1024, 0.6);
+                        return { ...item, url: fallbackBase64, file: null };
+
+                    } catch (err) {
+                        console.error('❌ Serious logic error', err);
+                        // Last resort: Return empty or placeholder to prevent crash
+                        return { ...item, url: "https://via.placeholder.com/800?text=Error", file: null };
                     }
                 }
 
