@@ -279,14 +279,27 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
 
             const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(t => t);
 
+            // Convert media array to images array for backward compatibility with SetupDetailModal
+            const imagesArray = processedMedia
+                .filter(item => item.type === 'image' || item.type === 'youtube')
+                .map(item => ({
+                    url: item.url,
+                    products: item.products || []
+                }));
+
+            // Find first video for thumbnailVideo field (old format compatibility)
+            const videoItem = processedMedia.find(item => item.type === 'video');
+
             const setupData = {
                 ...formData,
                 tags: tagsArray,
-                media: processedMedia, // Save full media array
-                mainImage: processedMedia[0]?.url || '', // Key for SetupCard display
-                // Legacy fields for backward compatibility
-                image: processedMedia[0]?.url || '',
-                products: processedMedia[0]?.products || [],
+                // NEW: Add both formats for maximum compatibility
+                images: imagesArray,                    // ← For SetupDetailModal (old format)
+                media: processedMedia,                  // ← Keep for future use (new format)
+                mainImage: processedMedia[0]?.url || '',
+                image: processedMedia[0]?.url || '',    // Legacy
+                products: imagesArray[0]?.products || [], // Legacy - from first image
+                thumbnailVideo: videoItem?.url || null,  // ← Add video support (old format)
                 updatedAt: new Date().toISOString()
             };
 

@@ -27,24 +27,44 @@ const SetupDetailModal = () => {
     const currentSetup = setups.find(s => s.id === selectedSetup.id) || selectedSetup;
 
     // Logic gộp Video và Ảnh thành list media
+    // Support both old format (images[]) and new format (media[])
     const mediaItems = useMemo(() => {
         let items = [];
+
+        // Support thumbnailVideo field (old format)
         if (currentSetup.thumbnailVideo) {
             items.push({
                 type: 'video',
                 url: currentSetup.thumbnailVideo,
-                poster: currentSetup.mainImage
+                poster: currentSetup.mainImage,
+                products: []
             });
         }
-        if (currentSetup.images) {
-            items = [...items, ...currentSetup.images.map(img => ({ ...img, type: 'image' }))];
+
+        // Support media array (new format) - check this first
+        if (currentSetup.media && Array.isArray(currentSetup.media)) {
+            items = [...items, ...currentSetup.media];
         }
+        // Fallback to images array (old format - sample data)
+        else if (currentSetup.images && Array.isArray(currentSetup.images)) {
+            items = [...items, ...currentSetup.images.map(img => ({
+                ...img,
+                type: 'image',
+                products: img.products || []
+            }))];
+        }
+
         return items;
     }, [currentSetup]);
 
     // Handle index overflow if media list changes
     const activeIndex = currentImageIndex >= mediaItems.length ? 0 : currentImageIndex;
-    const currentMedia = mediaItems[activeIndex];
+    // Add fallback to prevent crashes if mediaItems is empty
+    const currentMedia = mediaItems[activeIndex] || {
+        type: 'image',
+        url: currentSetup.mainImage || '',
+        products: []
+    };
 
     const isLiked = hasUserLiked(currentSetup.id);
     const isSaved = hasUserSaved(currentSetup.id);
@@ -129,7 +149,7 @@ const SetupDetailModal = () => {
                                         className="main-image"
                                     />
                                     {/* Product Markers (Only for images) */}
-                                    {showProducts && currentMedia.products && currentMedia.products.map((product, index) => (
+                                    {showProducts && currentMedia.products && Array.isArray(currentMedia.products) && currentMedia.products.map((product, index) => (
                                         <ProductMarker key={index} product={product} />
                                     ))}
 
@@ -205,7 +225,7 @@ const SetupDetailModal = () => {
                         <p className="detail-caption">{currentSetup.caption}</p>
 
                         <div className="detail-tags">
-                            {currentSetup.tags.map(tag => (
+                            {currentSetup.tags && Array.isArray(currentSetup.tags) && currentSetup.tags.map(tag => (
                                 <span key={tag} className="detail-tag">#{tag}</span>
                             ))}
                         </div>
