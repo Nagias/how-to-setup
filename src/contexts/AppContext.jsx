@@ -314,24 +314,38 @@ export const AppProvider = ({ children }) => {
 
     // Add setup (admin only)
     const addSetup = async (setupData) => {
+        console.log('🟢 AppContext.addSetup called');
+
         // Use state currentUser
         if (currentUser?.role !== 'admin') {
+            console.warn('⚠️ Non-admin user attempted to add setup');
             return { success: false, message: 'Chỉ Admin mới có thể thêm setup!' };
         }
 
         const user = currentUser;
+        console.log('🟢 Current user:', { id: user.id, displayName: user.displayName, role: user.role });
+
+        // Ensure avatar has a fallback
+        const authorAvatar = user.photoURL || user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}`;
 
         const setupToSave = {
             ...setupData,
-            author: { name: user.displayName, avatar: user.avatar }
+            author: {
+                name: user.displayName || user.email || 'Anonymous',
+                avatar: authorAvatar
+            }
         };
 
+        console.log('🟢 Calling api.addSetup with setupToSave:', setupToSave);
         const res = await api.addSetup(setupToSave);
+
+        console.log('🟢 api.addSetup response:', res);
+
         if (res.success) {
             setSetups(prev => [res.setup, ...prev]);
             return { success: true, setup: res.setup };
         }
-        return { success: false, message: 'Thêm setup thất bại' };
+        return { success: false, message: res.message || 'Thêm setup thất bại' };
     };
 
     // Delete setup (admin only)

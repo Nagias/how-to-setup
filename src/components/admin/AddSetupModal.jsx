@@ -206,17 +206,26 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log('🟡 Form submission started');
         setUploading(true);
 
         try {
+            // Validate media
+            if (mediaList.length === 0) {
+                alert('Vui lòng thêm ít nhất một ảnh hoặc video!');
+                setUploading(false);
+                return;
+            }
+
+            console.log('🟡 Processing media uploads...');
+
             // Upload files first
-            // Upload files
             const processedMedia = await Promise.all(mediaList.map(async (item) => {
                 if (item.file) {
                     try {
                         if (item.type === 'video') {
                             // Video Logic (Keep existing)
-                            console.log(`Starting video upload: ${item.file.name}`);
+                            console.log(`🟡 Starting video upload: ${item.file.name}`);
                             const videoTimeout = new Promise((_, reject) =>
                                 setTimeout(() => reject(new Error('Video upload timed out (5 mins)')), 300000)
                             );
@@ -224,9 +233,11 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                 api.uploadVideo(item.file, (percent) => console.log(`Video ${item.id}: ${Math.round(percent)}%`)),
                                 videoTimeout
                             ]);
+                            console.log(`✅ Video uploaded: ${downloadUrl}`);
                             return { ...item, url: downloadUrl, file: null };
                         } else {
                             // Image Logic
+                            console.log(`🟡 Starting image upload: ${item.file.name}`);
                             const imageTimeout = new Promise((_, reject) =>
                                 setTimeout(() => reject(new Error('Image upload timed out (60s)')), 60000)
                             );
@@ -234,10 +245,11 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                 api.uploadFile(item.file),
                                 imageTimeout
                             ]);
+                            console.log(`✅ Image uploaded: ${downloadUrl}`);
                             return { ...item, url: downloadUrl, file: null };
                         }
                     } catch (err) {
-                        console.error('Failed to upload', item.file.name, err);
+                        console.error('❌ Failed to upload', item.file.name, err);
 
                         // Base64 Fallback with Compression (Only for Images)
                         if (item.type === 'image') {
@@ -263,6 +275,8 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                 return item;
             }));
 
+            console.log('🟡 Media processing complete:', processedMedia);
+
             const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(t => t);
 
             const setupData = {
@@ -276,12 +290,18 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                 updatedAt: new Date().toISOString()
             };
 
+            console.log('🟡 Final setupData to save:', setupData);
+            console.log('🟡 Calling onSave...');
+
             if (initialData?.id) {
                 await onSave(initialData.id, setupData);
             } else {
                 await onSave(setupData);
             }
+
+            console.log('✅ onSave completed successfully');
         } catch (err) {
+            console.error('❌ Form submission error:', err);
             alert(err.message || 'Có lỗi xảy ra khi lưu setup.');
         } finally {
             setUploading(false);

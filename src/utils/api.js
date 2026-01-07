@@ -287,6 +287,13 @@ export const api = {
     // Setup Management
     addSetup: async (setupData) => {
         try {
+            console.log('🔵 addSetup called with data:', setupData);
+
+            // Validate required fields
+            if (!setupData.title || !setupData.caption) {
+                throw new Error('Missing required fields: title or caption');
+            }
+
             const newSetup = {
                 ...setupData,
                 likes: [],
@@ -294,11 +301,26 @@ export const api = {
                 comments: 0,
                 createdAt: new Date().toISOString()
             };
+
+            console.log('🔵 Calling addDoc with data:', JSON.stringify(newSetup, null, 2));
             const docRef = await addDoc(setupsCol, newSetup);
+            console.log('✅ Setup added successfully with ID:', docRef.id);
+
             return { success: true, setup: { id: docRef.id, ...newSetup } };
         } catch (error) {
-            console.error(error);
-            return { success: false, message: error.message };
+            console.error('❌ addSetup FAILED:', error);
+            console.error('Error code:', error.code);
+            console.error('Error message:', error.message);
+            console.error('Full error:', JSON.stringify(error, null, 2));
+
+            // Provide specific error messages
+            if (error.code === 'permission-denied') {
+                return { success: false, message: 'Permission denied. Check Firestore Security Rules.' };
+            } else if (error.code === 'unavailable') {
+                return { success: false, message: 'Network error. Check your internet connection.' };
+            }
+
+            return { success: false, message: error.message || 'Unknown error occurred' };
         }
     },
 

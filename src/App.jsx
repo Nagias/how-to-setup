@@ -83,12 +83,15 @@ const AppContent = () => {
     }, [location.pathname]);
 
     const handleSaveSetup = async (setupData) => {
+        console.log('🔴 App.handleSaveSetup called with:', setupData);
         const res = await addSetup(setupData);
+        console.log('🔴 App.handleSaveSetup response:', res);
+
         if (res.success) {
             setShowAddSetupModal(false);
             alert('Đã thêm setup thành công!');
         } else {
-            alert(res.message || 'Có lỗi xảy ra');
+            alert(`Lỗi: ${res.message || 'Có lỗi xảy ra'}`);
         }
     };
 
