@@ -296,6 +296,12 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
             // Find first video for thumbnailVideo field (old format compatibility)
             const videoItem = processedMedia.find(item => item.type === 'video');
 
+            // Extract YouTube video ID if URL provided
+            const youtubeVideoId = getYouTubeId(youtubeUrl);
+            const videoThumbnail = youtubeVideoId
+                ? `https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg`
+                : null;
+
             const setupData = {
                 ...formData,
                 tags: tagsArray,
@@ -306,6 +312,9 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                 image: processedMedia[0]?.url || '',    // Legacy
                 products: imagesArray[0]?.products || [], // Legacy - from first image
                 thumbnailVideo: videoItem?.url || null,  // ← Add video support (old format)
+                // YouTube fields
+                youtubeVideoId: youtubeVideoId || null,
+                videoThumbnail: videoThumbnail || null,
                 updatedAt: new Date().toISOString()
             };
 
