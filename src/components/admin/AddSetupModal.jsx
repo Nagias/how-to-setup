@@ -187,7 +187,7 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
     // --- Submit ---
 
     // Helper: Compress Image for Base64 Fallback (Firestore limit < 1MB)
-    const compressImage = (file, maxWidth = 1920) => {
+    const compressImage = (file, maxWidth = 1920, quality = 0.8) => {
         return new Promise((resolve) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -220,8 +220,8 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                     canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // Compress to JPEG 0.8
-                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                    // Compress to JPEG with custom quality
+                    resolve(canvas.toDataURL('image/jpeg', quality));
                 };
             };
         });
@@ -290,7 +290,16 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                         return { ...item, url: downloadUrl, file: null };
                     } catch (err) {
                         console.error('❌ Failed to upload', item.file.name, err);
-                        throw new Error(`Lỗi tải ảnh ${item.file.name}: ${err.message}. (Hãy kiểm tra CORS nếu lỗi liên tục)`);
+
+                        // Fallback: Aggressive compression for Base64 storage (< 1MB guaranteed)
+                        console.warn('⚠️ Server upload failed, using low-quality Base64 fallback');
+                        try {
+                            // Max 800px, Quality 0.5 to ensure size is small (~100-200KB)
+                            const fallbackBase64 = await compressImage(item.file, 800, 0.5);
+                            return { ...item, url: fallbackBase64, file: null };
+                        } catch (fbErr) {
+                            throw new Error(`Lỗi tải ảnh nghiêm trọng: ${err.message}`);
+                        }
                     }
                 }
 
