@@ -135,8 +135,9 @@ export const AppProvider = ({ children }) => {
         document.documentElement.setAttribute('data-theme', newTheme);
     };
 
-    // Refresh current user
+    // Refresh current user (only for guest updates)
     const refreshUser = () => {
+        if (currentUser && !currentUser.isGuest) return; // Don't overwrite Firebase user
         setCurrentUser(getCurrentUser());
     };
 
@@ -166,7 +167,7 @@ export const AppProvider = ({ children }) => {
 
     // Toggle like
     const toggleLike = async (setupId) => {
-        const user = getCurrentUser();
+        const user = currentUser || getCurrentUser();
         const res = await api.toggleLike(setupId, user.id);
         if (res.success) {
             // Optimistic update or reload
@@ -178,7 +179,7 @@ export const AppProvider = ({ children }) => {
 
     // Toggle save
     const toggleSave = async (setupId) => {
-        const user = getCurrentUser();
+        const user = currentUser || getCurrentUser();
         const res = await api.toggleSave(setupId, user.id);
         if (res.success) {
             setSetups(prev => prev.map(s =>
@@ -189,7 +190,7 @@ export const AppProvider = ({ children }) => {
 
     // Get user's saved setups
     const getSavedSetups = () => {
-        const user = getCurrentUser();
+        const user = currentUser || getCurrentUser();
         if (!user) return [];
         return setups.filter(setup => {
             const saves = setup.saves || [];
@@ -205,7 +206,7 @@ export const AppProvider = ({ children }) => {
 
     // Check if user liked/saved
     const hasUserLiked = (setupId) => {
-        const user = getCurrentUser();
+        const user = currentUser || getCurrentUser();
         if (!user) return false;
         const setup = setups.find(s => s.id === setupId);
         if (!setup) return false;
@@ -214,7 +215,7 @@ export const AppProvider = ({ children }) => {
     };
 
     const hasUserSaved = (setupId) => {
-        const user = getCurrentUser();
+        const user = currentUser || getCurrentUser();
         if (!user) return false;
         const setup = setups.find(s => s.id === setupId);
         if (!setup) return false;
@@ -224,7 +225,7 @@ export const AppProvider = ({ children }) => {
 
     // Add comment
     const addComment = async (setupId, commentText, authorName) => {
-        const user = getCurrentUser();
+        const user = currentUser || getCurrentUser();
         const comment = {
             text: commentText,
             author: authorName || user.displayName,
@@ -263,10 +264,12 @@ export const AppProvider = ({ children }) => {
 
     // Add blog (admin only)
     const addBlog = async (blogData) => {
-        const user = getCurrentUser();
-        if (user.role !== 'admin') {
+        // Use state currentUser which contains Firestore role
+        if (currentUser?.role !== 'admin') {
             return { success: false, message: 'Chỉ Admin mới có thể viết blog!' };
         }
+
+        const user = currentUser;
 
         const blogToSave = {
             ...blogData,
@@ -280,8 +283,8 @@ export const AppProvider = ({ children }) => {
 
     // Update blog
     const updateBlog = async (blogId, blogData) => {
-        const user = getCurrentUser();
-        if (user?.role !== 'admin') {
+        // Use state currentUser
+        if (currentUser?.role !== 'admin') {
             return { success: false, message: 'Chỉ Admin mới có thể chỉnh sửa blog!' };
         }
 
@@ -297,8 +300,7 @@ export const AppProvider = ({ children }) => {
 
     // Delete blog
     const deleteBlog = async (blogId) => {
-        const user = getCurrentUser();
-        if (user.role !== 'admin') {
+        if (currentUser?.role !== 'admin') {
             return { success: false, message: 'Chỉ Admin mới có thể xóa blog!' };
         }
 
@@ -312,10 +314,12 @@ export const AppProvider = ({ children }) => {
 
     // Add setup (admin only)
     const addSetup = async (setupData) => {
-        const user = getCurrentUser();
-        if (user?.role !== 'admin') {
+        // Use state currentUser
+        if (currentUser?.role !== 'admin') {
             return { success: false, message: 'Chỉ Admin mới có thể thêm setup!' };
         }
+
+        const user = currentUser;
 
         const setupToSave = {
             ...setupData,
@@ -332,8 +336,7 @@ export const AppProvider = ({ children }) => {
 
     // Delete setup (admin only)
     const deleteSetup = async (setupId) => {
-        const user = getCurrentUser();
-        if (user?.role !== 'admin') {
+        if (currentUser?.role !== 'admin') {
             return { success: false, message: 'Chỉ Admin mới có thể xóa setup!' };
         }
 
@@ -347,8 +350,7 @@ export const AppProvider = ({ children }) => {
 
     // Update setup (admin only)
     const updateSetup = async (setupId, setupData) => {
-        const user = getCurrentUser();
-        if (user?.role !== 'admin') {
+        if (currentUser?.role !== 'admin') {
             return { success: false, message: 'Chỉ Admin mới có thể sửa setup!' };
         }
 

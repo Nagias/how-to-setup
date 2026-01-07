@@ -3,7 +3,7 @@ import { updateProfile } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebase';
 import { useApp } from '../../contexts/AppContext';
-import { updateGuestProfile, logoutUser, getCurrentUser } from '../../utils/ipUtils';
+import { updateGuestProfile, getCurrentUser } from '../../utils/ipUtils';
 import './ProfileModal.css';
 
 const ProfileModal = () => {

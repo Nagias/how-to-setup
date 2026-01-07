@@ -163,6 +163,47 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
 
     // --- Submit ---
 
+    // Helper: Compress Image for Base64 Fallback (Firestore limit < 1MB)
+    const compressImage = (file) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    // Max dimensions
+                    const MAX_WIDTH = 1024;
+                    const MAX_HEIGHT = 1024;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Compress to JPEG 0.6
+                    resolve(canvas.toDataURL('image/jpeg', 0.6));
+                };
+            };
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setUploading(true);
@@ -174,54 +215,47 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                 if (item.file) {
                     try {
                         if (item.type === 'video') {
-                            // --- Video Strategy: Resumable Upload + Long Timeout ---
+                            // Video Logic (Keep existing)
                             console.log(`Starting video upload: ${item.file.name}`);
-
-                            // 5-minute timeout for videos
                             const videoTimeout = new Promise((_, reject) =>
                                 setTimeout(() => reject(new Error('Video upload timed out (5 mins)')), 300000)
                             );
-
                             const downloadUrl = await Promise.race([
                                 api.uploadVideo(item.file, (percent) => console.log(`Video ${item.id}: ${Math.round(percent)}%`)),
                                 videoTimeout
                             ]);
-
-                            return { ...item, url: downloadUrl, file: null }; // Clear file obj
+                            return { ...item, url: downloadUrl, file: null };
                         } else {
-                            // --- Image Strategy: Simple Upload + Base64 Fallback ---
+                            // Image Logic
                             const imageTimeout = new Promise((_, reject) =>
                                 setTimeout(() => reject(new Error('Image upload timed out (60s)')), 60000)
                             );
-
                             const downloadUrl = await Promise.race([
                                 api.uploadFile(item.file),
                                 imageTimeout
                             ]);
-
                             return { ...item, url: downloadUrl, file: null };
                         }
                     } catch (err) {
                         console.error('Failed to upload', item.file.name, err);
 
-                        // Base64 Fallback (Only for Images)
+                        // Base64 Fallback with Compression (Only for Images)
                         if (item.type === 'image') {
-                            console.log('Falling back to Base64 for image:', item.file.name);
-                            return new Promise((resolve) => {
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                    resolve({
-                                        ...item,
-                                        url: reader.result,
-                                        file: null
-                                    });
+                            console.log('Compressing & using Base64 for image:', item.file.name);
+                            try {
+                                const compressedBase64 = await compressImage(item.file);
+                                return {
+                                    ...item,
+                                    url: compressedBase64,
+                                    file: null
                                 };
-                                reader.readAsDataURL(item.file);
-                            });
+                            } catch (compErr) {
+                                console.error('Compression failed:', compErr);
+                            }
                         }
 
                         // For Videos, we must throw because Base64 is too big
-                        throw new Error(`Lỗi tải lên video ${item.file.name}: ${err.message}. Vui lòng kiểm tra mạng hoặc thử file nhỏ hơn.`);
+                        throw new Error(`Lỗi tải lên video ${item.file.name} (hoặc file quá lớn). Hãy dùng link YouTube!`);
                     }
                 }
 
@@ -235,6 +269,7 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                 ...formData,
                 tags: tagsArray,
                 media: processedMedia, // Save full media array
+                mainImage: processedMedia[0]?.url || '', // Key for SetupCard display
                 // Legacy fields for backward compatibility
                 image: processedMedia[0]?.url || '',
                 products: processedMedia[0]?.products || [],
@@ -298,6 +333,11 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                         >
                                             {item.type === 'video' ? (
                                                 <div className="video-icon">▶️</div>
+                                            ) : item.type === 'youtube' ? (
+                                                <>
+                                                    <img src={item.thumb} alt="yt-thumb" style={{ opacity: 0.8 }} />
+                                                    <div className="video-icon" style={{ fontSize: '12px' }}>🔴</div>
+                                                </>
                                             ) : (
                                                 <img src={item.url} alt="thumb" />
                                             )}
@@ -316,6 +356,43 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                         <span>+ Thêm</span>
                                     </label>
                                 </div>
+
+                                {/* YouTube Input */}
+                                <div style={{ marginTop: '10px', display: 'flex', gap: '5px' }}>
+                                    <input
+                                        type="text"
+                                        placeholder="Dán link YouTube (đỡ tốn dung lượng)..."
+                                        className="youtube-input"
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                const url = e.target.value;
+                                                const getYouTubeId = (url) => {
+                                                    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+                                                    const match = url.match(regExp);
+                                                    return (match && match[2].length === 11) ? match[2] : null;
+                                                };
+                                                const vidId = getYouTubeId(url);
+                                                if (vidId) {
+                                                    const newItem = {
+                                                        id: Date.now().toString(),
+                                                        type: 'youtube', // distinct type
+                                                        url: `https://www.youtube.com/embed/${vidId}`,
+                                                        thumb: `https://img.youtube.com/vi/${vidId}/0.jpg`,
+                                                        file: null,
+                                                        products: []
+                                                    };
+                                                    setMediaList(prev => [...prev, newItem]);
+                                                    if (!activeMediaId) setActiveMediaId(newItem.id);
+                                                    e.target.value = '';
+                                                } else {
+                                                    alert('Link YouTube không hợp lệ!');
+                                                }
+                                            }
+                                        }}
+                                    />
+                                </div>
+
                                 <small style={{ display: 'block', marginTop: '5px', color: '#888' }}>
                                     Hỗ trợ nhiều ảnh & video (Max 400MB/Video).
                                 </small>
@@ -364,7 +441,7 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                         {/* Right Column: Preview & Tagging */}
                         <div className="form-column">
                             <label style={{ marginBottom: '0.5rem', display: 'block', fontWeight: '500' }}>
-                                {activeMedia ? (activeMedia.type === 'video' ? 'Xem Video (Không hỗ trợ gắn thẻ)' : 'Gắn Thẻ Sản Phẩm (Click vào ảnh)') : 'Xem trước'}
+                                {activeMedia ? (activeMedia.type === 'video' || activeMedia.type === 'youtube' ? 'Xem Video (Không hỗ trợ gắn thẻ)' : 'Gắn Thẻ Sản Phẩm (Click vào ảnh)') : 'Xem trước'}
                             </label>
 
                             <div className="image-tagging-area">
@@ -376,6 +453,17 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                             className="tagging-image"
                                             style={{ maxHeight: '100%' }}
                                         />
+                                    ) : activeMedia.type === 'youtube' ? (
+                                        <iframe
+                                            width="100%"
+                                            height="100%"
+                                            src={activeMedia.url}
+                                            title="YouTube video player"
+                                            frameBorder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                            style={{ aspectRatio: '16/9', borderRadius: '8px' }}
+                                        ></iframe>
                                     ) : (
                                         <div
                                             className="image-wrapper"
