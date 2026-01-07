@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
+import { vietnameseToSlug } from '../../utils/slugify';
 import './BlogEditor.css';
 
 const BlogEditor = () => {
@@ -54,41 +55,54 @@ const BlogEditor = () => {
     const handleTitleChange = (e) => {
         const newTitle = e.target.value;
         setTitle(newTitle);
-        // Auto generate slug if slug is empty or matches previous auto-gen
-        if (!slug || slug === title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')) {
-            setSlug(newTitle.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''));
+
+        // Auto generate slug from title (with Vietnamese support)
+        const autoSlug = vietnameseToSlug(newTitle);
+
+        // Only auto-update if slug is empty or matches previous auto-gen
+        if (!slug || slug === vietnameseToSlug(title)) {
+            setSlug(autoSlug);
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log('🟡 Blog form submission started');
 
         const blogData = {
             title,
-            slug: slug || title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
+            slug: slug || vietnameseToSlug(title),
             excerpt,
             coverImage: coverImage || 'https://images.unsplash.com/photo-1593062096033-9a26b09da705?w=1200',
             content,
             category,
             tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
-            readTime: parseInt(readTime)
+            readTime: parseInt(readTime) || 5
         };
 
+        console.log('🟡 Blog data to save:', blogData);
+
         if (isEditMode && selectedBlog) {
+            console.log('🟡 Updating blog:', selectedBlog.id);
             const res = await updateBlog(selectedBlog.id, blogData);
+            console.log('🟡 Update response:', res);
+
             if (res.success) {
                 alert('Đã cập nhật bài viết thành công!');
                 navigate(`/blog/${selectedBlog.id}`);
             } else {
-                alert(res.message || 'Có lỗi xảy ra khi cập nhật!');
+                alert(`Lỗi: ${res.message || 'Có lỗi xảy ra khi cập nhật!'}`);
             }
         } else {
+            console.log('🟡 Creating new blog');
             const res = await addBlog(blogData);
+            console.log('🟡 Create response:', res);
+
             if (res.success) {
                 alert('Đã đăng bài viết thành công!');
                 navigate('/blog');
             } else {
-                alert(res.message || 'Có lỗi xảy ra!');
+                alert(`Lỗi: ${res.message || 'Có lỗi xảy ra!'}`);
             }
         }
     };

@@ -347,14 +347,33 @@ export const api = {
     // Blog Management
     addBlog: async (blog) => {
         try {
+            console.log('🔵 addBlog called with data:', blog);
+
+            // Validate required fields
+            if (!blog.title || !blog.excerpt || !blog.content) {
+                throw new Error('Missing required fields: title, excerpt, or content');
+            }
+
             const newBlog = {
                 ...blog,
                 views: 0,
                 publishedAt: new Date().toISOString()
             };
+
+            console.log('🔵 Calling addDoc with data:', JSON.stringify(newBlog, null, 2));
             const docRef = await addDoc(blogsCol, newBlog);
+            console.log('✅ Blog added successfully with ID:', docRef.id);
+
             return { ...newBlog, id: docRef.id };
         } catch (error) {
+            console.error('❌ addBlog FAILED:', error);
+            console.error('Error code:', error.code);
+            console.error('Error message:', error.message);
+
+            if (error.code === 'permission-denied') {
+                throw new Error('Permission denied. Check Firestore Security Rules.');
+            }
+
             throw error;
         }
     },
