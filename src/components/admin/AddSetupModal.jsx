@@ -36,9 +36,6 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
     });
 
     const [activeMediaId, setActiveMediaId] = useState(null);
-    const [youtubeUrl, setYoutubeUrl] = useState(initialData?.youtubeVideoId
-        ? `https://www.youtube.com/watch?v=${initialData.youtubeVideoId}`
-        : '');
     const [uploading, setUploading] = useState(false);
 
     // Set first media as active on load
@@ -282,67 +279,31 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
             }));
 
             console.log('🟡 Media processing complete:', processedMedia);
-            console.log('🔍 YouTube items in processedMedia:', processedMedia.filter(item => item.platform === 'youtube'));
 
             const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(t => t);
 
-            // Convert media array to images array for backward compatibility with SetupDetailModal
-            // CRITICAL FIX: Check platform === 'youtube', not type === 'youtube'
+            // Convert media array to images array for backward compatibility
             const imagesArray = processedMedia
-                .filter(item => item.type === 'image' || item.platform === 'youtube')
+                .filter(item => item.type === 'image')
                 .map(item => ({
                     url: item.url,
                     products: item.products || []
                 }));
 
-            // Find first video for thumbnailVideo field (old format compatibility)
-            const videoItem = processedMedia.find(item => item.type === 'video' && item.platform !== 'youtube');
-
-            // Find YouTube item from processed media List
-            const youtubeItem = processedMedia.find(item => item.platform === 'youtube');
-
-            let finalYoutubeId = null;
-            let finalVideoThumbnail = null;
-            let finalYoutubeUrl = null;
-
-            if (youtubeItem) {
-                // Extract ID from the stored embed URL or thumb
-                // URL: https://www.youtube.com/embed/VID_ID
-                const embedPrefix = 'https://www.youtube.com/embed/';
-                if (youtubeItem.url.startsWith(embedPrefix)) {
-                    finalYoutubeId = youtubeItem.url.replace(embedPrefix, '');
-                }
-                // Fallback: Use videoId directly if URL extraction fails
-                finalYoutubeId = finalYoutubeId || youtubeItem.videoId;
-                finalVideoThumbnail = youtubeItem.thumb || `https://img.youtube.com/vi/${finalYoutubeId}/maxresdefault.jpg`;
-                finalYoutubeUrl = `https://www.youtube.com/watch?v=${finalYoutubeId}`;
-            } else {
-                // Fallback to input state if user forgot to press Enter but typed a link
-                finalYoutubeId = getYouTubeId(youtubeUrl);
-                if (finalYoutubeId) {
-                    finalVideoThumbnail = `https://img.youtube.com/vi/${finalYoutubeId}/maxresdefault.jpg`;
-                    finalYoutubeUrl = `https://www.youtube.com/watch?v=${finalYoutubeId}`;
-                }
-            }
-
-            console.log('🔍 Final YouTube data:', { finalYoutubeId, finalVideoThumbnail, finalYoutubeUrl });
+            // Find first video for thumbnailVideo field (for hover playback in gallery)
+            const videoItem = processedMedia.find(item => item.type === 'video');
 
             const setupData = {
                 ...formData,
                 tags: tagsArray,
-                // NEW: Add both formats for maximum compatibility
-                images: imagesArray,                    // ← For SetupDetailModal (old format)
-                media: processedMedia,                  // ← Keep for future use (new format)
-                mainImage: processedMedia[0]?.platform === 'youtube' ? (processedMedia[0].thumbnail || processedMedia[0].url) : (processedMedia[0]?.url || ''),
-                image: processedMedia[0]?.platform === 'youtube' ? (processedMedia[0].thumbnail || processedMedia[0].url) : (processedMedia[0]?.url || ''),    // Legacy
+                // Add both formats for maximum compatibility
+                images: imagesArray,
+                media: processedMedia,
+                mainImage: processedMedia[0]?.url || '',
+                image: processedMedia[0]?.url || '',    // Legacy
                 products: imagesArray[0]?.products || [], // Legacy - from first image
-                // CRITICAL FIX: thumbnailVideo MUST have a value for video to display
-                // Priority: YouTube thumbnail > uploaded video URL
-                thumbnailVideo: finalVideoThumbnail || videoItem?.url || null,
-                // YouTube fields
-                youtubeVideoId: finalYoutubeId || null,
-                videoThumbnail: finalVideoThumbnail || null,
-                youtubeUrl: finalYoutubeUrl || null,  // Save original YouTube URL
+                // Save video URL to thumbnailVideo for hover playback in gallery
+                thumbnailVideo: videoItem?.url || null,
                 updatedAt: new Date().toISOString()
             };
 
@@ -433,31 +394,21 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                     </label>
                                 </div>
 
-                                {/* YouTube Input */}
+                                {/* Video URL Input */}
                                 <div style={{ marginTop: '10px', display: 'flex', gap: '5px' }}>
                                     <input
                                         type="text"
-                                        placeholder="Dán link YouTube (đỡ tốn dung lượng)..."
+                                        placeholder="Dán link video (Pexels, etc.) - Video sẽ tự phát khi hover..."
                                         className="youtube-input"
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter') {
                                                 e.preventDefault();
-                                                const url = e.target.value;
-                                                const getYouTubeId = (url) => {
-                                                    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-                                                    const match = url.match(regExp);
-                                                    return (match && match[2].length === 11) ? match[2] : null;
-                                                };
-                                                const vidId = getYouTubeId(url);
-                                                if (vidId) {
+                                                const url = e.target.value.trim();
+                                                if (url) {
                                                     const newItem = {
                                                         id: Date.now().toString(),
-                                                        type: 'video', // Standardize as video
-                                                        platform: 'youtube', // Explicit platform
-                                                        videoId: vidId,
-                                                        url: `https://www.youtube.com/embed/${vidId}`,
-                                                        thumbnail: `https://img.youtube.com/vi/${vidId}/maxresdefault.jpg`,
-                                                        thumb: `https://img.youtube.com/vi/${vidId}/maxresdefault.jpg`, // UI compatibility
+                                                        type: 'video',
+                                                        url: url,
                                                         file: null,
                                                         products: []
                                                     };
@@ -465,7 +416,7 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                                     if (!activeMediaId) setActiveMediaId(newItem.id);
                                                     e.target.value = '';
                                                 } else {
-                                                    alert('Link YouTube không hợp lệ!');
+                                                    alert('Vui lòng nhập link video!');
                                                 }
                                             }
                                         }}
