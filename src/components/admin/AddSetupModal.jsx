@@ -294,14 +294,14 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                 }));
 
             // Find first video for thumbnailVideo field (old format compatibility)
-
-            const videoItem = processedMedia.find(item => item.type === 'video');
+            const videoItem = processedMedia.find(item => item.type === 'video' && item.platform !== 'youtube');
 
             // Find YouTube item from processed media List
-            const youtubeItem = processedMedia.find(item => item.type === 'youtube');
+            const youtubeItem = processedMedia.find(item => item.platform === 'youtube');
 
             let finalYoutubeId = null;
             let finalVideoThumbnail = null;
+            let finalYoutubeUrl = null;
 
             if (youtubeItem) {
                 // Extract ID from the stored embed URL or thumb
@@ -311,12 +311,14 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                     finalYoutubeId = youtubeItem.url.replace(embedPrefix, '');
                 }
                 finalVideoThumbnail = youtubeItem.thumb || `https://img.youtube.com/vi/${finalYoutubeId}/maxresdefault.jpg`;
+                finalYoutubeUrl = `https://www.youtube.com/watch?v=${finalYoutubeId}`;
             } else {
                 // Fallback to input state if user forgot to press Enter but typed a link
                 finalYoutubeId = getYouTubeId(youtubeUrl);
-                finalVideoThumbnail = finalYoutubeId
-                    ? `https://img.youtube.com/vi/${finalYoutubeId}/maxresdefault.jpg`
-                    : null;
+                if (finalYoutubeId) {
+                    finalVideoThumbnail = `https://img.youtube.com/vi/${finalYoutubeId}/maxresdefault.jpg`;
+                    finalYoutubeUrl = `https://www.youtube.com/watch?v=${finalYoutubeId}`;
+                }
             }
 
             const setupData = {
@@ -328,10 +330,13 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                 mainImage: processedMedia[0]?.platform === 'youtube' ? (processedMedia[0].thumbnail || processedMedia[0].url) : (processedMedia[0]?.url || ''),
                 image: processedMedia[0]?.platform === 'youtube' ? (processedMedia[0].thumbnail || processedMedia[0].url) : (processedMedia[0]?.url || ''),    // Legacy
                 products: imagesArray[0]?.products || [], // Legacy - from first image
-                thumbnailVideo: videoItem?.url || null,  // ← Add video support (old format)
+                // CRITICAL FIX: thumbnailVideo MUST have a value for video to display
+                // Priority: YouTube thumbnail > uploaded video URL
+                thumbnailVideo: finalVideoThumbnail || videoItem?.url || null,
                 // YouTube fields
                 youtubeVideoId: finalYoutubeId || null,
                 videoThumbnail: finalVideoThumbnail || null,
+                youtubeUrl: finalYoutubeUrl || null,  // Save original YouTube URL
                 updatedAt: new Date().toISOString()
             };
 
