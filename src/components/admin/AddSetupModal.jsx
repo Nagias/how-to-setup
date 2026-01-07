@@ -279,14 +279,26 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
 
                         console.log(`🟡 Starting upload (Compressed): ${compressedFile.size / 1024} KB`);
 
-                        // Try upload with standard timeout (browser default or simple wait)
+                        // Try upload with 15s timeout fallback
                         let downloadUrl;
                         try {
-                            downloadUrl = await api.uploadFile(compressedFile);
+                            const uploadPromise = api.uploadFile(compressedFile);
+                            const timeoutPromise = new Promise((resolve) =>
+                                setTimeout(() => resolve('TIMEOUT'), 15000)
+                            );
+
+                            const result = await Promise.race([uploadPromise, timeoutPromise]);
+
+                            if (result === 'TIMEOUT') {
+                                console.warn("Upload timed out (15s), switching to fallback");
+                                throw new Error("Timeout");
+                            }
+
+                            downloadUrl = result;
                             console.log(`✅ Image uploaded: ${downloadUrl}`);
                             return { ...item, url: downloadUrl, file: null };
                         } catch (uploadErr) {
-                            console.warn("Upload failed, switching to fallback:", uploadErr);
+                            console.warn("Upload failed/timed out, switching to fallback:", uploadErr);
                         }
 
                         // If we reached here, upload failed. Use Fallback.
