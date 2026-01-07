@@ -280,7 +280,7 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                         console.log(`🟡 Starting upload (Compressed): ${compressedFile.size / 1024} KB`);
 
                         const imageTimeout = new Promise((_, reject) =>
-                            setTimeout(() => reject(new Error('Image upload timed out (60s)')), 60000)
+                            setTimeout(() => reject(new Error('Upload quá lâu (timeout)')), 25000)
                         );
                         const downloadUrl = await Promise.race([
                             api.uploadFile(compressedFile),
@@ -290,20 +290,7 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                         return { ...item, url: downloadUrl, file: null };
                     } catch (err) {
                         console.error('❌ Failed to upload', item.file.name, err);
-
-                        // Base64 Fallback with Compression
-                        console.log('Using Base64 fallback for:', item.file.name);
-                        try {
-                            const compressedBase64 = await compressImage(item.file, 1280);
-                            return {
-                                ...item,
-                                url: compressedBase64,
-                                file: null
-                            };
-                        } catch (compErr) {
-                            console.error('Compression failed:', compErr);
-                            throw new Error(`Lỗi tải lên ảnh ${item.file.name}`);
-                        }
+                        throw new Error(`Lỗi tải ảnh ${item.file.name}: ${err.message}. (Hãy kiểm tra CORS nếu lỗi liên tục)`);
                     }
                 }
 
