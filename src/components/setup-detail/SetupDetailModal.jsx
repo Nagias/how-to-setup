@@ -26,11 +26,6 @@ const SetupDetailModal = () => {
     // Data reactive
     const currentSetup = setups.find(s => s.id === selectedSetup.id) || selectedSetup;
 
-    // DEBUG: Check data structure
-    console.log('🔍 SetupDetailModal - currentSetup:', currentSetup);
-    console.log('🔍 SetupDetailModal - youtubeVideoId:', currentSetup?.youtubeVideoId);
-    console.log('🔍 SetupDetailModal - media array:', currentSetup?.media);
-
     // Logic gộp Video và Ảnh thành list media
     // Support both old format (images[]) and new format (media[])
     const mediaItems = useMemo(() => {
