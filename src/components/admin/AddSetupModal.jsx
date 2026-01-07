@@ -325,8 +325,8 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                 // NEW: Add both formats for maximum compatibility
                 images: imagesArray,                    // ← For SetupDetailModal (old format)
                 media: processedMedia,                  // ← Keep for future use (new format)
-                mainImage: processedMedia[0]?.type === 'youtube' ? (processedMedia[0].thumb || processedMedia[0].url) : (processedMedia[0]?.url || ''),
-                image: processedMedia[0]?.type === 'youtube' ? (processedMedia[0].thumb || processedMedia[0].url) : (processedMedia[0]?.url || ''),    // Legacy
+                mainImage: processedMedia[0]?.platform === 'youtube' ? (processedMedia[0].thumbnail || processedMedia[0].url) : (processedMedia[0]?.url || ''),
+                image: processedMedia[0]?.platform === 'youtube' ? (processedMedia[0].thumbnail || processedMedia[0].url) : (processedMedia[0]?.url || ''),    // Legacy
                 products: imagesArray[0]?.products || [], // Legacy - from first image
                 thumbnailVideo: videoItem?.url || null,  // ← Add video support (old format)
                 // YouTube fields
@@ -396,13 +396,13 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                             className={`media-thumb ${activeMediaId === item.id ? 'active' : ''}`}
                                             onClick={() => setActiveMediaId(item.id)}
                                         >
-                                            {item.type === 'video' ? (
-                                                <div className="video-icon">▶️</div>
-                                            ) : item.type === 'youtube' ? (
+                                            {item.type === 'video' && item.platform === 'youtube' ? (
                                                 <>
-                                                    <img src={item.thumb} alt="yt-thumb" style={{ opacity: 0.8 }} />
+                                                    <img src={item.thumb || item.thumbnail} alt="yt-thumb" style={{ opacity: 0.8 }} />
                                                     <div className="video-icon" style={{ fontSize: '12px' }}>🔴</div>
                                                 </>
+                                            ) : item.type === 'video' ? (
+                                                <div className="video-icon">▶️</div>
                                             ) : (
                                                 <img src={item.url} alt="thumb" />
                                             )}
@@ -441,9 +441,12 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                                 if (vidId) {
                                                     const newItem = {
                                                         id: Date.now().toString(),
-                                                        type: 'youtube', // distinct type
+                                                        type: 'video', // Standardize as video
+                                                        platform: 'youtube', // Explicit platform
+                                                        videoId: vidId,
                                                         url: `https://www.youtube.com/embed/${vidId}`,
-                                                        thumb: `https://img.youtube.com/vi/${vidId}/0.jpg`,
+                                                        thumbnail: `https://img.youtube.com/vi/${vidId}/maxresdefault.jpg`,
+                                                        thumb: `https://img.youtube.com/vi/${vidId}/maxresdefault.jpg`, // UI compatibility
                                                         file: null,
                                                         products: []
                                                     };

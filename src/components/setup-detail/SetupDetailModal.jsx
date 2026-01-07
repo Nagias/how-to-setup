@@ -53,9 +53,36 @@ const SetupDetailModal = () => {
 
         // Support media array (new format) - check this first
         if (currentSetup.media && Array.isArray(currentSetup.media)) {
-            // Filter out video types (we handle YouTube separately) and old 'video' items
-            const imageMedia = currentSetup.media.filter(m => m.type === 'image');
-            items = [...items, ...imageMedia];
+            currentSetup.media.forEach(m => {
+                // Check for YouTube (new structure or legacy 'youtube' type)
+                if (m.platform === 'youtube' || m.type === 'youtube') {
+                    // Extract ID if missing in object but present in URL
+                    let vId = m.videoId;
+                    if (!vId && m.url) {
+                        const match = m.url.match(/\/embed\/([^/?]+)/);
+                        if (match) vId = match[1];
+                    }
+
+                    items.push({
+                        type: 'youtube',
+                        videoId: vId || currentSetup.youtubeVideoId,
+                        url: m.url || `https://www.youtube.com/embed/${vId}`,
+                        poster: m.thumbnail || m.thumb || m.poster || `https://img.youtube.com/vi/${vId}/maxresdefault.jpg`,
+                        products: m.products || []
+                    });
+                }
+                // Check for normal images
+                else if (m.type === 'image') {
+                    items.push(m);
+                }
+                // Check for traditional videos
+                else if (m.type === 'video' && !m.platform) {
+                    items.push({
+                        ...m,
+                        type: 'video'
+                    });
+                }
+            });
         }
         // Fallback to images array (old format - sample data)
         else if (currentSetup.images && Array.isArray(currentSetup.images)) {
