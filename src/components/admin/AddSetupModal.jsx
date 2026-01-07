@@ -187,7 +187,7 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
     // --- Submit ---
 
     // Helper: Compress Image for Base64 Fallback (Firestore limit < 1MB)
-    const compressImage = (file) => {
+    const compressImage = (file, maxWidth = 1920) => {
         return new Promise((resolve) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -199,8 +199,8 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                     const ctx = canvas.getContext('2d');
 
                     // Max dimensions
-                    const MAX_WIDTH = 1024;
-                    const MAX_HEIGHT = 1024;
+                    const MAX_WIDTH = maxWidth;
+                    const MAX_HEIGHT = maxWidth;
                     let width = img.width;
                     let height = img.height;
 
@@ -220,8 +220,8 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                     canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // Compress to JPEG 0.6
-                    resolve(canvas.toDataURL('image/jpeg', 0.6));
+                    // Compress to JPEG 0.8
+                    resolve(canvas.toDataURL('image/jpeg', 0.8));
                 };
             };
         });
@@ -247,13 +247,19 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
             if (avatarFile) {
                 try {
                     console.log('🟡 Uploading avatar...');
-                    avatarUrl = await api.uploadFile(avatarFile);
+                    // Compress avatar (limit 500px)
+                    const avatarBase64 = await compressImage(avatarFile, 500);
+                    // Convert to blob for upload
+                    const avatarBlob = await (await fetch(avatarBase64)).blob();
+                    const compressedAvatar = new File([avatarBlob], "avatar.jpg", { type: "image/jpeg" });
+
+                    avatarUrl = await api.uploadFile(compressedAvatar);
                     console.log('✅ Avatar uploaded:', avatarUrl);
                 } catch (err) {
                     console.error('❌ Avatar upload failed:', err);
                     // Fallback to base64
                     try {
-                        avatarUrl = await compressImage(avatarFile);
+                        avatarUrl = await compressImage(avatarFile, 300);
                     } catch (compErr) {
                         console.error('Avatar compression failed:', compErr);
                         avatarUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(formData.authorName || 'User');
@@ -266,12 +272,18 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                 if (item.file) {
                     try {
                         // Image upload only
-                        console.log(`🟡 Starting image upload: ${item.file.name}`);
+                        console.log(`🟡 Compressing image: ${item.file.name}`);
+                        const compressedBase64 = await compressImage(item.file, 1920);
+                        const blob = await (await fetch(compressedBase64)).blob();
+                        const compressedFile = new File([blob], item.file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: "image/jpeg" });
+
+                        console.log(`🟡 Starting upload (Compressed): ${compressedFile.size / 1024} KB`);
+
                         const imageTimeout = new Promise((_, reject) =>
                             setTimeout(() => reject(new Error('Image upload timed out (60s)')), 60000)
                         );
                         const downloadUrl = await Promise.race([
-                            api.uploadFile(item.file),
+                            api.uploadFile(compressedFile),
                             imageTimeout
                         ]);
                         console.log(`✅ Image uploaded: ${downloadUrl}`);
@@ -280,9 +292,9 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                         console.error('❌ Failed to upload', item.file.name, err);
 
                         // Base64 Fallback with Compression
-                        console.log('Compressing & using Base64 for image:', item.file.name);
+                        console.log('Using Base64 fallback for:', item.file.name);
                         try {
-                            const compressedBase64 = await compressImage(item.file);
+                            const compressedBase64 = await compressImage(item.file, 1280);
                             return {
                                 ...item,
                                 url: compressedBase64,
