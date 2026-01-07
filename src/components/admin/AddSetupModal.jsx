@@ -40,6 +40,10 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
     const [activeMediaId, setActiveMediaId] = useState(null);
     const [uploading, setUploading] = useState(false);
 
+    // Avatar upload state
+    const [avatarFile, setAvatarFile] = useState(null);
+    const [avatarPreview, setAvatarPreview] = useState(initialData?.author?.avatar || '');
+
     // Set first media as active on load
     useEffect(() => {
         if (mediaList.length > 0 && !activeMediaId) {
@@ -113,6 +117,20 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
         if (activeMediaId === id) {
             setActiveMediaId(newList[0]?.id || null);
         }
+    };
+
+    // Avatar upload handler
+    const handleAvatarUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Avatar quá lớn (>5MB).');
+            return;
+        }
+
+        setAvatarFile(file);
+        setAvatarPreview(URL.createObjectURL(file));
     };
 
     // --- Tagging Logic (Only for Images) ---
@@ -224,6 +242,25 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
 
             console.log('🟡 Processing media uploads...');
 
+            // Upload avatar first if exists
+            let avatarUrl = avatarPreview; // Use existing preview if no new file
+            if (avatarFile) {
+                try {
+                    console.log('🟡 Uploading avatar...');
+                    avatarUrl = await api.uploadFile(avatarFile);
+                    console.log('✅ Avatar uploaded:', avatarUrl);
+                } catch (err) {
+                    console.error('❌ Avatar upload failed:', err);
+                    // Fallback to base64
+                    try {
+                        avatarUrl = await compressImage(avatarFile);
+                    } catch (compErr) {
+                        console.error('Avatar compression failed:', compErr);
+                        avatarUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(formData.authorName || 'User');
+                    }
+                }
+            }
+
             // Upload files first
             const processedMedia = await Promise.all(mediaList.map(async (item) => {
                 if (item.file) {
@@ -282,7 +319,7 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                 // Author information
                 author: {
                     name: formData.authorName || 'Anonymous',
-                    avatar: formData.authorAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(formData.authorName || 'User')
+                    avatar: avatarUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(formData.authorName || 'User')
                 },
                 // Media
                 images: imagesArray,
@@ -398,16 +435,33 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                             </div>
 
                             <div className="form-group">
-                                <label>Avatar URL</label>
-                                <input
-                                    type="text"
-                                    name="authorAvatar"
-                                    value={formData.authorAvatar}
-                                    onChange={handleChange}
-                                    placeholder="https://example.com/avatar.jpg"
-                                />
+                                <label>Avatar người đăng</label>
+                                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                    {avatarPreview && (
+                                        <img
+                                            src={avatarPreview}
+                                            alt="Avatar preview"
+                                            style={{
+                                                width: '60px',
+                                                height: '60px',
+                                                borderRadius: '50%',
+                                                objectFit: 'cover',
+                                                border: '2px solid var(--color-border)'
+                                            }}
+                                        />
+                                    )}
+                                    <label className="btn btn-secondary" style={{ cursor: 'pointer', margin: 0 }}>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleAvatarUpload}
+                                            style={{ display: 'none' }}
+                                        />
+                                        {avatarPreview ? 'Đổi Avatar' : 'Tải Avatar'}
+                                    </label>
+                                </div>
                                 <small style={{ display: 'block', marginTop: '5px', color: '#888' }}>
-                                    Link ảnh đại diện của người đăng
+                                    Ảnh đại diện của người đăng (Max 5MB)
                                 </small>
                             </div>
 
