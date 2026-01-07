@@ -31,8 +31,18 @@ const SetupDetailModal = () => {
     const mediaItems = useMemo(() => {
         let items = [];
 
-        // Support thumbnailVideo field (old format)
-        if (currentSetup.thumbnailVideo) {
+        // Support YouTube video (NEW FORMAT)
+        if (currentSetup.youtubeVideoId) {
+            items.push({
+                type: 'youtube',
+                videoId: currentSetup.youtubeVideoId,
+                url: `https://www.youtube.com/embed/${currentSetup.youtubeVideoId}`,
+                poster: currentSetup.videoThumbnail || `https://img.youtube.com/vi/${currentSetup.youtubeVideoId}/maxresdefault.jpg`,
+                products: []
+            });
+        }
+        // Fallback: Support old thumbnailVideo field (demo data)
+        else if (currentSetup.thumbnailVideo) {
             items.push({
                 type: 'video',
                 url: currentSetup.thumbnailVideo,
@@ -43,7 +53,9 @@ const SetupDetailModal = () => {
 
         // Support media array (new format) - check this first
         if (currentSetup.media && Array.isArray(currentSetup.media)) {
-            items = [...items, ...currentSetup.media];
+            // Filter out video types (we handle YouTube separately) and old 'video' items
+            const imageMedia = currentSetup.media.filter(m => m.type === 'image');
+            items = [...items, ...imageMedia];
         }
         // Fallback to images array (old format - sample data)
         else if (currentSetup.images && Array.isArray(currentSetup.images)) {
@@ -141,6 +153,17 @@ const SetupDetailModal = () => {
                                     poster={currentMedia.poster}
                                     style={{ objectFit: 'contain', background: '#000' }}
                                 />
+                            ) : currentMedia.type === 'youtube' ? (
+                                <iframe
+                                    width="100%"
+                                    height="100%"
+                                    src={currentMedia.url}
+                                    title="YouTube video player"
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                    style={{ aspectRatio: '16/9', borderRadius: '8px', minHeight: '400px' }}
+                                />
                             ) : (
                                 <>
                                     <img
@@ -169,7 +192,7 @@ const SetupDetailModal = () => {
                                 {mediaItems.map((item, index) => (
                                     <button
                                         key={index}
-                                        className={`thumbnail ${index === activeIndex ? 'active' : ''}`}
+                                        className={`thumbnail ${index === currentImageIndex ? 'active' : ''}`}
                                         onClick={() => setCurrentImageIndex(index)}
                                     >
                                         {item.type === 'video' ? (
@@ -177,6 +200,15 @@ const SetupDetailModal = () => {
                                                 <img src={item.poster} alt="Video" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)' }}>
                                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z" /></svg>
+                                                </div>
+                                            </div>
+                                        ) : item.type === 'youtube' ? (
+                                            <div className="thumbnail-video-wrapper" style={{ position: 'relative', width: '100%', height: '100%' }}>
+                                                <img src={item.poster} alt="YouTube" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)' }}>
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="red">
+                                                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                                                    </svg>
                                                 </div>
                                             </div>
                                         ) : (

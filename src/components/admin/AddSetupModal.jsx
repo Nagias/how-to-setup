@@ -36,6 +36,9 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
     });
 
     const [activeMediaId, setActiveMediaId] = useState(null);
+    const [youtubeUrl, setYoutubeUrl] = useState(initialData?.youtubeVideoId
+        ? `https://www.youtube.com/watch?v=${initialData.youtubeVideoId}`
+        : '');
     const [uploading, setUploading] = useState(false);
 
     // Set first media as active on load
@@ -70,25 +73,28 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
         }
     };
 
+    // Extract YouTube video ID from URL
+    const getYouTubeId = (url) => {
+        if (!url) return null;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    };
+
     const handleFileUpload = (e) => {
         const files = Array.from(e.target.files);
         if (files.length === 0) return;
 
         const newItems = files.map(file => {
-            const isVideo = file.type.startsWith('video/');
-            // Size check: Video < 500MB, Image < 10MB
-            if (isVideo && file.size > 500 * 1024 * 1024) {
-                alert(`Video ${file.name} quá lớn (>500MB).`);
-                return null;
-            }
-            if (!isVideo && file.size > 10 * 1024 * 1024) {
+            // Only accept images now (no video upload)
+            if (file.size > 10 * 1024 * 1024) {
                 alert(`Ảnh ${file.name} quá lớn (>10MB).`);
                 return null;
             }
 
             return {
                 id: Date.now() + Math.random().toString(),
-                type: isVideo ? 'video' : 'image',
+                type: 'image',
                 url: URL.createObjectURL(file), // Preview URL
                 file: file,
                 products: []
