@@ -7,6 +7,8 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
     const [formData, setFormData] = useState({
         title: initialData?.title || '',
         caption: initialData?.caption || '',
+        authorName: initialData?.author?.name || '',
+        authorAvatar: initialData?.author?.avatar || '',
         filters: initialData?.filters || {
             colorTone: 'neutral',
             budget: 'mid-range',
@@ -17,8 +19,8 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
         tags: initialData?.tags?.join(', ') || ''
     });
 
-    // Media State management
-    // items: { id, type: 'image'|'video', url, file, products: [] }
+    // Media State management - IMAGES ONLY
+    // items: { id, type: 'image', url, file, products: [] }
     const [mediaList, setMediaList] = useState(() => {
         if (initialData?.media && initialData.media.length > 0) {
             return initialData.media;
@@ -226,51 +228,33 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
             const processedMedia = await Promise.all(mediaList.map(async (item) => {
                 if (item.file) {
                     try {
-                        if (item.type === 'video') {
-                            // Video Logic (Keep existing)
-                            console.log(`🟡 Starting video upload: ${item.file.name}`);
-                            const videoTimeout = new Promise((_, reject) =>
-                                setTimeout(() => reject(new Error('Video upload timed out (5 mins)')), 300000)
-                            );
-                            const downloadUrl = await Promise.race([
-                                api.uploadVideo(item.file, (percent) => console.log(`Video ${item.id}: ${Math.round(percent)}%`)),
-                                videoTimeout
-                            ]);
-                            console.log(`✅ Video uploaded: ${downloadUrl}`);
-                            return { ...item, url: downloadUrl, file: null };
-                        } else {
-                            // Image Logic
-                            console.log(`🟡 Starting image upload: ${item.file.name}`);
-                            const imageTimeout = new Promise((_, reject) =>
-                                setTimeout(() => reject(new Error('Image upload timed out (60s)')), 60000)
-                            );
-                            const downloadUrl = await Promise.race([
-                                api.uploadFile(item.file),
-                                imageTimeout
-                            ]);
-                            console.log(`✅ Image uploaded: ${downloadUrl}`);
-                            return { ...item, url: downloadUrl, file: null };
-                        }
+                        // Image upload only
+                        console.log(`🟡 Starting image upload: ${item.file.name}`);
+                        const imageTimeout = new Promise((_, reject) =>
+                            setTimeout(() => reject(new Error('Image upload timed out (60s)')), 60000)
+                        );
+                        const downloadUrl = await Promise.race([
+                            api.uploadFile(item.file),
+                            imageTimeout
+                        ]);
+                        console.log(`✅ Image uploaded: ${downloadUrl}`);
+                        return { ...item, url: downloadUrl, file: null };
                     } catch (err) {
                         console.error('❌ Failed to upload', item.file.name, err);
 
-                        // Base64 Fallback with Compression (Only for Images)
-                        if (item.type === 'image') {
-                            console.log('Compressing & using Base64 for image:', item.file.name);
-                            try {
-                                const compressedBase64 = await compressImage(item.file);
-                                return {
-                                    ...item,
-                                    url: compressedBase64,
-                                    file: null
-                                };
-                            } catch (compErr) {
-                                console.error('Compression failed:', compErr);
-                            }
+                        // Base64 Fallback with Compression
+                        console.log('Compressing & using Base64 for image:', item.file.name);
+                        try {
+                            const compressedBase64 = await compressImage(item.file);
+                            return {
+                                ...item,
+                                url: compressedBase64,
+                                file: null
+                            };
+                        } catch (compErr) {
+                            console.error('Compression failed:', compErr);
+                            throw new Error(`Lỗi tải lên ảnh ${item.file.name}`);
                         }
-
-                        // For Videos, we must throw because Base64 is too big
-                        throw new Error(`Lỗi tải lên video ${item.file.name} (hoặc file quá lớn). Hãy dùng link YouTube!`);
                     }
                 }
 
@@ -290,20 +274,22 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                     products: item.products || []
                 }));
 
-            // Find first video for thumbnailVideo field (for hover playback in gallery)
-            const videoItem = processedMedia.find(item => item.type === 'video');
-
             const setupData = {
-                ...formData,
+                title: formData.title,
+                caption: formData.caption,
+                filters: formData.filters,
                 tags: tagsArray,
-                // Add both formats for maximum compatibility
+                // Author information
+                author: {
+                    name: formData.authorName || 'Anonymous',
+                    avatar: formData.authorAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(formData.authorName || 'User')
+                },
+                // Media
                 images: imagesArray,
                 media: processedMedia,
                 mainImage: processedMedia[0]?.url || '',
                 image: processedMedia[0]?.url || '',    // Legacy
                 products: imagesArray[0]?.products || [], // Legacy - from first image
-                // Save video URL to thumbnailVideo for hover playback in gallery
-                thumbnailVideo: videoItem?.url || null,
                 updatedAt: new Date().toISOString()
             };
 
@@ -394,37 +380,34 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                     </label>
                                 </div>
 
-                                {/* Video URL Input */}
-                                <div style={{ marginTop: '10px', display: 'flex', gap: '5px' }}>
-                                    <input
-                                        type="text"
-                                        placeholder="Dán link video (Pexels, etc.) - Video sẽ tự phát khi hover..."
-                                        className="youtube-input"
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                e.preventDefault();
-                                                const url = e.target.value.trim();
-                                                if (url) {
-                                                    const newItem = {
-                                                        id: Date.now().toString(),
-                                                        type: 'video',
-                                                        url: url,
-                                                        file: null,
-                                                        products: []
-                                                    };
-                                                    setMediaList(prev => [...prev, newItem]);
-                                                    if (!activeMediaId) setActiveMediaId(newItem.id);
-                                                    e.target.value = '';
-                                                } else {
-                                                    alert('Vui lòng nhập link video!');
-                                                }
-                                            }
-                                        }}
-                                    />
-                                </div>
-
                                 <small style={{ display: 'block', marginTop: '5px', color: '#888' }}>
-                                    Hỗ trợ nhiều ảnh & video (Max 400MB/Video).
+                                    Hỗ trợ nhiều ảnh (Max 10MB/ảnh).
+                                </small>
+                            </div>
+
+                            {/* Author Information */}
+                            <div className="form-group">
+                                <label>Tên người đăng</label>
+                                <input
+                                    type="text"
+                                    name="authorName"
+                                    value={formData.authorName}
+                                    onChange={handleChange}
+                                    placeholder="Nhập tên người đăng..."
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Avatar URL</label>
+                                <input
+                                    type="text"
+                                    name="authorAvatar"
+                                    value={formData.authorAvatar}
+                                    onChange={handleChange}
+                                    placeholder="https://example.com/avatar.jpg"
+                                />
+                                <small style={{ display: 'block', marginTop: '5px', color: '#888' }}>
+                                    Link ảnh đại diện của người đăng
                                 </small>
                             </div>
 
