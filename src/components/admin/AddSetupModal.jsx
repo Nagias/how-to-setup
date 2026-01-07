@@ -304,8 +304,9 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                         // If we reached here, upload failed. Use Fallback.
                         // Silent Fallback: No Alert, just save as Base64.
                         console.log('⚠️ Using Silent Base64 fallback');
-                        // 1024px, 0.6 quality -> Safe enough for Firestore limit (< 1MB)
-                        const fallbackBase64 = await compressImage(item.file, 1024, 0.6);
+                        // Reduce to 600px, 0.5 quality to ensure multiple images (e.g. 7) fit in 1MB Firestore limit
+                        // 600px ~ 40-50KB per image -> 10 images = 500KB (Safe)
+                        const fallbackBase64 = await compressImage(item.file, 600, 0.5);
                         return { ...item, url: fallbackBase64, file: null };
 
                     } catch (err) {
