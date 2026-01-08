@@ -23,9 +23,12 @@ const SetupDetailModal = () => {
     const [commentText, setCommentText] = useState('');
     const [showProducts, setShowProducts] = useState(true);
 
+    // Early return if no setup is selected
     if (!selectedSetup) return null;
 
+    // All currentSetup-dependent variables MUST be declared after the early return check
     const currentSetup = selectedSetup;
+
     const mediaItems = [
         { type: 'image', url: currentSetup.mainImage, products: currentSetup.products },
         ...(currentSetup.moreImages || []).map(img => ({ type: 'image', url: img })),
@@ -126,68 +129,7 @@ const SetupDetailModal = () => {
                                     style={{ objectFit: 'contain', background: '#000' }}
                                 />
                             ) : currentMedia.type === 'youtube' ? (
-                                (() => {
-                                    // Use local state to track if user clicked play
-                                    const [isPlaying, setIsPlaying] = React.useState(false);
-
-                                    // Reset playing state when media changes
-                                    React.useEffect(() => {
-                                        setIsPlaying(false);
-                                    }, [currentMedia.url]);
-
-                                    return isPlaying ? (
-                                        <iframe
-                                            width="100%"
-                                            height="100%"
-                                            src={`${currentMedia.url}?autoplay=1&rel=0`}
-                                            title="YouTube video player"
-                                            frameBorder="0"
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                            allowFullScreen
-                                            style={{ aspectRatio: '16/9', borderRadius: '8px', minHeight: '400px' }}
-                                        />
-                                    ) : (
-                                        <div
-                                            className="youtube-placeholder"
-                                            onClick={() => setIsPlaying(true)}
-                                            style={{
-                                                position: 'relative',
-                                                width: '100%',
-                                                height: '100%',
-                                                minHeight: '400px',
-                                                cursor: 'pointer',
-                                                backgroundImage: `url(${currentMedia.poster})`,
-                                                backgroundSize: 'cover',
-                                                backgroundPosition: 'center',
-                                                borderRadius: '8px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}
-                                        >
-                                            <div style={{
-                                                background: 'red',
-                                                width: '60px',
-                                                height: '40px',
-                                                borderRadius: '10px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}>
-                                                <div style={{
-                                                    width: 0,
-                                                    height: 0,
-                                                    borderTop: '10px solid transparent',
-                                                    borderBottom: '10px solid transparent',
-                                                    borderLeft: '16px solid white'
-                                                }}></div>
-                                            </div>
-                                            <div style={{ position: 'absolute', bottom: '10px', left: '10px', color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
-                                                Click để phát video
-                                            </div>
-                                        </div>
-                                    );
-                                })()
+                                <YouTubePlayer url={currentMedia.url} poster={currentMedia.poster} />
                             ) : (
                                 <div className="image-wrapper-relative">
                                     <img
@@ -418,6 +360,73 @@ const SetupDetailModal = () => {
                 </div>
             </div>
         </div >
+    );
+};
+
+// YouTube Player Component (extracted to avoid hooks in IIFE)
+const YouTubePlayer = ({ url, poster }) => {
+    const [isPlaying, setIsPlaying] = useState(false);
+
+    // Reset playing state when URL changes
+    React.useEffect(() => {
+        setIsPlaying(false);
+    }, [url]);
+
+    if (isPlaying) {
+        return (
+            <iframe
+                width="100%"
+                height="100%"
+                src={`${url}?autoplay=1&rel=0`}
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                style={{ aspectRatio: '16/9', borderRadius: '8px', minHeight: '400px' }}
+            />
+        );
+    }
+
+    return (
+        <div
+            className="youtube-placeholder"
+            onClick={() => setIsPlaying(true)}
+            style={{
+                position: 'relative',
+                width: '100%',
+                height: '100%',
+                minHeight: '400px',
+                cursor: 'pointer',
+                backgroundImage: `url(${poster})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}
+        >
+            <div style={{
+                background: 'red',
+                width: '60px',
+                height: '40px',
+                borderRadius: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}>
+                <div style={{
+                    width: 0,
+                    height: 0,
+                    borderTop: '10px solid transparent',
+                    borderBottom: '10px solid transparent',
+                    borderLeft: '16px solid white'
+                }}></div>
+            </div>
+            <div style={{ position: 'absolute', bottom: '10px', left: '10px', color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                Click để phát video
+            </div>
+        </div>
     );
 };
 
