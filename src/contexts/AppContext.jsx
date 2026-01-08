@@ -176,7 +176,13 @@ export const AppProvider = ({ children }) => {
 
     // Toggle save
     const toggleSave = async (setupId) => {
-        const user = currentUser || getCurrentUser();
+        // Strictly require logged-in user for Saving
+        if (!currentUser) {
+            setShowAuthModal(true);
+            return;
+        }
+
+        const user = currentUser;
         const res = await api.toggleSave(setupId, user.id);
         if (res.success) {
             setSetups(prev => prev.map(s =>

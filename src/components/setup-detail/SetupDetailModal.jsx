@@ -352,16 +352,19 @@ const SetupDetailModal = () => {
                             </div>
                         </div>
 
-                        {/* Comments */}
                         <div className="comments-section">
                             <h4>Bình Luận ({setupComments.length})</h4>
                             <form className="comment-form" onSubmit={handleSubmitComment}>
                                 <div className="comment-input-wrapper">
-                                    <img src={currentUser?.avatar} alt="Avatar" className="comment-user-avatar" />
+                                    <img
+                                        src={currentUser?.avatar || 'https://ui-avatars.com/api/?name=Guest&background=random'}
+                                        alt="Avatar"
+                                        className="comment-user-avatar"
+                                    />
                                     <input
                                         type="text"
                                         className="input comment-input"
-                                        placeholder={`Bình luận với tên ${currentUser?.displayName}...`}
+                                        placeholder={currentUser ? `Bình luận với tên ${currentUser.displayName}...` : "Viết bình luận của bạn (Ẩn danh)..."}
                                         value={commentText}
                                         onChange={(e) => setCommentText(e.target.value)}
                                     />
