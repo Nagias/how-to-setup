@@ -3,6 +3,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
 import './Header.css';
 
+
+
 const Header = () => {
     const {
         theme,
@@ -18,6 +20,7 @@ const Header = () => {
     } = useApp();
     const [searchExpanded, setSearchExpanded] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // New State
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -28,11 +31,25 @@ const Header = () => {
         }
     };
 
+    const closeMobileMenu = () => setMobileMenuOpen(false);
+
     return (
         <header className="header">
             <div className="container header-container">
+                {/* Mobile: Hamburger Button */}
+                <button
+                    className="btn-icon mobile-menu-toggle"
+                    onClick={() => setMobileMenuOpen(true)}
+                >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+
                 {/* Logo */}
-                <Link to="/" className="header-logo">
+                <Link to="/" className="header-logo" onClick={closeMobileMenu}>
                     <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
                         <rect width="32" height="32" rx="8" fill="url(#logo-gradient)" />
                         <path d="M8 12h16M8 16h16M8 20h12" stroke="white" strokeWidth="2" strokeLinecap="round" />
@@ -46,8 +63,8 @@ const Header = () => {
                     <span className="header-logo-text">DeskHub</span>
                 </Link>
 
-                {/* Navigation */}
-                <nav className="header-nav">
+                {/* Desktop Navigation */}
+                <nav className="header-nav desktop-only">
                     <Link to="/" className={`nav-link ${location.pathname === '/' || location.pathname === '/gallery' ? 'active' : ''}`}>
                         Bộ Sưu Tập
                     </Link>
@@ -58,9 +75,9 @@ const Header = () => {
 
                 {/* Actions */}
                 <div className="header-actions">
-                    {/* Admin Post Button */}
+                    {/* Admin Post Button (Desktop) */}
                     {currentUser?.role === 'admin' && (
-                        <>
+                        <div className="desktop-only" style={{ display: 'flex', alignItems: 'center' }}>
                             <Link
                                 to="/blog/new"
                                 className="btn"
@@ -86,7 +103,7 @@ const Header = () => {
                             >
                                 <span>+</span> Đăng Góc
                             </button>
-                        </>
+                        </div>
                     )}
 
                     {/* Search */}
@@ -94,7 +111,7 @@ const Header = () => {
                         <input
                             type="text"
                             className="search-input"
-                            placeholder="Tìm kiếm setup..."
+                            placeholder="Tìm kiếm..."
                             value={filters.search}
                             onChange={handleSearch}
                             onFocus={() => setSearchExpanded(true)}
@@ -105,9 +122,9 @@ const Header = () => {
                         </svg>
                     </div>
 
-                    {/* Collections */}
+                    {/* Collections (Desktop) */}
                     <button
-                        className="btn btn-icon"
+                        className="btn btn-icon desktop-only"
                         onClick={() => setShowCollectionsModal(true)}
                         title="Setup đã lưu"
                     >
@@ -116,8 +133,8 @@ const Header = () => {
                         </svg>
                     </button>
 
-                    {/* Theme Toggle */}
-                    <button className="btn btn-icon theme-toggle" onClick={toggleTheme} title="Đổi theme">
+                    {/* Theme Toggle (Desktop) */}
+                    <button className="btn btn-icon theme-toggle desktop-only" onClick={toggleTheme} title="Đổi theme">
                         {theme === 'light' ? (
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                                 <path d="M10 3V1M10 19v-2M17 10h2M1 10h2M15.657 4.343l1.414-1.414M3.343 16.657l1.414-1.414M15.657 15.657l1.414 1.414M3.343 3.343l1.414 1.414" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -130,14 +147,13 @@ const Header = () => {
                         )}
                     </button>
 
-                    {/* User Menu */}
-                    <div className="user-menu-container">
+                    {/* User Menu - Always visible but simplified on mobile? No, hide on mobile and put in drawer */}
+                    <div className="user-menu-container desktop-only">
                         <button
                             className="user-avatar-btn"
                             onClick={() => setShowUserMenu(!showUserMenu)}
                         >
                             <img src={currentUser?.avatar || `https://ui-avatars.com/api/?name=${currentUser?.displayName || 'Guest'}`} alt="" />
-                            {/* <span className="user-name">{currentUser?.displayName}</span> */}
                         </button>
 
                         {showUserMenu && (
@@ -147,7 +163,6 @@ const Header = () => {
                                     <div>
                                         <p className="user-menu-name">{currentUser?.displayName || 'Khách'}</p>
                                         <p className="user-menu-role">
-                                            {/* Logic for role display */}
                                             {!currentUser ? 'Chưa đăng nhập' :
                                                 currentUser.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}
                                         </p>
@@ -212,10 +227,68 @@ const Header = () => {
                 </div>
             </div>
 
-            {/* Overlay */}
+            {/* User Menu Overlay (Desktop) */}
             {showUserMenu && (
                 <div className="user-menu-overlay" onClick={() => setShowUserMenu(false)} />
             )}
+
+            {/* MOBILE MENU DRAWER */}
+            <>
+                <div className={`mobile-menu-backdrop ${mobileMenuOpen ? 'open' : ''}`} onClick={() => setMobileMenuOpen(false)}></div>
+                <div className={`mobile-menu-drawer ${mobileMenuOpen ? 'open' : ''}`}>
+                    <div className="mobile-menu-header">
+                        <h3>Menu</h3>
+                        <button className="btn-icon" onClick={() => setMobileMenuOpen(false)}>&times;</button>
+                    </div>
+
+                    {currentUser && (
+                        <div className="mobile-user-profile" onClick={() => { setShowProfileModal(true); closeMobileMenu(); }}>
+                            <img src={currentUser.avatar} alt="Avatar" />
+                            <div>
+                                <p className="name">{currentUser.displayName}</p>
+                                <p className="role">{currentUser.role === 'admin' ? 'Admin' : 'Member'}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="mobile-nav-links">
+                        <Link to="/" className={`mobile-nav-item ${location.pathname === '/' ? 'active' : ''}`} onClick={closeMobileMenu}>
+                            🏠 Trang Chủ
+                        </Link>
+                        <Link to="/blog" className={`mobile-nav-item ${location.pathname.startsWith('/blog') ? 'active' : ''}`} onClick={closeMobileMenu}>
+                            📰 Blog
+                        </Link>
+
+                        {currentUser?.role === 'admin' && (
+                            <Link to="/admin" className="mobile-nav-item" onClick={closeMobileMenu}>
+                                📊 Quản Lý (Admin)
+                            </Link>
+                        )}
+                    </div>
+
+                    <div className="mobile-actions">
+                        <button className="mobile-action-btn" onClick={() => { setShowCollectionsModal(true); closeMobileMenu(); }}>
+                            📦 Setup Đã Lưu
+                        </button>
+
+                        {currentUser?.role === 'admin' && (
+                            <button className="mobile-action-btn primary" onClick={() => { setShowAddSetupModal(true); closeMobileMenu(); }}>
+                                + Đăng Setup
+                            </button>
+                        )}
+
+                        {!currentUser && (
+                            <button className="mobile-action-btn primary" onClick={() => { setShowAuthModal(true); closeMobileMenu(); }}>
+                                🔐 Đăng Nhập
+                            </button>
+                        )}
+
+                        <button className="mobile-action-btn" onClick={toggleTheme}>
+                            {theme === 'light' ? '🌙 Chế Độ Tối' : '☀️ Chế Độ Sáng'}
+                        </button>
+                    </div>
+                </div>
+            </>
         </header>
     );
 };
