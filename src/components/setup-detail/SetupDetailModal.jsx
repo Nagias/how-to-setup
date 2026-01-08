@@ -19,6 +19,24 @@ const SetupDetailModal = () => {
         setShowAuthModal
     } = useApp();
     const [activeProduct, setActiveProduct] = useState(null);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [commentText, setCommentText] = useState('');
+    const [showProducts, setShowProducts] = useState(true);
+
+    if (!selectedSetup) return null;
+
+    const currentSetup = selectedSetup;
+    const mediaItems = [
+        { type: 'image', url: currentSetup.mainImage, products: currentSetup.products },
+        ...(currentSetup.moreImages || []).map(img => ({ type: 'image', url: img })),
+        ...(currentSetup.youtubeVideo ? [{ type: 'youtube', url: currentSetup.youtubeVideo, poster: currentSetup.mainImage }] : [])
+    ];
+    const currentMedia = mediaItems[currentImageIndex] || mediaItems[0];
+
+    const isLiked = hasUserLiked(currentSetup.id);
+    const isSaved = hasUserSaved(currentSetup.id);
+    const setupComments = getComments(currentSetup.id);
+    const similarSetups = getSimilarSetups(currentSetup.id);
 
     // Close tooltip when clicking background or image
     const handleImageAreaClick = () => {
