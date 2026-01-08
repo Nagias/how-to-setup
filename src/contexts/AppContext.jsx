@@ -164,12 +164,8 @@ export const AppProvider = ({ children }) => {
 
     // Toggle like
     const toggleLike = async (setupId) => {
-        if (!currentUser) {
-            setShowAuthModal(true);
-            return;
-        }
-
-        const res = await api.toggleLike(setupId, currentUser.id);
+        const user = currentUser || getCurrentUser();
+        const res = await api.toggleLike(setupId, user.id);
         if (res.success) {
             // Optimistic update or reload
             setSetups(prev => prev.map(s =>
@@ -197,11 +193,12 @@ export const AppProvider = ({ children }) => {
 
     // Get user's saved setups
     const getSavedSetups = () => {
-        if (!currentUser) return [];
+        const user = currentUser || getCurrentUser();
+        if (!user) return [];
         return setups.filter(setup => {
             const saves = setup.saves || [];
             // Check formatted save object { userId, timestamp } or string ID
-            return saves.some(s => (s.userId === currentUser.id || s === currentUser.id));
+            return saves.some(s => (s.userId === user.id || s === user.id));
         });
     };
 
@@ -212,29 +209,26 @@ export const AppProvider = ({ children }) => {
 
     // Check if user liked/saved
     const hasUserLiked = (setupId) => {
-        if (!currentUser) return false;
+        const user = currentUser || getCurrentUser();
+        if (!user) return false;
         const setup = setups.find(s => s.id === setupId);
         if (!setup) return false;
         const likes = setup.likes || [];
-        return likes.some(l => (l.userId === currentUser.id || l === currentUser.id));
+        return likes.some(l => (l.userId === user.id || l === user.id));
     };
 
     const hasUserSaved = (setupId) => {
-        if (!currentUser) return false;
+        const user = currentUser || getCurrentUser();
+        if (!user) return false;
         const setup = setups.find(s => s.id === setupId);
         if (!setup) return false;
         const saves = setup.saves || [];
-        return saves.some(s => (s.userId === currentUser.id || s === currentUser.id));
+        return saves.some(s => (s.userId === user.id || s === user.id));
     };
 
     // Add comment
     const addComment = async (setupId, commentText, authorName) => {
-        if (!currentUser) {
-            setShowAuthModal(true);
-            return;
-        }
-
-        const user = currentUser;
+        const user = currentUser || getCurrentUser();
         const comment = {
             text: commentText,
             author: authorName || user.displayName,

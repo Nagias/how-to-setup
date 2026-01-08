@@ -232,7 +232,7 @@ const SetupDetailModal = () => {
                             <div className="detail-actions">
                                 <button
                                     className={`action-btn-large ${isLiked ? 'active' : ''}`}
-                                    onClick={() => toggleLike(currentSetup.id)}
+                                    onClick={handleLike}
                                 >
                                     <svg width="24" height="24" viewBox="0 0 20 20" fill={isLiked ? 'currentColor' : 'none'}>
                                         <path d="M10 17.5l-1.45-1.32C4.4 12.36 2 10.28 2 7.5 2 5.42 3.42 4 5.5 4c1.74 0 3.41.81 4.5 2.09C11.09 4.81 12.76 4 14.5 4 16.58 4 18 5.42 18 7.5c0 2.78-2.4 4.86-6.55 8.68L10 17.5z" stroke="currentColor" strokeWidth="1.5" />
