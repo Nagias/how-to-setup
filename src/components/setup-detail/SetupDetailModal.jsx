@@ -326,7 +326,7 @@ const SetupDetailModal = () => {
                 </div>
             </div>
 
-            {/* Product Tooltip Portal - Render outside modal to avoid z-index issues */}
+            {/* Product Tooltip Portal - E-commerce Style UI */}
             {activeProduct && ReactDOM.createPortal(
                 <div
                     className="product-tooltip-portal"
@@ -335,62 +335,113 @@ const SetupDetailModal = () => {
                         bottom: '20px',
                         left: '50%',
                         transform: 'translateX(-50%)',
-                        width: '95%',
-                        maxWidth: '400px',
-                        background: 'rgba(20, 20, 20, 0.95)',
-                        backdropFilter: 'blur(12px)',
-                        color: 'white',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        padding: 'var(--space-md)',
+                        width: '90%',
+                        maxWidth: '380px',
+                        background: 'white',
+                        color: '#333',
+                        border: 'none',
+                        padding: '20px',
                         zIndex: 99999,
-                        boxShadow: '0 -4px 30px rgba(0, 0, 0, 0.5)',
-                        borderRadius: 'var(--radius-xl)',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)',
+                        borderRadius: '16px',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '8px'
+                        gap: '12px',
+                        animation: 'slideUpFade 0.3s ease-out'
                     }}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <p style={{ fontSize: 'var(--font-size-base)', fontWeight: 700, color: 'white', margin: 0, flex: 1 }}>
-                            {activeProduct.name}
-                        </p>
-                        <button
-                            style={{
-                                background: 'none',
-                                border: 'none',
-                                color: 'rgba(255, 255, 255, 0.7)',
-                                fontSize: '18px',
-                                padding: '4px',
-                                cursor: 'pointer'
-                            }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveProduct(null);
-                            }}
-                        >✕</button>
-                    </div>
-                    <p style={{ fontSize: 'var(--font-size-md)', color: 'var(--color-primary)', fontWeight: 700, margin: 0 }}>
+                    {/* Close Button */}
+                    <button
+                        style={{
+                            position: 'absolute',
+                            top: '12px',
+                            right: '12px',
+                            background: 'rgba(0, 0, 0, 0.05)',
+                            border: 'none',
+                            color: '#666',
+                            fontSize: '20px',
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s',
+                            lineHeight: '1'
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveProduct(null);
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.background = 'rgba(0, 0, 0, 0.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.background = 'rgba(0, 0, 0, 0.05)';
+                        }}
+                    >×</button>
+
+                    {/* Product Name */}
+                    <h3 style={{
+                        fontSize: '16px',
+                        fontWeight: 600,
+                        color: '#1a1a1a',
+                        margin: '0 24px 0 0',
+                        lineHeight: '1.4',
+                        paddingRight: '8px'
+                    }}>
+                        {activeProduct.name}
+                    </h3>
+
+                    {/* Price - Large and Orange */}
+                    <div style={{
+                        fontSize: '28px',
+                        fontWeight: 700,
+                        color: '#ff6b35',
+                        margin: '4px 0',
+                        lineHeight: '1.2'
+                    }}>
                         {activeProduct.price}
-                    </p>
+                    </div>
+
+                    {/* CTA Button - Orange */}
                     {activeProduct.link && (
                         <a
                             href={activeProduct.link}
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{
-                                fontSize: 'var(--font-size-sm)',
+                                fontSize: '15px',
+                                fontWeight: 600,
                                 color: 'white',
                                 textDecoration: 'none',
-                                background: 'var(--color-primary)',
-                                padding: '8px 16px',
-                                borderRadius: 'var(--radius-full)',
-                                alignSelf: 'flex-end',
-                                display: 'inline-block',
-                                fontWeight: 600
+                                background: 'linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%)',
+                                padding: '14px 24px',
+                                borderRadius: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                marginTop: '8px',
+                                boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)',
+                                transition: 'all 0.2s',
+                                border: 'none'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.transform = 'translateY(-2px)';
+                                e.target.style.boxShadow = '0 6px 16px rgba(255, 107, 53, 0.4)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.transform = 'translateY(0)';
+                                e.target.style.boxShadow = '0 4px 12px rgba(255, 107, 53, 0.3)';
                             }}
                         >
-                            Xem sản phẩm →
+                            <span>Xem sản phẩm</span>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginTop: '1px' }}>
+                                <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
                         </a>
                     )}
                 </div>,
