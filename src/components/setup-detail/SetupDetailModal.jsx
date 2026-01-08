@@ -15,7 +15,8 @@ const SetupDetailModal = () => {
         hasUserSaved,
         getSimilarSetups,
         currentUser,
-        setups
+        setups,
+        setShowAuthModal
     } = useApp();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [commentText, setCommentText] = useState('');
@@ -357,19 +358,32 @@ const SetupDetailModal = () => {
                             <form className="comment-form" onSubmit={handleSubmitComment}>
                                 <div className="comment-input-wrapper">
                                     <img
-                                        src={currentUser?.avatar || 'https://ui-avatars.com/api/?name=Guest&background=random'}
+                                        src={currentUser?.avatar || 'https://ui-avatars.com/api/?name=User&background=random'}
                                         alt="Avatar"
                                         className="comment-user-avatar"
                                     />
                                     <input
                                         type="text"
                                         className="input comment-input"
-                                        placeholder={currentUser ? `Bình luận với tên ${currentUser.displayName}...` : "Viết bình luận của bạn (Ẩn danh)..."}
+                                        placeholder={currentUser ? `Bình luận với tên ${currentUser.displayName}...` : "Đăng nhập để bình luận..."}
                                         value={commentText}
                                         onChange={(e) => setCommentText(e.target.value)}
+                                        onClick={() => !currentUser && setShowAuthModal(true)}
                                     />
                                 </div>
-                                <button type="submit" className="btn btn-primary" disabled={!commentText.trim()}>Gửi</button>
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary"
+                                    disabled={!commentText.trim()}
+                                    onClick={(e) => {
+                                        if (!currentUser) {
+                                            e.preventDefault();
+                                            setShowAuthModal(true);
+                                        }
+                                    }}
+                                >
+                                    Gửi
+                                </button>
                             </form>
                             <div className="comments-list">
                                 {setupComments.length === 0 ? (
