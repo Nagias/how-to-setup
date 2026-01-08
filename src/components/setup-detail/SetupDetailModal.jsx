@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import ReactDOM from 'react-dom';
 import { useApp } from '../../contexts/AppContext';
 import SeoHead from '../common/SeoHead';
 import './SetupDetailModal.css';
@@ -146,41 +147,6 @@ const SetupDetailModal = () => {
                                             onActivate={setActiveProduct}
                                         />
                                     ))}
-
-                                    {/* Render Active Tooltip HERE (Sibling to markers) */}
-                                    {activeProduct && (
-                                        <div
-                                            className="product-tooltip standalone-tooltip"
-                                            style={{
-                                                '--x': `${activeProduct.x}%`,
-                                                '--y': `${activeProduct.y}%`
-                                            }}
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <div className="tooltip-header">
-                                                <p className="product-name">{activeProduct.name}</p>
-                                                {/* Close button for mobile comfort */}
-                                                <button
-                                                    className="tooltip-close-btn mobile-only"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setActiveProduct(null);
-                                                    }}
-                                                >✕</button>
-                                            </div>
-                                            <p className="product-price">{activeProduct.price}</p>
-                                            {activeProduct.link && (
-                                                <a
-                                                    href={activeProduct.link}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="product-link"
-                                                >
-                                                    Xem sản phẩm →
-                                                </a>
-                                            )}
-                                        </div>
-                                    )}
 
                                     <button
                                         className="toggle-products-btn"
@@ -359,6 +325,77 @@ const SetupDetailModal = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Product Tooltip Portal - Render outside modal to avoid z-index issues */}
+            {activeProduct && ReactDOM.createPortal(
+                <div
+                    className="product-tooltip-portal"
+                    style={{
+                        position: 'fixed',
+                        bottom: '20px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: '95%',
+                        maxWidth: '400px',
+                        background: 'rgba(20, 20, 20, 0.95)',
+                        backdropFilter: 'blur(12px)',
+                        color: 'white',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        padding: 'var(--space-md)',
+                        zIndex: 99999,
+                        boxShadow: '0 -4px 30px rgba(0, 0, 0, 0.5)',
+                        borderRadius: 'var(--radius-xl)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px'
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <p style={{ fontSize: 'var(--font-size-base)', fontWeight: 700, color: 'white', margin: 0, flex: 1 }}>
+                            {activeProduct.name}
+                        </p>
+                        <button
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                fontSize: '18px',
+                                padding: '4px',
+                                cursor: 'pointer'
+                            }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveProduct(null);
+                            }}
+                        >✕</button>
+                    </div>
+                    <p style={{ fontSize: 'var(--font-size-md)', color: 'var(--color-primary)', fontWeight: 700, margin: 0 }}>
+                        {activeProduct.price}
+                    </p>
+                    {activeProduct.link && (
+                        <a
+                            href={activeProduct.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                fontSize: 'var(--font-size-sm)',
+                                color: 'white',
+                                textDecoration: 'none',
+                                background: 'var(--color-primary)',
+                                padding: '8px 16px',
+                                borderRadius: 'var(--radius-full)',
+                                alignSelf: 'flex-end',
+                                display: 'inline-block',
+                                fontWeight: 600
+                            }}
+                        >
+                            Xem sản phẩm →
+                        </a>
+                    )}
+                </div>,
+                document.body
+            )}
         </div >
     );
 };
