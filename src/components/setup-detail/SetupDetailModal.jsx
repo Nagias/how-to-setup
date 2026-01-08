@@ -18,137 +18,11 @@ const SetupDetailModal = () => {
         setups,
         setShowAuthModal
     } = useApp();
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [commentText, setCommentText] = useState('');
-    const [showProducts, setShowProducts] = useState(true);
+    const [activeProduct, setActiveProduct] = useState(null);
 
-    if (!selectedSetup) return null;
-
-    // Data reactive
-    const currentSetup = setups.find(s => s.id === selectedSetup.id) || selectedSetup;
-
-    // Logic gộp Video và Ảnh thành list media
-    // Support both old format (images[]) and new format (media[])
-    const mediaItems = useMemo(() => {
-        let items = [];
-
-        // Support YouTube video (NEW FORMAT)
-        if (currentSetup.youtubeVideoId) {
-            items.push({
-                type: 'youtube',
-                videoId: currentSetup.youtubeVideoId,
-                url: `https://www.youtube.com/embed/${currentSetup.youtubeVideoId}`,
-                poster: currentSetup.videoThumbnail || `https://img.youtube.com/vi/${currentSetup.youtubeVideoId}/maxresdefault.jpg`,
-                products: []
-            });
-        }
-        // Fallback: Support old thumbnailVideo field (demo data)
-        else if (currentSetup.thumbnailVideo) {
-            items.push({
-                type: 'video',
-                url: currentSetup.thumbnailVideo,
-                poster: currentSetup.mainImage,
-                products: []
-            });
-        }
-
-        // Support media array (new format) - check this first
-        if (currentSetup.media && Array.isArray(currentSetup.media)) {
-            currentSetup.media.forEach(m => {
-                // Check for YouTube (new structure or legacy 'youtube' type)
-                if (m.platform === 'youtube' || m.type === 'youtube') {
-                    // Extract ID if missing in object but present in URL
-                    let vId = m.videoId;
-                    if (!vId && m.url) {
-                        const match = m.url.match(/\/embed\/([^/?]+)/);
-                        if (match) vId = match[1];
-                    }
-
-                    items.push({
-                        type: 'youtube',
-                        videoId: vId || currentSetup.youtubeVideoId,
-                        url: m.url || `https://www.youtube.com/embed/${vId}`,
-                        poster: m.thumbnail || m.thumb || m.poster || `https://img.youtube.com/vi/${vId}/maxresdefault.jpg`,
-                        products: m.products || []
-                    });
-                }
-                // Check for normal images
-                else if (m.type === 'image') {
-                    items.push(m);
-                }
-                // Check for traditional videos
-                else if (m.type === 'video' && !m.platform) {
-                    items.push({
-                        ...m,
-                        type: 'video'
-                    });
-                }
-            });
-        }
-        // Fallback to images array (old format - sample data)
-        else if (currentSetup.images && Array.isArray(currentSetup.images)) {
-            items = [...items, ...currentSetup.images.map(img => ({
-                ...img,
-                type: 'image',
-                products: img.products || []
-            }))];
-        }
-
-        return items;
-    }, [currentSetup]);
-
-    // Handle index overflow if media list changes
-    const activeIndex = currentImageIndex >= mediaItems.length ? 0 : currentImageIndex;
-    // Add fallback to prevent crashes if mediaItems is empty
-    const currentMedia = mediaItems[activeIndex] || {
-        type: 'image',
-        url: currentSetup.mainImage || '',
-        products: []
-    };
-
-    const isLiked = hasUserLiked(currentSetup.id);
-    const isSaved = hasUserSaved(currentSetup.id);
-    const setupComments = getComments(currentSetup.id);
-    const similarSetups = getSimilarSetups(currentSetup.id);
-
-    const handleClose = () => {
-        setSelectedSetup(null);
-        setCurrentImageIndex(0);
-        setCommentText('');
-    };
-
-    const handleSubmitComment = (e) => {
-        e.preventDefault();
-        if (commentText.trim()) {
-            addComment(currentSetup.id, commentText);
-            setCommentText('');
-        }
-    };
-
-    const handleOverlayClick = (e) => {
-        if (e.target === e.currentTarget) {
-            handleClose();
-        }
-    };
-
-    // Schema SEO
-    const schema = {
-        "@context": "https://schema.org",
-        "@type": "CreativeWork",
-        "name": currentSetup.title,
-        "image": currentSetup.mainImage,
-        "creator": {
-            "@type": "Person",
-            "name": currentSetup.author.name
-        },
-        "description": currentSetup.caption,
-        "interactionStatistic": [
-            {
-                "@type": "InteractionCounter",
-                "interactionType": "https://schema.org/LikeAction",
-                "userInteractionCount": currentSetup.likes?.length || 0
-            }
-        ]
+    // Close tooltip when clicking background or image
+    const handleImageAreaClick = () => {
+        if (activeProduct) setActiveProduct(null);
     };
 
     return (
@@ -170,7 +44,7 @@ const SetupDetailModal = () => {
                 <div className="modal-layout">
                     {/* Left: Media Gallery */}
                     <div className="modal-gallery">
-                        <div className="main-image-container">
+                        <div className="main-image-container" onClick={handleImageAreaClick}>
                             {currentMedia.type === 'video' ? (
                                 <video
                                     src={currentMedia.url}
@@ -253,12 +127,55 @@ const SetupDetailModal = () => {
                                     />
                                     {/* Product Markers (Only for images) */}
                                     {showProducts && currentMedia.products && Array.isArray(currentMedia.products) && currentMedia.products.map((product, index) => (
-                                        <ProductMarker key={index} product={product} />
+                                        <ProductMarker
+                                            key={index}
+                                            product={product}
+                                            isActive={activeProduct === product}
+                                            onActivate={setActiveProduct}
+                                        />
                                     ))}
+
+                                    {/* Render Active Tooltip HERE (Sibling to markers) */}
+                                    {activeProduct && (
+                                        <div
+                                            className="product-tooltip standalone-tooltip"
+                                            style={{
+                                                '--x': `${activeProduct.x}%`,
+                                                '--y': `${activeProduct.y}%`
+                                            }}
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <div className="tooltip-header">
+                                                <p className="product-name">{activeProduct.name}</p>
+                                                {/* Close button for mobile comfort */}
+                                                <button
+                                                    className="tooltip-close-btn mobile-only"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setActiveProduct(null);
+                                                    }}
+                                                >✕</button>
+                                            </div>
+                                            <p className="product-price">{activeProduct.price}</p>
+                                            {activeProduct.link && (
+                                                <a
+                                                    href={activeProduct.link}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="product-link"
+                                                >
+                                                    Xem sản phẩm →
+                                                </a>
+                                            )}
+                                        </div>
+                                    )}
 
                                     <button
                                         className="toggle-products-btn"
-                                        onClick={() => setShowProducts(!showProducts)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowProducts(!showProducts);
+                                        }}
                                     >
                                         {showProducts ? 'Ẩn sản phẩm' : 'Hiện sản phẩm'}
                                     </button>
@@ -434,46 +351,27 @@ const SetupDetailModal = () => {
     );
 };
 
-const ProductMarker = ({ product }) => {
-    const [showTooltip, setShowTooltip] = useState(false);
-
+const ProductMarker = ({ product, isActive, onActivate }) => {
     // Toggle on click for mobile mainly
-    const handleToggle = (e) => {
+    const handleClick = (e) => {
         e.stopPropagation(); // Prevent image click handling
-        setShowTooltip(!showTooltip);
+        onActivate(isActive ? null : product);
     };
 
     return (
         <div
             className="product-marker"
             style={{ left: `${product.x}%`, top: `${product.y}%` }}
-            onMouseEnter={() => setShowTooltip(true)}
-            onMouseLeave={() => setShowTooltip(false)}
-            onClick={handleToggle}
+            onMouseEnter={() => onActivate(product)}
+            // onMouseLeave={() => onActivate(null)} // Disabled to keep it open on hover for stability
+            onClick={handleClick}
         >
-            <button className="marker-btn">
+            <button className={`marker-btn ${isActive ? 'active' : ''}`}>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                     <circle cx="10" cy="10" r="8" fill="var(--color-primary)" />
                     <path d="M10 6v8M6 10h8" stroke="white" strokeWidth="2" strokeLinecap="round" />
                 </svg>
             </button>
-
-            {showTooltip && (
-                <div className="product-tooltip" onClick={(e) => e.stopPropagation()}>
-                    <p className="product-name">{product.name}</p>
-                    <p className="product-price">{product.price}</p>
-                    {product.link && (
-                        <a
-                            href={product.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="product-link"
-                        >
-                            Xem sản phẩm →
-                        </a>
-                    )}
-                </div>
-            )}
         </div>
     );
 };
