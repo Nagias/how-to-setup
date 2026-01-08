@@ -515,45 +515,107 @@
         padding: var(--space-md);
     }
 
+    /* Reduce detail section height to allow image to be prominent */
+    .modal-details {
+        padding-top: 0;
+        /* Connect visually with image */
+    }
+
     .detail-header {
         flex-direction: column;
+        gap: var(--space-sm);
+        padding-bottom: var(--space-md);
+    }
+
+    .detail-title {
+        font-size: var(--font-size-xl);
+        /* Smaller Title */
+    }
+
+    .detail-caption {
+        font-size: var(--font-size-sm);
+        line-height: 1.5;
     }
 
     .similar-grid {
         grid-template-columns: 1fr;
     }
 
-    /* Mobile styles for Product Popup */
+    /* Mobile styles for Product Popup - FIXED BOTTOM SHEET STYLE */
     .product-tooltip {
-        min-width: auto;
-        width: max-content;
-        max-width: 200px;
-        /* Prevent it from being too wide */
-        padding: var(--space-xs) var(--space-sm);
-        margin-top: 5px;
+        position: fixed;
+        top: auto;
+        bottom: 80px;
+        /* Above potential bottom bars */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 400px;
+        min-width: 0;
+
+        background: rgba(30, 41, 59, 0.95);
+        /* Darker, high contrast background */
+        backdrop-filter: blur(8px);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+
+        padding: var(--space-md);
+        margin-top: 0;
+        z-index: 2000;
+        /* Highest z-index */
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Hide the little arrow since it's detached */
+    .product-tooltip::before {
+        display: none;
     }
 
     .product-name {
-        font-size: var(--font-size-sm);
+        font-size: var(--font-size-base);
+        color: white;
         margin-bottom: 2px;
+        white-space: normal;
+        /* Allow wrap */
     }
 
     .product-price {
-        font-size: 0.9rem;
-        margin-bottom: 2px;
+        font-size: var(--font-size-sm);
+        color: var(--color-primary-light);
+        margin-bottom: 4px;
     }
 
     .product-link {
-        font-size: 0.8rem;
+        font-size: var(--font-size-sm);
+        color: var(--color-accent);
+        text-decoration: underline;
+        align-self: flex-end;
+        /* Put action on right */
     }
 
-    /* Ensure image fits nicely */
+    /* Ensure image fits nicely - FIXED HEIGHT to avoid scroll */
     .main-image-container {
-        /* On mobile, we might want to let it take height as needed, but max-height helps context */
-        max-height: 60vh;
+        /* Force a specific max-height so it fits in the top half/two-thirds of screen */
+        max-height: 55vh;
+        background: black;
+        /* Better contrast for contained images */
     }
 
     .main-image {
-        max-height: 60vh;
+        max-height: 55vh;
+        width: auto;
+        max-width: 100%;
+        object-fit: contain;
+        /* Ensure full image is visible */
+    }
+
+    .main-image-container video,
+    .main-image-container iframe {
+        max-height: 55vh;
     }
 }
