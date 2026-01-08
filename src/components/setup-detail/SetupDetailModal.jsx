@@ -244,7 +244,7 @@ const SetupDetailModal = () => {
                                     );
                                 })()
                             ) : (
-                                <>
+                                <div className="image-wrapper-relative">
                                     <img
                                         src={currentMedia.url}
                                         alt={currentSetup.title}
@@ -261,7 +261,7 @@ const SetupDetailModal = () => {
                                     >
                                         {showProducts ? 'Ẩn sản phẩm' : 'Hiện sản phẩm'}
                                     </button>
-                                </>
+                                </div>
                             )}
                         </div>
 

@@ -59,7 +59,27 @@
     justify-content: center;
 }
 
-.main-image,
+.image-wrapper-relative {
+    position: relative;
+    display: flex;
+    /* Helps with centering if needed */
+    justify-content: center;
+    align-items: center;
+    max-width: 100%;
+    max-height: 80vh;
+}
+
+.main-image {
+    display: block;
+    max-width: 100%;
+    max-height: 80vh;
+    width: auto;
+    /* Allow width to adjust naturally */
+    height: auto;
+    /* Allow height to adjust naturally */
+    object-fit: contain;
+}
+
 .main-image-container video,
 .main-image-container iframe {
     width: 100%;

@@ -395,6 +395,10 @@ export const api = {
             if (error.code === 'storage/unauthorized') {
                 throw new Error("Không có quyền tải lên (Lỗi Storage Rules)");
             }
+            // Helper for CORS/Network issues which often appear as 'storage/unknown' or generic errors
+            if (error.message.includes('network') || error.code === 'storage/retry-limit-exceeded' || error.code === 'storage/unknown') {
+                console.warn("Potential CORS or Network issue. Ensure cors.json is configured on the bucket.");
+            }
             throw error;
         }
     },
