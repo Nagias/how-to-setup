@@ -337,12 +337,13 @@ const SetupDetailModal = () => {
                         transform: 'translateX(-50%)',
                         width: '90%',
                         maxWidth: '380px',
-                        background: 'white',
-                        color: '#333',
-                        border: 'none',
+                        background: 'rgba(20, 20, 20, 0.95)',
+                        backdropFilter: 'blur(12px)',
+                        color: 'white',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
                         padding: '20px',
                         zIndex: 99999,
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3)',
                         borderRadius: '16px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -357,9 +358,9 @@ const SetupDetailModal = () => {
                             position: 'absolute',
                             top: '12px',
                             right: '12px',
-                            background: 'rgba(0, 0, 0, 0.05)',
+                            background: 'rgba(255, 255, 255, 0.1)',
                             border: 'none',
-                            color: '#666',
+                            color: 'rgba(255, 255, 255, 0.7)',
                             fontSize: '20px',
                             width: '32px',
                             height: '32px',
@@ -376,10 +377,10 @@ const SetupDetailModal = () => {
                             setActiveProduct(null);
                         }}
                         onMouseEnter={(e) => {
-                            e.target.style.background = 'rgba(0, 0, 0, 0.1)';
+                            e.target.style.background = 'rgba(255, 255, 255, 0.2)';
                         }}
                         onMouseLeave={(e) => {
-                            e.target.style.background = 'rgba(0, 0, 0, 0.05)';
+                            e.target.style.background = 'rgba(255, 255, 255, 0.1)';
                         }}
                     >×</button>
 
@@ -387,7 +388,7 @@ const SetupDetailModal = () => {
                     <h3 style={{
                         fontSize: '16px',
                         fontWeight: 600,
-                        color: '#1a1a1a',
+                        color: 'white',
                         margin: '0 24px 0 0',
                         lineHeight: '1.4',
                         paddingRight: '8px'
@@ -425,17 +426,17 @@ const SetupDetailModal = () => {
                                 justifyContent: 'center',
                                 gap: '8px',
                                 marginTop: '8px',
-                                boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)',
+                                boxShadow: '0 4px 12px rgba(255, 107, 53, 0.4)',
                                 transition: 'all 0.2s',
                                 border: 'none'
                             }}
                             onMouseEnter={(e) => {
                                 e.target.style.transform = 'translateY(-2px)';
-                                e.target.style.boxShadow = '0 6px 16px rgba(255, 107, 53, 0.4)';
+                                e.target.style.boxShadow = '0 6px 16px rgba(255, 107, 53, 0.5)';
                             }}
                             onMouseLeave={(e) => {
                                 e.target.style.transform = 'translateY(0)';
-                                e.target.style.boxShadow = '0 4px 12px rgba(255, 107, 53, 0.3)';
+                                e.target.style.boxShadow = '0 4px 12px rgba(255, 107, 53, 0.4)';
                             }}
                         >
                             <span>Xem sản phẩm</span>
