@@ -420,12 +420,19 @@ const SetupDetailModal = () => {
 const ProductMarker = ({ product }) => {
     const [showTooltip, setShowTooltip] = useState(false);
 
+    // Toggle on click for mobile mainly
+    const handleToggle = (e) => {
+        e.stopPropagation(); // Prevent image click handling
+        setShowTooltip(!showTooltip);
+    };
+
     return (
         <div
             className="product-marker"
             style={{ left: `${product.x}%`, top: `${product.y}%` }}
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
+            onClick={handleToggle}
         >
             <button className="marker-btn">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -435,12 +442,19 @@ const ProductMarker = ({ product }) => {
             </button>
 
             {showTooltip && (
-                <div className="product-tooltip">
+                <div className="product-tooltip" onClick={(e) => e.stopPropagation()}>
                     <p className="product-name">{product.name}</p>
                     <p className="product-price">{product.price}</p>
-                    <a href={product.link} className="product-link" onClick={(e) => e.stopPropagation()}>
-                        Xem sản phẩm →
-                    </a>
+                    {product.link && (
+                        <a
+                            href={product.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="product-link"
+                        >
+                            Xem sản phẩm →
+                        </a>
+                    )}
                 </div>
             )}
         </div>
