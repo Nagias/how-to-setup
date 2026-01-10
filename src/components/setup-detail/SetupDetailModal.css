@@ -789,10 +789,9 @@
         /* Scroll the whole layout if needed, but image should fit */
     }
 
-    /* Gallery Section - Takes top priority, minimal top padding */
+    /* Gallery Section - Takes top priority, NO top padding */
     .modal-gallery {
         padding: 0;
-        padding-top: 4px;
         background: black;
         flex-shrink: 0;
     }
@@ -854,14 +853,14 @@
 
     /* Ensure image fits nicely - MAXIMIZED for mobile vertical screens */
     .main-image-container {
-        /* Maximize height for mobile vertical viewing - reduced top gap */
+        /* Maximize height for mobile vertical viewing - NO top gap */
         max-height: 75vh;
         min-height: 50vh;
         background: black;
         display: flex;
         align-items: flex-start;
         justify-content: center;
-        padding-top: 2px;
+        padding-top: 0;
     }
 
     .main-image {
