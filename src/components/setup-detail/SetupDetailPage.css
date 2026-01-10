@@ -227,45 +227,77 @@
 
 @media (max-width: 768px) {
     .setup-detail-page {
-        padding-top: 60px;
+        padding-top: 0;
+        background: black;
     }
 
+    /* Back button - Icon only, inside image area, fixed position */
     .back-btn {
+        position: fixed;
         top: 70px;
         left: var(--space-md);
-        padding: var(--space-xs) var(--space-md);
-        font-size: var(--font-size-sm);
+        z-index: 1000;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        font-size: 0;
+        /* Hide any text */
     }
 
-    .setup-content {
-        padding: var(--space-md);
-        gap: var(--space-lg);
-    }
-
-    .setup-main-image {
-        max-height: 70vh;
-        border-radius: var(--radius-lg);
-    }
-
-    .setup-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .author-avatar {
-        width: 48px;
-        height: 48px;
-    }
-
-    .setup-title {
-        font-size: var(--font-size-xl);
-    }
-
-    .action-btn span {
+    .back-btn span {
         display: none;
     }
 
-    .action-btn {
+    .back-btn:hover {
+        transform: none;
+        background: rgba(0, 0, 0, 0.7);
+    }
+
+    .setup-content {
+        padding: 0;
+        gap: 0;
+    }
+
+    /* Gallery section - NO top gap, image close to menu */
+    .setup-gallery-section {
+        background: black;
+    }
+
+    .setup-main-image-container {
+        border-radius: 0;
+        background: black;
+    }
+
+    .setup-main-image {
+        max-height: 75vh;
+        border-radius: 0;
+        width: 100%;
+    }
+
+    /* Details section - card style below image */
+    .setup-details-section {
+        padding: var(--space-md);
+        background: var(--color-surface);
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        margin-top: -16px;
+        position: relative;
+        z-index: 10;
+    }
+
+    .action-btn-large span {
+        display: none;
+    }
+
+    .action-btn-large {
         padding: var(--space-sm);
     }
 }

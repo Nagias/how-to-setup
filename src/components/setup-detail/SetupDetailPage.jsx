@@ -169,12 +169,11 @@ const SetupDetailPage = () => {
             />
 
             <div className="setup-detail-page">
-                {/* Back button */}
-                <button className="back-btn" onClick={() => navigate(-1)}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M19 12H5M5 12l7 7M5 12l7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                {/* Back button - Icon only, overlays on image */}
+                <button className="back-btn" onClick={() => navigate(-1)} aria-label="Quay lại">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    <span>Quay lại</span>
                 </button>
 
                 {/* Swipe hint popup for mobile */}
