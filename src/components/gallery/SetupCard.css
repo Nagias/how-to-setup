@@ -107,12 +107,19 @@
 .action-btn svg {
     width: 20px;
     height: 20px;
-    stroke-width: 2;
+    stroke: currentColor;
+    fill: none;
+}
+
+.action-btn svg[fill="currentColor"] {
+    fill: currentColor;
+    stroke: none;
 }
 
 .action-btn:hover {
     transform: scale(1.1);
     background: white;
+    color: var(--color-primary);
 }
 
 .action-btn.active {
@@ -132,6 +139,7 @@
 
 [data-theme="dark"] .action-btn:hover {
     background: rgba(40, 40, 50, 1);
+    color: white;
 }
 
 /* Tags */
