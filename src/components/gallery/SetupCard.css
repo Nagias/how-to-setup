@@ -258,19 +258,6 @@
     pointer-events: auto;
 }
 
-/* Allow clicks to pass through the area above popup */
-.mobile-menu-popup::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 40vh;
-    /* Match max-height */
-    pointer-events: none;
-    /* Clicks pass through */
-}
-
 @keyframes fadeIn {
     from {
         opacity: 0;
