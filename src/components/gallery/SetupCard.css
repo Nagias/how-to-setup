@@ -7,16 +7,13 @@
     overflow: hidden;
     background: var(--color-surface);
     box-shadow: var(--shadow-sm);
-    transition: all var(--transition-base);
     cursor: pointer;
-    /* Remove any outline that might appear */
     outline: none;
     border: none;
 }
 
 .setup-card:hover {
     box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
 }
 
 .setup-card:focus {
@@ -45,9 +42,7 @@
     opacity: 1;
 }
 
-.setup-card:hover .setup-card-image {
-    transform: scale(1.05);
-}
+/* Removed transform scale to prevent mobile rendering issues */
 
 .skeleton-image-placeholder {
     position: absolute;
