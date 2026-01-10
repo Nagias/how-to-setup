@@ -684,10 +684,10 @@ const ProductMarker = ({ product, isActive, onActivate }) => {
                     className="product-tooltip-desktop"
                     style={{
                         position: 'absolute',
-                        left: '100%',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        marginLeft: '12px',
+                        left: '50%',
+                        bottom: '100%',
+                        transform: 'translateX(-50%) translateY(-8px)',
+                        marginBottom: '8px',
                         background: 'white',
                         color: '#333',
                         padding: '16px',
@@ -761,18 +761,18 @@ const ProductMarker = ({ product, isActive, onActivate }) => {
                         </a>
                     )}
 
-                    {/* Arrow pointing to marker */}
+                    {/* Arrow pointing down to marker */}
                     <div style={{
                         position: 'absolute',
-                        right: '100%',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
+                        top: '100%',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
                         width: 0,
                         height: 0,
-                        borderTop: '8px solid transparent',
-                        borderBottom: '8px solid transparent',
-                        borderRight: '8px solid white',
-                        filter: 'drop-shadow(-1px 0 1px rgba(0, 0, 0, 0.05))'
+                        borderLeft: '8px solid transparent',
+                        borderRight: '8px solid transparent',
+                        borderTop: '8px solid white',
+                        filter: 'drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05))'
                     }}></div>
                 </div>
             )}
