@@ -9,6 +9,7 @@ const SetupCard = ({ setup, index }) => {
     const [imageError, setImageError] = useState(false);
     const videoRef = useRef(null);
     const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+    const [showMobileMenu, setShowMobileMenu] = useState(false);
 
     const isLiked = hasUserLiked(setup.id);
     const isSaved = hasUserSaved(setup.id);
@@ -17,12 +18,14 @@ const SetupCard = ({ setup, index }) => {
         e.preventDefault();
         e.stopPropagation();
         toggleLike(setup.id);
+        setShowMobileMenu(false);
     };
 
     const handleSave = (e) => {
         e.preventDefault();
         e.stopPropagation();
         toggleSave(setup.id);
+        setShowMobileMenu(false);
     };
 
     const handleShare = (e) => {
@@ -39,6 +42,13 @@ const SetupCard = ({ setup, index }) => {
             navigator.clipboard.writeText(setupUrl);
             alert('Đã copy link!');
         }
+        setShowMobileMenu(false);
+    };
+
+    const toggleMobileMenu = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowMobileMenu(!showMobileMenu);
     };
 
     const handleMouseEnter = () => {
@@ -188,6 +198,43 @@ const SetupCard = ({ setup, index }) => {
                         <span key={tag} className="tag">#{tag}</span>
                     ))}
                 </div>
+
+                {/* Mobile Menu Button - Pinterest style */}
+                <button
+                    className="mobile-menu-btn"
+                    onClick={toggleMobileMenu}
+                    style={{ zIndex: 6 }}
+                >
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <circle cx="10" cy="4" r="1.5" fill="currentColor" />
+                        <circle cx="10" cy="10" r="1.5" fill="currentColor" />
+                        <circle cx="10" cy="16" r="1.5" fill="currentColor" />
+                    </svg>
+                </button>
+
+                {/* Mobile Menu Popup */}
+                {showMobileMenu && (
+                    <div className="mobile-menu-popup" style={{ zIndex: 7 }}>
+                        <button onClick={handleLike} className={isLiked ? 'active' : ''}>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill={isLiked ? 'currentColor' : 'none'}>
+                                <path d="M10 17.5l-1.45-1.32C4.4 12.36 2 10.28 2 7.5 2 5.42 3.42 4 5.5 4c1.74 0 3.41.81 4.5 2.09C11.09 4.81 12.76 4 14.5 4 16.58 4 18 5.42 18 7.5c0 2.78-2.4 4.86-6.55 8.68L10 17.5z" stroke="currentColor" strokeWidth="1.5" />
+                            </svg>
+                            <span>{isLiked ? 'Bỏ thích' : 'Thích'}</span>
+                        </button>
+                        <button onClick={handleSave} className={isSaved ? 'active' : ''}>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill={isSaved ? 'currentColor' : 'none'}>
+                                <path d="M5 3h10a2 2 0 012 2v14l-7-4-7 4V5a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.5" />
+                            </svg>
+                            <span>{isSaved ? 'Đã lưu' : 'Lưu'}</span>
+                        </button>
+                        <button onClick={handleShare}>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M15 13v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3M10 3v10M10 3l-3 3M10 3l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                            </svg>
+                            <span>Chia sẻ</span>
+                        </button>
+                    </div>
+                )}
             </div>
         </Link>
     );
