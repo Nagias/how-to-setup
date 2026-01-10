@@ -173,8 +173,8 @@ const SetupDetailModal = () => {
             />
             <div className="setup-detail-modal modal-content">
                 <button className="modal-close-btn" onClick={handleClose}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                 </button>
 
@@ -272,20 +272,26 @@ const SetupDetailModal = () => {
                                 </div>
                             )}
 
-                            {/* Pagination dots (Instagram-style) */}
+                            {/* Pagination dots (Instagram-style) - Max 5 dots with progressive sizing */}
                             {mediaItems.length > 1 && (
                                 <div className="image-pagination-dots">
-                                    {mediaItems.map((_, index) => (
-                                        <button
-                                            key={index}
-                                            className={`pagination-dot ${index === currentImageIndex ? 'active' : ''}`}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setCurrentImageIndex(index);
-                                            }}
-                                            aria-label={`Go to image ${index + 1}`}
-                                        />
-                                    ))}
+                                    {mediaItems.slice(0, 5).map((_, index) => {
+                                        let dotClass = 'pagination-dot';
+                                        if (index === currentImageIndex) dotClass += ' active';
+                                        if (index === 3) dotClass += ' dot-small';
+                                        if (index === 4) dotClass += ' dot-tiny';
+                                        return (
+                                            <button
+                                                key={index}
+                                                className={dotClass}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setCurrentImageIndex(index);
+                                                }}
+                                                aria-label={`Go to image ${index + 1}`}
+                                            />
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
