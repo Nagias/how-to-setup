@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
+import { filterOptions } from '../../data/sampleData';
 import './Header.css';
 
 
@@ -20,7 +21,8 @@ const Header = () => {
     } = useApp();
     const [searchExpanded, setSearchExpanded] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false); // New State
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -33,28 +35,38 @@ const Header = () => {
 
     const closeMobileMenu = () => setMobileMenuOpen(false);
 
+    // Filter helpers for mobile
+    const toggleFilter = (category, value) => {
+        const currentValues = filters[category];
+        const newValues = currentValues.includes(value)
+            ? currentValues.filter(v => v !== value)
+            : [...currentValues, value];
+        setFilters({ ...filters, [category]: newValues });
+    };
+
+    const clearAllFilters = () => {
+        setFilters({
+            colorTone: [],
+            budget: [],
+            gender: [],
+            purpose: [],
+            size: [],
+            search: ''
+        });
+    };
+
+    const getActiveFilterCount = () => {
+        return Object.keys(filters).reduce((count, key) => {
+            if (key === 'search') return count;
+            return count + filters[key].length;
+        }, 0);
+    };
+
+    const activeFilterCount = getActiveFilterCount();
+
     return (
         <header className="header">
             <div className="container header-container">
-                {/* Mobile: User/Avatar Button */}
-                <button
-                    className="btn-icon mobile-menu-toggle"
-                    onClick={() => setMobileMenuOpen(true)}
-                >
-                    {currentUser ? (
-                        <img
-                            src={currentUser.avatar || `https://ui-avatars.com/api/?name=${currentUser.displayName}`}
-                            alt=""
-                            className="mobile-avatar-btn"
-                        />
-                    ) : (
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                    )}
-                </button>
-
                 {/* Logo */}
                 <Link to="/" className="header-logo" onClick={closeMobileMenu}>
                     <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
@@ -69,6 +81,7 @@ const Header = () => {
                     </svg>
                     <span className="header-logo-text">DeskHub</span>
                 </Link>
+
 
                 {/* Desktop Navigation */}
                 <nav className="header-nav desktop-only">
@@ -128,6 +141,39 @@ const Header = () => {
                             <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                         </svg>
                     </div>
+
+                    {/* Mobile: Filter Button */}
+                    <button
+                        className="btn-icon mobile-filter-btn mobile-only"
+                        onClick={() => setMobileFilterOpen(true)}
+                        title="Bộ lọc"
+                    >
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                        {activeFilterCount > 0 && (
+                            <span className="filter-badge">{activeFilterCount}</span>
+                        )}
+                    </button>
+
+                    {/* Mobile: User/Avatar Button */}
+                    <button
+                        className="btn-icon mobile-menu-toggle mobile-only"
+                        onClick={() => setMobileMenuOpen(true)}
+                    >
+                        {currentUser ? (
+                            <img
+                                src={currentUser.avatar || `https://ui-avatars.com/api/?name=${currentUser.displayName}`}
+                                alt=""
+                                className="mobile-avatar-btn"
+                            />
+                        ) : (
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        )}
+                    </button>
 
                     {/* Collections (Desktop) */}
                     <button
@@ -299,6 +345,62 @@ const Header = () => {
                             {theme === 'light' ? 'Chế Độ Tối' : 'Chế Độ Sáng'}
                         </button>
                     </div>
+                </div>
+            </>
+
+            {/* MOBILE FILTER DRAWER */}
+            <>
+                <div className={`mobile-menu-backdrop ${mobileFilterOpen ? 'open' : ''}`} onClick={() => setMobileFilterOpen(false)}></div>
+                <div className={`mobile-filter-drawer ${mobileFilterOpen ? 'open' : ''}`}>
+                    <div className="mobile-menu-header">
+                        <h3>Bộ Lọc {activeFilterCount > 0 && <span className="filter-count-header">{activeFilterCount}</span>}</h3>
+                        <button className="mobile-close-btn" onClick={() => setMobileFilterOpen(false)}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+
+                    {activeFilterCount > 0 && (
+                        <button className="btn-clear-filters" onClick={clearAllFilters}>
+                            Xóa tất cả bộ lọc
+                        </button>
+                    )}
+
+                    <div className="mobile-filter-groups">
+                        {Object.entries(filterOptions).map(([category, options]) => {
+                            const categoryLabels = {
+                                colorTone: 'Tông Màu',
+                                budget: 'Ngân Sách',
+                                gender: 'Phong Cách',
+                                purpose: 'Mục Đích',
+                                size: 'Kích Thước'
+                            };
+
+                            return (
+                                <div key={category} className="mobile-filter-group">
+                                    <h4>{categoryLabels[category]}</h4>
+                                    <div className="mobile-filter-options">
+                                        {options.map(option => (
+                                            <label key={option.value} className="mobile-filter-option">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={filters[category].includes(option.value)}
+                                                    onChange={() => toggleFilter(category, option.value)}
+                                                />
+                                                <span>{option.label}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    <button className="btn-apply-filters" onClick={() => setMobileFilterOpen(false)}>
+                        Áp dụng bộ lọc
+                    </button>
                 </div>
             </>
         </header>
