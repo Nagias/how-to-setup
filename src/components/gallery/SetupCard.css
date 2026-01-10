@@ -340,6 +340,25 @@
     color: var(--color-text-secondary);
 }
 
+/* Mobile Responsive - Pinterest style */
+@media (max-width: 768px) {
+
+    /* Hide desktop action buttons on mobile */
+    .setup-card-actions {
+        display: none !important;
+    }
+
+    /* Hide tags on mobile */
+    .setup-card-tags {
+        display: none !important;
+    }
+
+    /* Show mobile menu button */
+    .mobile-menu-btn {
+        display: flex !important;
+    }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .setup-card-content {
