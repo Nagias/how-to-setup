@@ -105,15 +105,12 @@ const SetupCard = ({ setup, index }) => {
                     {setup.thumbnailVideo && (
                         <video
                             ref={videoRef}
-                            className={`setup-card-image ${imageLoaded ? 'loaded' : ''}`}
+                            className="setup-card-image"
                             muted
                             loop
                             playsInline
-                            onLoadedData={() => setImageLoaded(true)}
                             style={{
-                                opacity: imageLoaded ? 1 : 0,
-                                position: 'absolute',
-                                inset: 0
+                                display: isVideoPlaying ? 'block' : 'none'
                             }}
                         >
                             <source src={setup.thumbnailVideo} type="video/mp4" />
@@ -128,9 +125,7 @@ const SetupCard = ({ setup, index }) => {
                         onLoad={() => setImageLoaded(true)}
                         onError={() => setImageError(true)}
                         style={{
-                            opacity: setup.thumbnailVideo && isVideoPlaying ? 0 : (imageLoaded ? 1 : 0),
-                            position: setup.thumbnailVideo ? 'absolute' : 'relative',
-                            inset: 0
+                            display: setup.thumbnailVideo && isVideoPlaying ? 'none' : 'block'
                         }}
                     />
 
