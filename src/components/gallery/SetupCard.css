@@ -246,16 +246,9 @@
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
     z-index: 9999;
-    /* High z-index but use pointer-events to allow clicks through */
     animation: slideUp 0.3s ease-out;
     max-height: 40vh;
-    /* Smaller height to not cover cards */
     overflow-y: auto;
-    will-change: transform;
-    /* Optimize for mobile */
-    transform: translateZ(0);
-    /* Force GPU acceleration */
-    pointer-events: auto;
 }
 
 @keyframes fadeIn {
