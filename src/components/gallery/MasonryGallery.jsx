@@ -6,7 +6,7 @@ import './MasonryGallery.css';
 
 
 const MasonryGallery = () => {
-    const { getFilteredSetups, loading } = useApp();
+    const { getFilteredSetups, loading, filters, setups } = useApp();
     const [displayedSetups, setDisplayedSetups] = useState([]);
     const [page, setPage] = useState(1);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -73,13 +73,19 @@ const MasonryGallery = () => {
 
     const hasMore = displayedSetups.length < filteredSetups.length;
 
-    // Show loading when:
-    // 1. Global loading is true (fetching from Firestore)
-    // 2. OR displayedSetups is empty but filteredSetups has data (still populating)
-    const isLoading = loading || (displayedSetups.length === 0 && filteredSetups.length === 0);
+    // Check if any filter is active (search or category filters)
+    const hasActiveFilters = filters.search ||
+        filters.colorTone?.length > 0 ||
+        filters.budget?.length > 0 ||
+        filters.gender?.length > 0 ||
+        filters.purpose?.length > 0 ||
+        filters.size?.length > 0;
 
-    // Empty state: NOT loading AND no data after filters applied
-    const showEmptyState = !loading && filteredSetups.length === 0;
+    // Show loading when fetching data OR when we have no setups yet (first load)
+    const isLoading = loading || setups.length === 0;
+
+    // Empty state: ONLY show when NOT loading AND has active filters AND no results
+    const showEmptyState = !isLoading && hasActiveFilters && filteredSetups.length === 0;
 
     return (
         <div className="masonry-gallery">
