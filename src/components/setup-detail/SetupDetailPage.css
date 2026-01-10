@@ -30,7 +30,7 @@
     margin: 0 auto;
     padding: var(--space-xl);
     display: grid;
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: 1fr 1fr;
     gap: var(--space-2xl);
     align-items: start;
 }
@@ -42,11 +42,7 @@
     gap: var(--space-lg);
 }
 
-/* Right Column - Similar Setups */
-.setup-right-column {
-    position: sticky;
-    top: calc(var(--header-height) + var(--space-lg));
-}
+
 
 /* Gallery Section */
 .setup-gallery-section {
@@ -310,11 +306,12 @@
 
 
 .similar-setups-grid-desktop {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-md);
-    /* Increased gap slightly */
+    display: block;
+    column-count: 2;
+    column-gap: var(--space-md);
 }
+
+
 
 /* Zoom Controls */
 .zoom-controls {
@@ -366,9 +363,13 @@
 .similar-setup-card {
     border-radius: var(--radius-lg);
     overflow: hidden;
-    aspect-ratio: 1;
     cursor: pointer;
     transition: transform var(--transition-fast);
+    /* Masonry props */
+    display: inline-block;
+    width: 100%;
+    margin-bottom: var(--space-md);
+    break-inside: avoid;
 }
 
 .similar-setup-card:hover {
@@ -377,8 +378,8 @@
 
 .similar-setup-card img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
+    display: block;
 }
 
 /* Setup not found */

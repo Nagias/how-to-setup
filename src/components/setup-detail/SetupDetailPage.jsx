@@ -186,7 +186,7 @@ const SetupDetailPage = () => {
     const isLiked = hasUserLiked(setup.id);
     const isSaved = hasUserSaved(setup.id);
     const comments = getComments(setup.id);
-    const similarSetups = getSimilarSetups(setup.id, 8);
+    const similarSetups = getSimilarSetups(setup.id, 16);
 
     // Detect mobile viewport
     useEffect(() => {
