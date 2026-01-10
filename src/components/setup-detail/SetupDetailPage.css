@@ -51,22 +51,30 @@
 /* Gallery Section */
 .setup-gallery-section {
     position: relative;
+    display: flex;
+    justify-content: center;
+    /* Center the image */
 }
 
 .setup-main-image-container {
     position: relative;
-    width: 100%;
+    display: inline-block;
+    /* Fit to content */
+    width: auto;
+    max-width: 100%;
     border-radius: var(--radius-xl);
     overflow: hidden;
-    background: var(--color-bg-tertiary);
+    /* Remove background to avoid ugly boxes */
+    background: transparent;
+    box-shadow: var(--shadow-lg);
 }
 
 .setup-main-image {
-    width: 100%;
+    display: block;
+    max-width: 100%;
     height: auto;
     max-height: 80vh;
     object-fit: contain;
-    display: block;
 }
 
 /* Details Section */

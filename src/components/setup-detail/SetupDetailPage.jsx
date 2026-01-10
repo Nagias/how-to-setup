@@ -400,17 +400,22 @@ const SetupDetailPage = () => {
                                         }}
                                         style={{
                                             position: 'absolute',
-                                            bottom: '60px',
-                                            right: '10px',
-                                            background: 'rgba(0,0,0,0.7)',
+                                            top: '20px',
+                                            right: '20px',
+                                            background: 'rgba(0,0,0,0.6)',
+                                            backdropFilter: 'blur(4px)',
                                             color: 'white',
                                             border: 'none',
-                                            padding: '8px 12px',
+                                            padding: '8px 16px',
                                             borderRadius: '20px',
-                                            fontSize: '12px',
+                                            fontSize: '13px',
+                                            fontWeight: '500',
                                             cursor: 'pointer',
-                                            zIndex: 10
+                                            zIndex: 25,
+                                            transition: 'all 0.2s ease',
+                                            opacity: showZoomControls ? 0.3 : 1 // Fade out when zooming/hovering controls if needed, or keep simpler
                                         }}
+                                        onMouseEnter={(e) => e.target.style.opacity = '1'}
                                     >
                                         {showProducts ? 'Ẩn sản phẩm' : 'Hiện sản phẩm'}
                                     </button>
