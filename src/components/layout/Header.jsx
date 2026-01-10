@@ -21,6 +21,18 @@ const Header = () => {
     } = useApp();
     const [searchExpanded, setSearchExpanded] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const handleSearch = (e) => {
+        setFilters({ ...filters, search: e.target.value });
+        if (location.pathname !== '/' && location.pathname !== '/gallery') {
+            navigate('/');
+        }
+    };
+
+    const closeMobileMenu = () => setMobileMenuOpen(false);
     const getActiveFilterCount = () => {
         return Object.keys(filters).reduce((count, key) => {
             if (key === 'search') return count;
