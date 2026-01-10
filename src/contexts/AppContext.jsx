@@ -66,31 +66,68 @@ export const useApp = () => {
 export const AppProvider = ({ children }) => {
     const [theme, setTheme] = useState('light');
     // Initialize DIRECTLY from cache for instant display (no async wait)
-    const [setups, setSetups] = useState(getInitialSetups);
-    const [blogs, setBlogs] = useState(getInitialBlogs);
-    const [currentUser, setCurrentUser] = useState(null);
-    // Only show loading if we DON'T have cached data
-    const [loading, setLoading] = useState(() => {
-        const hasCache = localStorage.getItem(CACHE_KEY_SETUPS);
-        return !hasCache; // Only loading=true if no cache exists
+    const [setups, setSetups] = useState(() => {
+        try {
+            const cached = localStorage.getItem(CACHE_KEY_SETUPS);
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (parsed && parsed.length > 0) {
+                    console.log('⚡ Instant load:', parsed.length, 'setups from cache');
+                    return parsed;
+                }
+            }
+        } catch (e) {
+            console.warn('Cache parse error:', e);
+        }
+        return []; // Start with empty, will be filled by loadData
     });
+    const [blogs, setBlogs] = useState(() => {
+        try {
+            const cached = localStorage.getItem(CACHE_KEY_BLOGS);
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (parsed && parsed.length > 0) {
+                    return parsed;
+                }
+            }
+        } catch (e) {
+            console.warn('Cache parse error:', e);
+        }
+        return [];
+    });
+    const [currentUser, setCurrentUser] = useState(null);
+    // Show loading only when we have no data at all
+    const [loading, setLoading] = useState(true);
 
     const loadData = async () => {
-        // Check if cache is fresh - if so, skip network entirely
-        if (isCacheFresh()) {
-            console.log('✅ Cache is fresh, no network fetch needed');
+        // Check localStorage directly (not state) to avoid stale closure
+        let hasData = false;
+        try {
+            const cached = localStorage.getItem(CACHE_KEY_SETUPS);
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                hasData = parsed && parsed.length > 0;
+            }
+        } catch (e) {
+            // Ignore
+        }
+
+        const cacheFresh = isCacheFresh();
+
+        if (hasData && cacheFresh) {
+            console.log('✅ Cache is fresh with data, skipping network');
             setLoading(false);
             return;
         }
 
-        // Fetch from Firestore in TRUE background (don't block UI)
-        console.log('🔄 Background fetching fresh data from Firestore...');
+        // Need to fetch from Firestore
+        console.log('🔄 Fetching data from Firestore...', { hasData, cacheFresh });
 
         try {
             const data = await api.getData();
 
             if (data.setups && data.setups.length > 0) {
-                console.log('📊 Updated with', data.setups.length, 'setups from Firestore');
+                console.log('📊 Loaded', data.setups.length, 'setups from Firestore');
                 setSetups(data.setups);
                 // Update cache
                 try {
@@ -115,7 +152,6 @@ export const AppProvider = ({ children }) => {
             setAllComments(data.comments || {});
         } catch (error) {
             console.error('❌ Error loading data from Firestore:', error);
-            // Keep showing cached data - no problem
         } finally {
             setLoading(false);
         }
