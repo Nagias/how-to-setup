@@ -8,14 +8,16 @@
             "POST",
             "PUT",
             "DELETE",
-            "HEAD",
-            "OPTIONS"
+            "HEAD"
         ],
+        "maxAgeSeconds": 3600,
         "responseHeader": [
-            "Authorization",
             "Content-Type",
+            "Content-Length",
+            "Content-Range",
+            "Authorization",
+            "X-Requested-With",
             "x-goog-resumable"
-        ],
-        "maxAgeSeconds": 3600
+        ]
     }
 ]

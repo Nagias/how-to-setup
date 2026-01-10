@@ -385,26 +385,62 @@ export const api = {
         }
     },
 
+    // ImgBB API Key (Free tier: 100 uploads/hour)
+    // Get your own key at: https://api.imgbb.com/
+    _imgbbApiKey: '7a8f1e2b3c4d5e6f7a8b9c0d1e2f3a4b', // Replace with your key
+
     uploadFile: async (file) => {
         try {
-            // Simple upload for images
-            const storageRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
-            const metadata = { contentType: file.type };
+            console.log(`🚀 Starting ImgBB upload for ${file.name}`);
 
-            console.log(`Starting image upload for ${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file, metadata);
-            const downloadURL = await getDownloadURL(snapshot.ref);
-            return downloadURL;
+            // Convert file to base64
+            const toBase64 = (file) => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    // Remove the data:image/xxx;base64, prefix
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+            });
+
+            const base64Image = await toBase64(file);
+
+            // Upload to ImgBB
+            const formData = new FormData();
+            formData.append('key', api._imgbbApiKey);
+            formData.append('image', base64Image);
+            formData.append('name', `desk_${Date.now()}`);
+
+            const response = await fetch('https://api.imgbb.com/1/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                console.log(`✅ ImgBB upload success: ${result.data.url}`);
+                return result.data.url;
+            } else {
+                throw new Error(result.error?.message || 'ImgBB upload failed');
+            }
         } catch (error) {
-            console.error("Upload failed:", error);
-            if (error.code === 'storage/unauthorized') {
-                throw new Error("Không có quyền tải lên (Lỗi Storage Rules)");
+            console.error("ImgBB upload failed:", error);
+
+            // Fallback to Firebase Storage
+            console.log("⚠️ Trying Firebase Storage fallback...");
+            try {
+                const storageRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
+                const metadata = { contentType: file.type };
+                const snapshot = await uploadBytes(storageRef, file, metadata);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                return downloadURL;
+            } catch (fbError) {
+                console.error("Firebase Storage fallback also failed:", fbError);
+                throw new Error(`Upload thất bại: ${error.message}`);
             }
-            // Helper for CORS/Network issues which often appear as 'storage/unknown' or generic errors
-            if (error.message.includes('network') || error.code === 'storage/retry-limit-exceeded' || error.code === 'storage/unknown') {
-                console.warn("Potential CORS or Network issue. Ensure cors.json is configured on the bucket.");
-            }
-            throw error;
         }
     },
 
