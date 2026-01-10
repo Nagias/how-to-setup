@@ -112,6 +112,7 @@ const AppContent = () => {
                     <Route path="/blog/new" element={<BlogEditor />} />
                     <Route path="/blog/edit/:id" element={<BlogEditor />} />
                     <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="*" element={<GalleryPage />} />
                 </Routes>
             </main>
 
