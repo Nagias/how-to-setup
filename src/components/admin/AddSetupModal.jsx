@@ -284,13 +284,13 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                         try {
                             const uploadPromise = api.uploadFile(compressedFile);
                             const timeoutPromise = new Promise((resolve) =>
-                                setTimeout(() => resolve('TIMEOUT'), 15000)
+                                setTimeout(() => resolve('TIMEOUT'), 30000)
                             );
 
                             const result = await Promise.race([uploadPromise, timeoutPromise]);
 
                             if (result === 'TIMEOUT') {
-                                console.warn("Upload timed out (15s), switching to fallback");
+                                console.warn("Upload timed out (30s), switching to fallback");
                                 throw new Error("Timeout");
                             }
 
@@ -304,9 +304,9 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                         // If we reached here, upload failed. Use Fallback.
                         // Silent Fallback: No Alert, just save as Base64.
                         console.log('⚠️ Using Silent Base64 fallback');
-                        // Reduce to 1280px, 0.7 quality for better quality while staying under Firestore limit
-                        // 1280px ~ 80-100KB per image -> 10 images = 1MB (Safe)
-                        const fallbackBase64 = await compressImage(item.file, 1280, 0.7);
+                        // Reduce to 800px, 0.5 quality for aggressive compression
+                        // 800px ~ 80-100KB per image -> 8 images = 640-800KB (Safe under 1MB)
+                        const fallbackBase64 = await compressImage(item.file, 800, 0.5);
                         return { ...item, url: fallbackBase64, file: null };
 
                     } catch (err) {
@@ -439,7 +439,7 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                 </div>
 
                                 <small style={{ display: 'block', marginTop: '5px', color: '#888' }}>
-                                    Hỗ trợ nhiều ảnh (Max 10MB/ảnh).
+                                    Hỗ trợ tối đa 8 ảnh (Max 10MB/ảnh).
                                 </small>
                             </div>
 
