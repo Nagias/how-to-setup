@@ -247,84 +247,93 @@
     color: var(--color-text-tertiary);
 }
 
+/* Mobile Backdrop */
+.filter-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* Sidebar Close Button (Mobile) */
+.sidebar-close {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-md);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.sidebar-close:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-primary);
+}
+
 /* Responsive Sidebar (Drawer) */
 @media (max-width: 1024px) {
     .filter-sidebar {
         position: fixed;
         top: 0;
-        left: 0;
+        right: 0;
+        /* Changed from left to right */
         height: 100vh;
         z-index: 1000;
-        transform: translateX(-100%);
+        transform: translateX(100%);
+        /* Start from right */
         border-radius: 0;
-        width: 280px;
+        width: 300px;
+        max-width: 85vw;
         transition: transform var(--transition-base);
         box-shadow: var(--shadow-2xl);
     }
 
-    /* When NOT collapsed (i.e., OPEN) on mobile, show it */
-    .filter-sidebar:not(.collapsed) {
+    /* Open state controlled by class */
+    .filter-sidebar.mobile-open {
         transform: translateX(0);
-        width: 280px;
-        /* Ensure width is maintained */
     }
 
-    /* When collapsed on mobile, hide it completely */
+    /* Hide desktop controls on mobile */
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-only {
+        display: flex !important;
+    }
+
+    .sidebar-header {
+        justify-content: space-between;
+        padding-top: var(--space-sm);
+    }
+
+    /* Reset collapsed styles for mobile since we use drawer mode */
     .filter-sidebar.collapsed {
-        transform: translateX(-100%);
-        width: 280px;
-        /* Keep width structure */
+        width: 300px;
+        max-width: 85vw;
     }
 
-    /* Mobile Toggle Button (External) 
-       We need a button that is ALWAYS visible to toggle the sidebar when it is hidden.
-       In the current React component, the toggle is INSIDE the sidebar.
-       This is a structural issue. 
-       However, we can hack it: 
-       If the sidebar is hidden, we can't click the toggle inside it.
-       
-       Solutions:
-       1. The user creates a specific "Filter" button in the main layout (e.g., in App.jsx or GalleryPage) that toggles the sidebar state.
-       2. We make the toggle button `position: fixed` and pop it out when the sidebar is closed.
-    */
-
-    .sidebar-toggle {
-        display: flex;
-        position: fixed;
-        top: calc(var(--header-height) + var(--space-md));
-        left: var(--space-md);
-        z-index: 900;
-        border: 1px solid var(--color-border);
-        box-shadow: var(--shadow-md);
-        background: var(--color-surface);
-        color: var(--color-text-primary);
-    }
-
-    /* When sidebar is open, move toggle inside or hide it? 
-       If we keep it fixed, it might be covered by the sidebar (z-index 1000).
-       Let's increase z-index of button or move it.
-       If sidebar is open, the internal header has a close button likely?
-       Actually, `FilterSidebar` component logic might need a "close" button specifically for mobile.
-       But for now, sticking to the fixed toggle button is the safest CSS-only approach without major refactor.
-    */
-
-    .sidebar-toggle:hover {
-        background: var(--color-primary);
-        color: white;
-    }
-
-    /* Hide the "Collapse" logic visuals usually found on desktop */
     .filter-sidebar.collapsed .filter-groups,
     .filter-sidebar.collapsed .sidebar-title,
     .filter-sidebar.collapsed .btn-clear-all {
         display: block;
-        /* We don't need to hide these internally on mobile because the whole sidebar is hidden */
         opacity: 1;
         pointer-events: auto;
     }
 
     .filter-sidebar.collapsed .sidebar-content {
         padding: var(--space-lg);
-        /* Restore padding */
+    }
+
+    .sidebar-toggle {
+        display: none;
+        /* Hide original toggle on mobile */
     }
 }

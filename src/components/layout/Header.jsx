@@ -21,40 +21,6 @@ const Header = () => {
     } = useApp();
     const [searchExpanded, setSearchExpanded] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-    const navigate = useNavigate();
-    const location = useLocation();
-
-    const handleSearch = (e) => {
-        setFilters({ ...filters, search: e.target.value });
-        if (location.pathname !== '/' && location.pathname !== '/gallery') {
-            navigate('/');
-        }
-    };
-
-    const closeMobileMenu = () => setMobileMenuOpen(false);
-
-    // Filter helpers for mobile
-    const toggleFilter = (category, value) => {
-        const currentValues = filters[category];
-        const newValues = currentValues.includes(value)
-            ? currentValues.filter(v => v !== value)
-            : [...currentValues, value];
-        setFilters({ ...filters, [category]: newValues });
-    };
-
-    const clearAllFilters = () => {
-        setFilters({
-            colorTone: [],
-            budget: [],
-            gender: [],
-            purpose: [],
-            size: [],
-            search: ''
-        });
-    };
-
     const getActiveFilterCount = () => {
         return Object.keys(filters).reduce((count, key) => {
             if (key === 'search') return count;
@@ -145,7 +111,7 @@ const Header = () => {
                     {/* Mobile: Filter Button */}
                     <button
                         className="btn-icon mobile-filter-btn mobile-only"
-                        onClick={() => setMobileFilterOpen(true)}
+                        onClick={() => setShowMobileFilter(true)}
                         title="Bộ lọc"
                     >
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -348,62 +314,6 @@ const Header = () => {
                 </div>
             </>
 
-            {/* MOBILE FILTER DRAWER */}
-            <>
-                <div className={`mobile-menu-backdrop ${mobileFilterOpen ? 'open' : ''}`} onClick={() => setMobileFilterOpen(false)}></div>
-                <div className={`mobile-filter-drawer ${mobileFilterOpen ? 'open' : ''}`}>
-                    <div className="mobile-menu-header">
-                        <h3>Bộ Lọc {activeFilterCount > 0 && <span className="filter-count-header">{activeFilterCount}</span>}</h3>
-                        <button className="mobile-close-btn" onClick={() => setMobileFilterOpen(false)}>
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <div className="mobile-filter-groups">
-                        {Object.entries(filterOptions).map(([category, options]) => {
-                            const categoryLabels = {
-                                colorTone: 'Tông Màu',
-                                budget: 'Ngân Sách',
-                                gender: 'Phong Cách',
-                                purpose: 'Mục Đích',
-                                size: 'Kích Thước'
-                            };
-
-                            return (
-                                <div key={category} className="mobile-filter-group">
-                                    <h4>{categoryLabels[category]}</h4>
-                                    <div className="mobile-filter-options">
-                                        {options.map(option => (
-                                            <label key={option.value} className="mobile-filter-option">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={filters[category].includes(option.value)}
-                                                    onChange={() => toggleFilter(category, option.value)}
-                                                />
-                                                <span>{option.label}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    <div className="mobile-filter-footer">
-                        {activeFilterCount > 0 && (
-                            <button className="btn-clear-filters" onClick={clearAllFilters}>
-                                Xóa tất cả bộ lọc
-                            </button>
-                        )}
-                        <button className="btn-apply-filters" onClick={() => setMobileFilterOpen(false)}>
-                            Áp dụng bộ lọc
-                        </button>
-                    </div>
-                </div>
-            </>
         </header>
     );
 };

@@ -4,7 +4,7 @@ import { filterOptions } from '../../data/sampleData';
 import './FilterSidebar.css';
 
 const FilterSidebar = () => {
-    const { filters, setFilters } = useApp();
+    const { filters, setFilters, showMobileFilter, setShowMobileFilter } = useApp();
     const [collapsed, setCollapsed] = useState(false);
 
     const toggleFilter = (category, value) => {
@@ -36,49 +36,74 @@ const FilterSidebar = () => {
 
     const activeCount = getActiveFilterCount();
 
+    // On mobile, use showMobileFilter from context
+    // collapsed state is for desktop
+    const isMobileOpen = showMobileFilter;
+
     return (
-        <aside className={`filter-sidebar ${collapsed ? 'collapsed' : ''}`}>
-            <div className="sidebar-content">
-                {/* Header */}
-                <div className="sidebar-header">
-                    {/* Toggle Button Moved Here */}
-                    <button
-                        className="sidebar-toggle"
-                        onClick={() => setCollapsed(!collapsed)}
-                        title={collapsed ? 'Hiện bộ lọc' : 'Ẩn bộ lọc'}
-                    >
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                        </svg>
-                    </button>
+        <>
+            {/* Mobile Backdrop */}
+            {isMobileOpen && (
+                <div
+                    className="filter-backdrop mobile-only"
+                    onClick={() => setShowMobileFilter(false)}
+                />
+            )}
 
-                    <h3 className="sidebar-title">
-                        Bộ Lọc
-                        {activeCount > 0 && (
-                            <span className="filter-count">{activeCount}</span>
-                        )}
-                    </h3>
-                    {activeCount > 0 && (
-                        <button className="btn-clear-all" onClick={clearAllFilters}>
-                            Xóa tất cả
+            <aside className={`filter-sidebar ${collapsed ? 'collapsed' : ''} ${isMobileOpen ? 'mobile-open' : ''}`}>
+                <div className="sidebar-content">
+                    {/* Header */}
+                    <div className="sidebar-header">
+                        {/* Desktop Toggle Button */}
+                        <button
+                            className="sidebar-toggle desktop-only"
+                            onClick={() => setCollapsed(!collapsed)}
+                            title={collapsed ? 'Hiện bộ lọc' : 'Ẩn bộ lọc'}
+                        >
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
                         </button>
-                    )}
-                </div>
 
-                {/* Filter Groups */}
-                <div className="filter-groups">
-                    {Object.entries(filterOptions).map(([category, options]) => (
-                        <FilterGroup
-                            key={category}
-                            category={category}
-                            options={options}
-                            selectedValues={filters[category]}
-                            onToggle={toggleFilter}
-                        />
-                    ))}
+                        {/* Mobile Close Button */}
+                        <button
+                            className="sidebar-close mobile-only"
+                            onClick={() => setShowMobileFilter(false)}
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+
+                        <h3 className="sidebar-title">
+                            Bộ Lọc
+                            {activeCount > 0 && (
+                                <span className="filter-count">{activeCount}</span>
+                            )}
+                        </h3>
+                        {activeCount > 0 && (
+                            <button className="btn-clear-all" onClick={clearAllFilters}>
+                                Xóa tất cả
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Filter Groups */}
+                    <div className="filter-groups">
+                        {Object.entries(filterOptions).map(([category, options]) => (
+                            <FilterGroup
+                                key={category}
+                                category={category}
+                                options={options}
+                                selectedValues={filters[category]}
+                                onToggle={toggleFilter}
+                            />
+                        ))}
+                    </div>
                 </div>
-            </div>
-        </aside>
+            </aside>
+        </>
     );
 };
 
