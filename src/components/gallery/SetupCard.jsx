@@ -153,6 +153,8 @@ const SetupCard = ({ setup, index }) => {
                             src={typeof setup.images[0] === 'string' ? setup.images[0] : setup.images[0]?.url || setup.images[0]?.src}
                             alt={setup.title || 'Setup image'}
                             className={`setup-card-image ${imageLoaded ? 'loaded' : ''}`}
+                            loading="lazy"
+                            decoding="async"
                             onLoad={() => setImageLoaded(true)}
                             onError={(e) => {
                                 console.error('Image load error:', {

@@ -1,8 +1,127 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
 import SeoHead from '../common/SeoHead';
 import './SetupDetailPage.css';
+
+// ProductMarker Component with tooltip (same as SetupDetailModal)
+const ProductMarker = ({ product, isActive, onActivate }) => {
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    const handleClick = (e) => {
+        e.stopPropagation();
+        onActivate(isActive ? null : product);
+    };
+
+    return (
+        <div
+            className="product-marker"
+            style={{ left: `${product.x}%`, top: `${product.y}%` }}
+            onClick={handleClick}
+        >
+            <button className={`marker-btn ${isActive ? 'active' : ''}`}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <circle cx="10" cy="10" r="8" fill="var(--color-primary)" />
+                    <path d="M10 6v8M6 10h8" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+            </button>
+
+            {/* Desktop Tooltip - Show inline next to marker */}
+            {!isMobile && isActive && (
+                <div
+                    className="product-tooltip-desktop"
+                    style={{
+                        position: 'absolute',
+                        left: '50%',
+                        bottom: '100%',
+                        transform: 'translateX(-50%) translateY(-8px)',
+                        marginBottom: '8px',
+                        background: 'white',
+                        color: '#333',
+                        padding: '16px',
+                        borderRadius: '12px',
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)',
+                        minWidth: '280px',
+                        maxWidth: '320px',
+                        zIndex: 10000,
+                        animation: 'fadeIn 0.2s ease-out',
+                        border: '1px solid rgba(0, 0, 0, 0.08)'
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <h3 style={{
+                        fontSize: '15px',
+                        fontWeight: 600,
+                        color: '#333',
+                        margin: '0 0 8px 0',
+                        lineHeight: '1.4'
+                    }}>
+                        {product.name}
+                    </h3>
+
+                    <div style={{
+                        fontSize: '24px',
+                        fontWeight: 700,
+                        color: '#ff6b35',
+                        margin: '0 0 12px 0',
+                        lineHeight: '1.2'
+                    }}>
+                        {product.price}
+                    </div>
+
+                    {product.link && (
+                        <a
+                            href={product.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                fontSize: '14px',
+                                fontWeight: 600,
+                                color: 'white',
+                                textDecoration: 'none',
+                                background: 'linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%)',
+                                padding: '10px 20px',
+                                borderRadius: '8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px',
+                                boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)',
+                                transition: 'all 0.2s',
+                                border: 'none'
+                            }}
+                        >
+                            <span>Xem sản phẩm</span>
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                                <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </a>
+                    )}
+
+                    <div style={{
+                        position: 'absolute',
+                        top: '100%',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: 0,
+                        height: 0,
+                        borderLeft: '8px solid transparent',
+                        borderRight: '8px solid transparent',
+                        borderTop: '8px solid white'
+                    }}></div>
+                </div>
+            )}
+        </div>
+    );
+};
 
 const SetupDetailPage = () => {
     const { setupId } = useParams();
@@ -146,6 +265,13 @@ const SetupDetailPage = () => {
         }
     };
 
+    // Close active product when clicking outside
+    const handleImageClick = () => {
+        if (activeProduct) {
+            setActiveProduct(null);
+        }
+    };
+
     // SEO Schema
     const schema = {
         '@context': 'https://schema.org',
@@ -196,6 +322,7 @@ const SetupDetailPage = () => {
                             onTouchStart={isMobile ? onTouchStart : undefined}
                             onTouchMove={isMobile ? onTouchMove : undefined}
                             onTouchEnd={isMobile ? onTouchEnd : undefined}
+                            onClick={handleImageClick}
                         >
                             <img
                                 src={currentMedia.url}
@@ -203,22 +330,41 @@ const SetupDetailPage = () => {
                                 className="setup-main-image"
                             />
 
-                            {/* Product Markers - Will add ProductMarker component */}
+                            {/* Product Markers with full tooltip functionality */}
                             {showProducts && currentMedia.products && currentMedia.products.map((product, index) => (
-                                <div
+                                <ProductMarker
                                     key={index}
-                                    className="product-marker"
-                                    style={{ left: `${product.x}%`, top: `${product.y}%` }}
-                                    onClick={() => setActiveProduct(activeProduct === product ? null : product)}
-                                >
-                                    <button className="marker-btn">
-                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                            <circle cx="10" cy="10" r="8" fill="var(--color-primary)" />
-                                            <path d="M10 6v8M6 10h8" stroke="white" strokeWidth="2" strokeLinecap="round" />
-                                        </svg>
-                                    </button>
-                                </div>
+                                    product={product}
+                                    isActive={activeProduct === product}
+                                    onActivate={setActiveProduct}
+                                />
                             ))}
+
+                            {/* Toggle Products Button */}
+                            {currentMedia.products && currentMedia.products.length > 0 && (
+                                <button
+                                    className="toggle-products-btn"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowProducts(!showProducts);
+                                    }}
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: '60px',
+                                        right: '10px',
+                                        background: 'rgba(0,0,0,0.7)',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '8px 12px',
+                                        borderRadius: '20px',
+                                        fontSize: '12px',
+                                        cursor: 'pointer',
+                                        zIndex: 10
+                                    }}
+                                >
+                                    {showProducts ? 'Ẩn sản phẩm' : 'Hiện sản phẩm'}
+                                </button>
+                            )}
 
                             {/* Navigation Arrows - Desktop only */}
                             {!isMobile && mediaItems.length > 1 && (
@@ -386,6 +532,103 @@ const SetupDetailPage = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Mobile Product Tooltip Portal */}
+            {isMobile && activeProduct && ReactDOM.createPortal(
+                <div
+                    className="product-tooltip-portal"
+                    style={{
+                        position: 'fixed',
+                        bottom: '20px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: '90%',
+                        maxWidth: '380px',
+                        background: 'rgba(20, 20, 20, 0.95)',
+                        backdropFilter: 'blur(12px)',
+                        color: 'white',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        padding: '20px',
+                        zIndex: 100000,
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+                        borderRadius: '16px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '12px',
+                        animation: 'slideUpFade 0.3s ease-out'
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <button
+                        style={{
+                            position: 'absolute',
+                            top: '12px',
+                            right: '12px',
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            border: 'none',
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            fontSize: '20px',
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}
+                        onClick={() => setActiveProduct(null)}
+                    >×</button>
+
+                    <h3 style={{
+                        fontSize: '16px',
+                        fontWeight: 600,
+                        color: 'white',
+                        margin: '0 24px 0 0',
+                        lineHeight: '1.4'
+                    }}>
+                        {activeProduct.name}
+                    </h3>
+
+                    <div style={{
+                        fontSize: '28px',
+                        fontWeight: 700,
+                        color: '#ff6b35',
+                        margin: '4px 0',
+                        lineHeight: '1.2'
+                    }}>
+                        {activeProduct.price}
+                    </div>
+
+                    {activeProduct.link && (
+                        <a
+                            href={activeProduct.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                fontSize: '15px',
+                                fontWeight: 600,
+                                color: 'white',
+                                textDecoration: 'none',
+                                background: 'linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%)',
+                                padding: '14px 24px',
+                                borderRadius: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                marginTop: '8px',
+                                boxShadow: '0 4px 12px rgba(255, 107, 53, 0.4)'
+                            }}
+                        >
+                            <span>Xem sản phẩm</span>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </a>
+                    )}
+                </div>,
+                document.body
+            )}
         </>
     );
 };
