@@ -3,11 +3,16 @@
     min-height: 60vh;
 }
 
+/* True Pinterest-style masonry using CSS columns */
 .masonry-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: var(--space-md);
+    column-count: 4;
+    column-gap: var(--space-md);
     margin-bottom: var(--space-xl);
+}
+
+.masonry-grid>* {
+    break-inside: avoid;
+    margin-bottom: var(--space-md);
 }
 
 /* Empty State */
@@ -87,21 +92,29 @@
 /* Responsive */
 @media (max-width: 1200px) {
     .masonry-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: var(--space-md);
+        column-count: 3;
+        column-gap: var(--space-md);
     }
 }
 
 @media (max-width: 768px) {
     .masonry-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-sm);
+        column-count: 2;
+        column-gap: var(--space-sm);
+    }
+
+    .masonry-grid>* {
+        margin-bottom: var(--space-sm);
     }
 }
 
 @media (max-width: 480px) {
     .masonry-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-xs);
+        column-count: 2;
+        column-gap: var(--space-xs);
+    }
+
+    .masonry-grid>* {
+        margin-bottom: var(--space-xs);
     }
 }
