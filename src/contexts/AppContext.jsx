@@ -17,9 +17,9 @@ export const useApp = () => {
 
 export const AppProvider = ({ children }) => {
     const [theme, setTheme] = useState('light');
-    // Initialize with empty arrays
-    const [setups, setSetups] = useState([]);
-    const [blogs, setBlogs] = useState([]);
+    // Initialize with sample data for instant display, will be replaced by Firestore data
+    const [setups, setSetups] = useState(sampleSetups);
+    const [blogs, setBlogs] = useState(sampleBlogs);
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
