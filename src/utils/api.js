@@ -9,6 +9,7 @@ import {
     query,
     where,
     orderBy,
+    limit,
     getDoc,
     setDoc,
     serverTimestamp,
@@ -47,26 +48,30 @@ export const ADMIN_EMAILS = [
 ];
 
 export const api = {
-    // Fetch all initial data
+    // Fetch all initial data with optimizations
     getData: async () => {
         try {
-            // Setups
-            const setupSnapshot = await getDocs(setupsCol);
+            // Setups - Limit to 50 most recent, ordered by creation date
+            const setupsQuery = query(
+                setupsCol,
+                orderBy('createdAt', 'desc'),
+                limit(50)
+            );
+            const setupSnapshot = await getDocs(setupsQuery);
             const setups = setupSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            // Blogs
-            // Blogs
-            const blogSnapshot = await getDocs(blogsCol);
+            // Blogs - Limit to 20 most recent
+            const blogsQuery = query(
+                blogsCol,
+                orderBy('createdAt', 'desc'),
+                limit(20)
+            );
+            const blogSnapshot = await getDocs(blogsQuery);
             const blogs = blogSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            // Comments (Simple fetch all for now, optimized later)
-            const commentSnapshot = await getDocs(commentsCol);
+            // Comments - Only fetch when needed, not on initial load
+            // Skip comments for faster initial load
             const comments = {};
-            commentSnapshot.docs.forEach(doc => {
-                const data = doc.data();
-                if (!comments[data.setupId]) comments[data.setupId] = [];
-                comments[data.setupId].push({ id: doc.id, ...data });
-            });
 
             return { setups, blogs, comments };
         } catch (error) {
