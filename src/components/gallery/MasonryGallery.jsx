@@ -105,7 +105,7 @@ const MasonryGallery = () => {
             )}
 
             {/* Main Gallery Content */}
-            {!showSkeleton && displayedSetups.length > 0 && (
+            {!isInitialLoading && displayedSetups.length > 0 && (
                 <>
                     <div className="masonry-grid">
                         {displayedSetups.map((setup, index) => (
