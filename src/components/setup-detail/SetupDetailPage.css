@@ -59,72 +59,65 @@
 .setup-details-section {
     display: flex;
     flex-direction: column;
-    gap: var(--space-xl);
+    gap: var(--space-lg);
 }
 
-.setup-header {
+/* Pinterest-style author info - small and simple */
+.setup-author-simple {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--space-md);
-    padding-bottom: var(--space-lg);
+    align-items: center;
+    gap: var(--space-sm);
+    padding-bottom: var(--space-md);
     border-bottom: 1px solid var(--color-border);
 }
 
-.author-info {
-    display: flex;
-    gap: var(--space-md);
-    align-items: center;
-}
-
-.author-avatar {
-    width: 56px;
-    height: 56px;
+.author-avatar-small {
+    width: 32px;
+    height: 32px;
     border-radius: var(--radius-full);
     object-fit: cover;
-    border: 3px solid var(--color-border);
 }
 
-.setup-title {
-    font-size: var(--font-size-2xl);
-    font-weight: 700;
-    color: var(--color-text-primary);
-    margin: 0 0 var(--space-xs) 0;
-}
-
-.author-name {
+.author-name-simple {
     font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
     font-weight: 600;
-    margin: 0;
+    color: var(--color-text-primary);
 }
 
-.setup-actions {
+/* Action buttons row */
+.setup-actions-row {
     display: flex;
     gap: var(--space-sm);
 }
 
-.action-btn {
+.action-btn-large {
+    flex: 1;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-lg);
+    padding: var(--space-md);
     background: var(--color-bg-tertiary);
-    border-radius: var(--radius-full);
+    border-radius: var(--radius-lg);
     font-weight: 600;
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
     transition: all var(--transition-fast);
 }
 
-.action-btn:hover {
+.action-btn-large:hover {
     background: var(--color-surface-hover);
     color: var(--color-text-primary);
 }
 
-.action-btn.active {
+.action-btn-large.active {
     background: var(--color-accent);
     color: white;
+}
+
+.action-btn-large svg {
+    width: 20px;
+    height: 20px;
 }
 
 .setup-caption {
