@@ -1,12 +1,12 @@
 .setup-detail-page {
     min-height: 100vh;
     background: var(--color-bg-primary);
-    padding-top: 80px;
+    padding-top: var(--header-height);
 }
 
 .back-btn {
     position: fixed;
-    top: 90px;
+    top: calc(var(--header-height) + 10px);
     left: var(--space-lg);
     z-index: 100;
     display: flex;
@@ -28,7 +28,7 @@
 .setup-content {
     max-width: 1600px;
     margin: 0 auto;
-    padding: var(--space-xl);
+    padding: var(--space-md) var(--space-xl) var(--space-xl);
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-2xl);
