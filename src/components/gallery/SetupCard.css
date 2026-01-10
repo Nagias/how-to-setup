@@ -331,6 +331,46 @@
     flex-shrink: 0;
 }
 
+/* Dark Mode for Mobile Menu Button */
+[data-theme="dark"] .mobile-menu-btn {
+    background: rgba(30, 30, 40, 0.95);
+    color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .mobile-menu-btn:hover {
+    background: rgba(40, 40, 50, 1);
+}
+
+/* Dark Mode for Mobile Menu Popup */
+[data-theme="dark"] .mobile-menu-popup {
+    background: var(--color-surface);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="dark"] .mobile-menu-header {
+    border-bottom-color: var(--color-border);
+}
+
+[data-theme="dark"] .mobile-menu-header h3 {
+    color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .mobile-menu-close {
+    color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .mobile-menu-close:hover {
+    background: var(--color-bg-tertiary);
+}
+
+[data-theme="dark"] .mobile-menu-actions button {
+    color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .mobile-menu-actions button:hover {
+    background: var(--color-bg-tertiary);
+}
+
 [data-theme="dark"] .tag {
     background: rgba(30, 30, 40, 0.95);
 }
