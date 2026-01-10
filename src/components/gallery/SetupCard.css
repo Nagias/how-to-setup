@@ -245,21 +245,11 @@
     background: white;
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-    /* Higher than backdrop */
+    z-index: 100;
+    /* Low z-index to not cover cards */
     animation: slideUp 0.3s ease-out;
     max-height: 70vh;
     overflow-y: auto;
-}
-
-/* Add backdrop effect directly to popup */
-.mobile-menu-popup::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: -1;
-    animation: fadeIn 0.2s ease-out;
 }
 
 @keyframes fadeIn {

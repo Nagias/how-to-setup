@@ -228,50 +228,47 @@ const SetupCard = ({ setup, index }) => {
 
             {/* Mobile Menu Portal - Render at document root */}
             {showMobileMenu && ReactDOM.createPortal(
-                <>
-                    {/* Bottom Sheet */}
-                    <div className="mobile-menu-popup">
-                        {/* Header */}
-                        <div className="mobile-menu-header">
-                            <button
-                                className="mobile-menu-close"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setShowMobileMenu(false);
-                                }}
-                            >
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                                </svg>
-                            </button>
-                            <h3>Tùy chọn</h3>
-                            <div style={{ width: '24px' }}></div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="mobile-menu-actions">
-                            <button onClick={handleLike} className={isLiked ? 'active' : ''}>
-                                <svg width="24" height="24" viewBox="0 0 20 20" fill={isLiked ? 'currentColor' : 'none'}>
-                                    <path d="M10 17.5l-1.45-1.32C4.4 12.36 2 10.28 2 7.5 2 5.42 3.42 4 5.5 4c1.74 0 3.41.81 4.5 2.09C11.09 4.81 12.76 4 14.5 4 16.58 4 18 5.42 18 7.5c0 2.78-2.4 4.86-6.55 8.68L10 17.5z" stroke="currentColor" strokeWidth="1.5" />
-                                </svg>
-                                <span>{isLiked ? 'Bỏ thích' : 'Thích'}</span>
-                            </button>
-                            <button onClick={handleSave} className={isSaved ? 'active' : ''}>
-                                <svg width="24" height="24" viewBox="0 0 20 20" fill={isSaved ? 'currentColor' : 'none'}>
-                                    <path d="M5 3h10a2 2 0 012 2v14l-7-4-7 4V5a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.5" />
-                                </svg>
-                                <span>{isSaved ? 'Đã lưu' : 'Lưu'}</span>
-                            </button>
-                            <button onClick={handleShare}>
-                                <svg width="24" height="24" viewBox="0 0 20 20" fill="none">
-                                    <path d="M15 13v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3M10 3v10M10 3l-3 3M10 3l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                                </svg>
-                                <span>Chia sẻ</span>
-                            </button>
-                        </div>
+                <div className="mobile-menu-popup">
+                    {/* Header */}
+                    <div className="mobile-menu-header">
+                        <button
+                            className="mobile-menu-close"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setShowMobileMenu(false);
+                            }}
+                        >
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                        </button>
+                        <h3>Tùy chọn</h3>
+                        <div style={{ width: '24px' }}></div>
                     </div>
-                </>,
+
+                    {/* Actions */}
+                    <div className="mobile-menu-actions">
+                        <button onClick={handleLike} className={isLiked ? 'active' : ''}>
+                            <svg width="24" height="24" viewBox="0 0 20 20" fill={isLiked ? 'currentColor' : 'none'}>
+                                <path d="M10 17.5l-1.45-1.32C4.4 12.36 2 10.28 2 7.5 2 5.42 3.42 4 5.5 4c1.74 0 3.41.81 4.5 2.09C11.09 4.81 12.76 4 14.5 4 16.58 4 18 5.42 18 7.5c0 2.78-2.4 4.86-6.55 8.68L10 17.5z" stroke="currentColor" strokeWidth="1.5" />
+                            </svg>
+                            <span>{isLiked ? 'Bỏ thích' : 'Thích'}</span>
+                        </button>
+                        <button onClick={handleSave} className={isSaved ? 'active' : ''}>
+                            <svg width="24" height="24" viewBox="0 0 20 20" fill={isSaved ? 'currentColor' : 'none'}>
+                                <path d="M5 3h10a2 2 0 012 2v14l-7-4-7 4V5a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.5" />
+                            </svg>
+                            <span>{isSaved ? 'Đã lưu' : 'Lưu'}</span>
+                        </button>
+                        <button onClick={handleShare}>
+                            <svg width="24" height="24" viewBox="0 0 20 20" fill="none">
+                                <path d="M15 13v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3M10 3v10M10 3l-3 3M10 3l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                            </svg>
+                            <span>Chia sẻ</span>
+                        </button>
+                    </div>
+                </div>,
                 document.body
             )}
         </>
