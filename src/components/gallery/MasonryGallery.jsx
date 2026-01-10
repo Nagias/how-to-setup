@@ -1,32 +1,25 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import SetupCard from './SetupCard';
+import SeoHead from '../common/SeoHead';
 import './MasonryGallery.css';
 
 const MasonryGallery = () => {
     const { getFilteredSetups } = useApp();
     const [displayedSetups, setDisplayedSetups] = useState([]);
     const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
-    const [isLoading, setIsLoading] = useState(false);
-    const observerTarget = useRef(null);
-    const [activeMobileMenu, setActiveMobileMenu] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const observerRef = useRef(null);
+    const loadMoreRef = useRef(null);
 
     const ITEMS_PER_PAGE = 12;
 
     // Memoize filtered setups to prevent unnecessary re-renders
-    const filteredSetups = useMemo(() => getFilteredSetups(), [getFilteredSetups]);
+    const filteredSetups = React.useMemo(() => getFilteredSetups(), [getFilteredSetups]);
 
     useEffect(() => {
-        loadSetups();
+        loadSetups(1);
     }, [filteredSetups]);
-
-    const loadSetups = () => {
-        const newSetups = filteredSetups.slice(0, ITEMS_PER_PAGE);
-        setDisplayedSetups(newSetups);
-        setPage(1);
-        setHasMore(filteredSetups.length > ITEMS_PER_PAGE);
-    };
 
     useEffect(() => {
         // Intersection Observer for infinite scroll
@@ -36,8 +29,8 @@ const MasonryGallery = () => {
             threshold: 0.1
         };
 
-        const observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && !isLoading && hasMore) {
+        observerRef.current = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && !loading) {
                 loadMore();
             }
         }, options);
@@ -88,11 +81,11 @@ const MasonryGallery = () => {
             {displayedSetups.length === 0 && !loading ? (
                 <div className="empty-state">
                     <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
-                        <circle cx="60" cy="60" r="50" stroke="var(--color-border)" strokeWidth="2" />
-                        <path d="M60 40v40M40 60h40" stroke="var(--color-text-tertiary)" strokeWidth="2" strokeLinecap="round" />
+                        <path d="M60 20L20 100h80L60 20z" stroke="currentColor" strokeWidth="4" />
+                        <path d="M60 45v30M60 85v4" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
                     </svg>
                     <h3>Không tìm thấy setup nào</h3>
-                    <p>Hãy thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm</p>
+                    <p>Thử thay đổi bộ lọc hoặc tìm kiếm với từ khóa khác</p>
                 </div>
             ) : (
                 <>
@@ -102,28 +95,21 @@ const MasonryGallery = () => {
                         ))}
                     </div>
 
-                    {/* Loading Skeletons */}
-                    {loading && (
-                        <div className="masonry-grid">
-                            {[...Array(6)].map((_, i) => (
-                                <div key={i} className="setup-card skeleton-card">
-                                    <div className="skeleton skeleton-image"></div>
-                                    <div className="skeleton-content">
-                                        <div className="skeleton skeleton-title"></div>
-                                        <div className="skeleton skeleton-caption"></div>
-                                    </div>
+                    {/* Load More Trigger */}
+                    {hasMore && (
+                        <div ref={loadMoreRef} className="load-more-trigger">
+                            {loading && (
+                                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                    <p>Đang tải...</p>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     )}
-
-                    {/* Load More Trigger */}
-                    {hasMore && <div ref={loadMoreRef} className="load-more-trigger"></div>}
 
                     {/* End Message */}
                     {!hasMore && displayedSetups.length > 0 && (
                         <div className="end-message">
-                            <p>You've reached the end! 🎉</p>
+                            🎉 Bạn đã xem hết tất cả!
                         </div>
                     )}
                 </>
