@@ -235,7 +235,13 @@ export const AppProvider = ({ children }) => {
 
     // Toggle like
     const toggleLike = async (setupId) => {
-        const user = currentUser || getCurrentUser();
+        // Require logged-in user for Liking (same as Save)
+        if (!currentUser) {
+            setShowAuthModal(true);
+            return;
+        }
+
+        const user = currentUser;
         const res = await api.toggleLike(setupId, user.id);
         if (res.success) {
             // Optimistic update or reload
