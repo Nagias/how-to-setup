@@ -451,15 +451,14 @@
     .setup-detail-page {
         padding-top: 0;
         background: var(--color-bg-primary);
-        /* Reset to default */
     }
 
-    /* Back button - White background, inside image area */
+    /* Back button - Positioned INSIDE the image container */
     .back-btn {
-        position: fixed;
-        top: 80px;
+        position: absolute;
+        top: var(--space-md);
         left: var(--space-md);
-        z-index: 1000;
+        z-index: 100;
         width: 40px;
         height: 40px;
         padding: 0;
@@ -490,32 +489,35 @@
         gap: 0;
     }
 
-    /* Gallery section - Full width minus small margin */
+    /* Gallery section - Full width, no background */
     .setup-gallery-section {
         background: transparent;
         padding: 0;
         display: block;
-        /* Ensure block layout */
+        position: relative;
     }
 
+    /* Image container - Full width, no padding/margin, acts as positioning parent */
     .setup-main-image-container {
-        border-radius: var(--radius-lg);
+        position: relative;
+        width: 100%;
+        margin: 0;
+        padding: 0;
         background: transparent;
         box-shadow: none;
-        width: calc(100% - 16px);
-        margin: 8px auto 0;
-        /* Centered with small top margin */
-        overflow: hidden;
+        border-radius: 0;
+        overflow: visible;
         display: block;
     }
 
+    /* Image - Full width with rounded corners, no gaps */
     .setup-main-image {
-        max-height: 75vh;
-        border-radius: var(--radius-lg);
         width: 100%;
+        max-height: none;
+        height: auto;
         display: block;
-        /* Remove inline-block spacing */
-        object-fit: contain;
+        object-fit: cover;
+        border-radius: var(--radius-xl);
     }
 
     /* Mobile Masonry Grid for Similar Setups */
@@ -533,7 +535,7 @@
         overflow: hidden;
     }
 
-    /* Details section - Below image, no overlap */
+    /* Details section - Below image */
     .setup-details-section {
         padding: var(--space-lg);
         background: var(--color-surface);
