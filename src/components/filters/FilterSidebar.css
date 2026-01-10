@@ -285,6 +285,7 @@
         right: 0;
         /* Changed from left to right */
         height: 100vh;
+        max-height: none;
         z-index: 2000;
         transform: translateX(100%);
         /* Start from right */
