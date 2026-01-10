@@ -362,12 +362,6 @@ const Header = () => {
                         </button>
                     </div>
 
-                    {activeFilterCount > 0 && (
-                        <button className="btn-clear-filters" onClick={clearAllFilters}>
-                            Xóa tất cả bộ lọc
-                        </button>
-                    )}
-
                     <div className="mobile-filter-groups">
                         {Object.entries(filterOptions).map(([category, options]) => {
                             const categoryLabels = {
@@ -398,9 +392,16 @@ const Header = () => {
                         })}
                     </div>
 
-                    <button className="btn-apply-filters" onClick={() => setMobileFilterOpen(false)}>
-                        Áp dụng bộ lọc
-                    </button>
+                    <div className="mobile-filter-footer">
+                        {activeFilterCount > 0 && (
+                            <button className="btn-clear-filters" onClick={clearAllFilters}>
+                                Xóa tất cả bộ lọc
+                            </button>
+                        )}
+                        <button className="btn-apply-filters" onClick={() => setMobileFilterOpen(false)}>
+                            Áp dụng bộ lọc
+                        </button>
+                    </div>
                 </div>
             </>
         </header>
