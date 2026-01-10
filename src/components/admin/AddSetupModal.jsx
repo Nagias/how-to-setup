@@ -267,56 +267,57 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                 }
             }
 
-            // Upload files first
+            // Upload files first - Force Firebase Storage, NO BASE64 FALLBACK
             const processedMedia = await Promise.all(mediaList.map(async (item) => {
                 if (item.file) {
                     try {
-                        // Image upload only
+                        // Image upload only - Keep high quality
                         console.log(`🟡 Compressing image: ${item.file.name}`);
-                        const compressedBase64 = await compressImage(item.file, 2560, 0.95);
+                        // High quality compression: 2560px width, 0.92 quality
+                        const compressedBase64 = await compressImage(item.file, 2560, 0.92);
                         const blob = await (await fetch(compressedBase64)).blob();
                         const compressedFile = new File([blob], item.file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: "image/jpeg" });
 
-                        console.log(`🟡 Starting upload (Compressed): ${compressedFile.size / 1024} KB`);
+                        console.log(`🟡 Starting upload (Compressed): ${(compressedFile.size / 1024).toFixed(0)} KB`);
 
-                        // Try upload with 15s timeout fallback
-                        let downloadUrl;
-                        try {
-                            const uploadPromise = api.uploadFile(compressedFile);
-                            const timeoutPromise = new Promise((resolve) =>
-                                setTimeout(() => resolve('TIMEOUT'), 30000)
-                            );
+                        // Retry logic - 3 attempts with 60s timeout each
+                        let downloadUrl = null;
+                        let lastError = null;
 
-                            const result = await Promise.race([uploadPromise, timeoutPromise]);
+                        for (let attempt = 1; attempt <= 3; attempt++) {
+                            try {
+                                console.log(`🔄 Upload attempt ${attempt}/3...`);
+                                const uploadPromise = api.uploadFile(compressedFile);
+                                const timeoutPromise = new Promise((_, reject) =>
+                                    setTimeout(() => reject(new Error('TIMEOUT')), 60000)
+                                );
 
-                            if (result === 'TIMEOUT') {
-                                console.warn("Upload timed out (30s), switching to fallback");
-                                throw new Error("Timeout");
+                                downloadUrl = await Promise.race([uploadPromise, timeoutPromise]);
+                                console.log(`✅ Image uploaded on attempt ${attempt}: ${downloadUrl}`);
+                                break; // Success, exit retry loop
+                            } catch (uploadErr) {
+                                lastError = uploadErr;
+                                console.warn(`⚠️ Attempt ${attempt} failed:`, uploadErr.message);
+                                if (attempt < 3) {
+                                    console.log(`⏳ Waiting 2s before retry...`);
+                                    await new Promise(r => setTimeout(r, 2000));
+                                }
                             }
-
-                            downloadUrl = result;
-                            console.log(`✅ Image uploaded: ${downloadUrl}`);
-                            return { ...item, url: downloadUrl, file: null };
-                        } catch (uploadErr) {
-                            console.warn("Upload failed/timed out, switching to fallback:", uploadErr);
                         }
 
-                        // If we reached here, upload failed. Use Fallback.
-                        // Silent Fallback: No Alert, just save as Base64.
-                        console.log('⚠️ Using Silent Base64 fallback');
-                        // Reduce to 800px, 0.5 quality for aggressive compression
-                        // 800px ~ 80-100KB per image -> 8 images = 640-800KB (Safe under 1MB)
-                        const fallbackBase64 = await compressImage(item.file, 800, 0.5);
-                        return { ...item, url: fallbackBase64, file: null };
+                        if (!downloadUrl) {
+                            throw new Error(`Upload thất bại sau 3 lần thử: ${lastError?.message || 'Network error'}`);
+                        }
+
+                        return { ...item, url: downloadUrl, file: null };
 
                     } catch (err) {
-                        console.error('❌ Serious logic error', err);
-                        // Last resort: Return empty or placeholder to prevent crash
-                        return { ...item, url: "https://via.placeholder.com/800?text=Error", file: null };
+                        console.error('❌ Image upload failed:', err);
+                        throw new Error(`Không thể tải ảnh "${item.file.name}": ${err.message}`);
                     }
                 }
 
-                // Existing items
+                // Existing items (already have URL)
                 return item;
             }));
 
