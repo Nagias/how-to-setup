@@ -4,16 +4,6 @@ import SetupCard from './SetupCard';
 import SeoHead from '../common/SeoHead';
 import './MasonryGallery.css';
 
-// Skeleton Card Component for loading state
-const SkeletonCard = ({ index }) => (
-    <div className="skeleton-card" style={{ animationDelay: `${index * 0.1}s` }}>
-        <div className="skeleton-image" />
-        <div className="skeleton-content">
-            <div className="skeleton-title" />
-            <div className="skeleton-caption" />
-        </div>
-    </div>
-);
 
 const MasonryGallery = () => {
     const { getFilteredSetups, loading } = useApp();
@@ -83,8 +73,8 @@ const MasonryGallery = () => {
 
     const hasMore = displayedSetups.length < filteredSetups.length;
 
-    // Show skeleton if loading globally (no cache) and no data yet
-    const showSkeleton = loading && filteredSetups.length === 0;
+    // Show loading state when no data yet
+    const isInitialLoading = loading && filteredSetups.length === 0;
 
     return (
         <div className="masonry-gallery">
@@ -93,17 +83,17 @@ const MasonryGallery = () => {
                 description="Bộ sưu tập những góc làm việc, setup bàn phím, màn hình đẹp nhất được chia sẻ bởi cộng đồng."
             />
 
-            {/* Skeleton Loading State */}
-            {showSkeleton && (
-                <div className="masonry-grid">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                        <SkeletonCard key={`skeleton-${i}`} index={i} />
-                    ))}
+            {/* Loading State with friendly message */}
+            {isInitialLoading && (
+                <div className="loading-state">
+                    <div className="loading-spinner"></div>
+                    <h3>Sắp load xong các góc setup, bạn đừng thoát nhé 🥺</h3>
+                    <p>Đang tải dữ liệu từ server...</p>
                 </div>
             )}
 
-            {/* Empty State - Only show if not loading and truly empty */}
-            {!showSkeleton && displayedSetups.length === 0 && !loading && (
+            {/* Empty State - Only show if not loading and truly empty (after filter) */}
+            {!isInitialLoading && displayedSetups.length === 0 && !loading && (
                 <div className="empty-state">
                     <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
                         <path d="M60 20L20 100h80L60 20z" stroke="currentColor" strokeWidth="4" />
