@@ -299,25 +299,60 @@
     gap: var(--space-sm);
 }
 
-/* Desktop Similar Setups - Right Column */
-.similar-setups-section-desktop {
-    background: var(--color-surface);
-    border-radius: var(--radius-xl);
-    padding: var(--space-lg);
-    box-shadow: var(--shadow-md);
-}
 
-.similar-setups-section-desktop h4 {
-    font-size: var(--font-size-lg);
-    font-weight: 700;
-    margin-bottom: var(--space-lg);
-    color: var(--color-text-primary);
-}
 
 .similar-setups-grid-desktop {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-sm);
+    gap: var(--space-md);
+    /* Increased gap slightly */
+}
+
+/* Zoom Controls */
+.zoom-controls {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    padding: 6px;
+    border-radius: var(--radius-full);
+    z-index: 20;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all var(--transition-fast);
+}
+
+.setup-main-image-container:hover .zoom-controls {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.zoom-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: var(--radius-full);
+    transition: all var(--transition-fast);
+}
+
+.zoom-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.zoom-reset {
+    width: auto;
+    padding: 0 8px;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .similar-setup-card {

@@ -148,6 +148,8 @@ const SetupDetailPage = () => {
     const [touchStart, setTouchStart] = useState(null);
     const [touchEnd, setTouchEnd] = useState(null);
     const [showAllComments, setShowAllComments] = useState(false);
+    const [zoomLevel, setZoomLevel] = useState(1);
+    const [showZoomControls, setShowZoomControls] = useState(false);
 
     const minSwipeDistance = 50;
 
@@ -325,12 +327,58 @@ const SetupDetailPage = () => {
                                 onTouchMove={isMobile ? onTouchMove : undefined}
                                 onTouchEnd={isMobile ? onTouchEnd : undefined}
                                 onClick={handleImageClick}
+                                onMouseEnter={() => !isMobile && setShowZoomControls(true)}
+                                onMouseLeave={() => !isMobile && setShowZoomControls(false)}
                             >
                                 <img
                                     src={currentMedia.url}
                                     alt={setup.title}
                                     className="setup-main-image"
+                                    style={{ transform: `scale(${zoomLevel})`, transition: 'transform 0.2s ease' }}
                                 />
+
+                                {/* Zoom Controls - Desktop only, show on hover */}
+                                {!isMobile && showZoomControls && (
+                                    <div className="zoom-controls">
+                                        <button
+                                            className="zoom-btn"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setZoomLevel(prev => Math.min(prev + 0.25, 3));
+                                            }}
+                                            title="Phóng to"
+                                        >
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                <line x1="12" y1="5" x2="12" y2="19" />
+                                                <line x1="5" y1="12" x2="19" y2="12" />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            className="zoom-btn"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setZoomLevel(prev => Math.max(prev - 0.25, 0.5));
+                                            }}
+                                            title="Thu nhỏ"
+                                        >
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                <line x1="5" y1="12" x2="19" y2="12" />
+                                            </svg>
+                                        </button>
+                                        {zoomLevel !== 1 && (
+                                            <button
+                                                className="zoom-btn zoom-reset"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setZoomLevel(1);
+                                                }}
+                                                title="Reset"
+                                            >
+                                                {Math.round(zoomLevel * 100)}%
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* Product Markers with full tooltip functionality */}
                                 {showProducts && currentMedia.products && currentMedia.products.map((product, index) => (
@@ -538,7 +586,6 @@ const SetupDetailPage = () => {
                     {!isMobile && similarSetups.length > 0 && (
                         <div className="setup-right-column">
                             <div className="similar-setups-section-desktop">
-                                <h4>Setup tương tự</h4>
                                 <div className="similar-setups-grid-desktop">
                                     {similarSetups.map(similar => (
                                         <div
