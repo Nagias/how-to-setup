@@ -91,43 +91,49 @@
     border-radius: var(--radius-xl);
 }
 
-/* Product Markers */
+/* Product Markers - Minimal white stroke style */
 .product-marker {
     position: absolute;
     transform: translate(-50%, -50%);
     z-index: 20;
-    /* High z-index */
 }
 
 .marker-btn {
     width: 32px;
-    /* Slightly smaller base size */
     height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: white;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+    border: 2px solid rgba(255, 255, 255, 0.9);
     border-radius: var(--radius-full);
-    box-shadow: var(--shadow-xl);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     transition: all var(--transition-fast);
     animation: pulse 2s infinite;
 }
 
+.marker-btn svg {
+    color: white;
+}
+
 .marker-btn:hover {
-    transform: scale(1.1);
-    box-shadow: var(--shadow-2xl);
+    transform: scale(1.15);
+    background: rgba(0, 0, 0, 0.5);
+    border-color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes pulse {
 
     0%,
     100% {
-        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
     }
 
     50% {
-        box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+        box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
     }
 }
 
@@ -212,20 +218,22 @@
     bottom: var(--space-md);
     right: var(--space-md);
     padding: var(--space-sm) var(--space-lg);
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
     color: white;
     border-radius: var(--radius-full);
     font-size: var(--font-size-sm);
     font-weight: 600;
     transition: all var(--transition-fast);
+    opacity: 0.7;
 }
 
 .toggle-products-btn:hover {
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.8);
+    opacity: 1;
 }
 
-/* Navigation Arrows (Facebook-style) */
+/* Navigation Arrows (Minimal, transparent style) */
 .nav-arrow {
     position: absolute;
     top: 50%;
@@ -235,20 +243,22 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(10px);
     border-radius: var(--radius-full);
     color: var(--color-text-primary);
-    box-shadow: var(--shadow-xl);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     transition: all var(--transition-fast);
     z-index: 30;
+    opacity: 0.6;
 }
 
 .nav-arrow:hover {
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
     transform: translateY(-50%) scale(1.1);
-    box-shadow: var(--shadow-2xl);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 1;
 }
 
 .nav-arrow:active {
@@ -264,18 +274,20 @@
 }
 
 .nav-arrow:disabled {
-    opacity: 0.3;
+    opacity: 0.2;
     cursor: not-allowed;
     pointer-events: none;
 }
 
 [data-theme="dark"] .nav-arrow {
-    background: rgba(30, 30, 40, 0.9);
+    background: rgba(30, 30, 40, 0.6);
     color: white;
+    opacity: 0.6;
 }
 
 [data-theme="dark"] .nav-arrow:hover {
-    background: rgba(40, 40, 50, 1);
+    background: rgba(40, 40, 50, 0.95);
+    opacity: 1;
 }
 
 /* Mobile arrow adjustments */
@@ -283,7 +295,12 @@
     .nav-arrow {
         width: 40px;
         height: 40px;
-        background: rgba(255, 255, 255, 0.95);
+        background: rgba(255, 255, 255, 0.5);
+        opacity: 0.7;
+    }
+
+    .nav-arrow:hover {
+        opacity: 1;
     }
 
     .nav-arrow.prev {
