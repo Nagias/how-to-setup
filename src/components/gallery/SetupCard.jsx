@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import ReactDOM from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
 import './SetupCard.css';
@@ -257,8 +256,8 @@ const SetupCard = ({ setup, index }) => {
                 </div>
             </Link>
 
-            {/* Mobile Menu Portal - Render at document root */}
-            {showMobileMenu && ReactDOM.createPortal(
+            {/* Mobile Menu - Render inside card, not portal */}
+            {showMobileMenu && (
                 <div className="mobile-menu-popup">
                     {/* Header */}
                     <div className="mobile-menu-header">
@@ -299,8 +298,7 @@ const SetupCard = ({ setup, index }) => {
                             <span>Chia sẻ</span>
                         </button>
                     </div>
-                </div>,
-                document.body
+                </div>
             )}
         </>
     );
