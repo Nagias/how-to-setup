@@ -50,16 +50,34 @@ const SetupCard = ({ setup, index }) => {
         e.preventDefault();
         e.stopPropagation();
 
-        // Close all other menus first
-        document.querySelectorAll('.mobile-menu-popup').forEach(popup => {
-            if (popup.dataset.cardId !== setup.id) {
-                const closeEvent = new Event('closemenu');
-                popup.dispatchEvent(closeEvent);
-            }
-        });
+        // Close ALL other menus first by setting their state
+        if (!showMobileMenu) {
+            // Before opening this menu, close all others
+            const allCards = document.querySelectorAll('.setup-card');
+            allCards.forEach(card => {
+                // Trigger a custom event to close other menus
+                card.dispatchEvent(new CustomEvent('closeOtherMenus', {
+                    detail: { exceptId: setup.id }
+                }));
+            });
+        }
 
         setShowMobileMenu(!showMobileMenu);
     };
+
+    // Listen for close event from other cards
+    React.useEffect(() => {
+        const cardElement = document.querySelector(`[data-setup-id="${setup.id}"]`);
+        if (cardElement) {
+            const handleCloseOthers = (e) => {
+                if (e.detail.exceptId !== setup.id) {
+                    setShowMobileMenu(false);
+                }
+            };
+            cardElement.addEventListener('closeOtherMenus', handleCloseOthers);
+            return () => cardElement.removeEventListener('closeOtherMenus', handleCloseOthers);
+        }
+    }, [setup.id]);
 
     // Close menu when clicking outside OR scrolling
     React.useEffect(() => {
@@ -108,6 +126,7 @@ const SetupCard = ({ setup, index }) => {
             <Link
                 to={`/setup/${setup.id}`}
                 className="setup-card"
+                data-setup-id={setup.id}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
             >
