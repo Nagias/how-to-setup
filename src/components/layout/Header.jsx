@@ -36,16 +36,23 @@ const Header = () => {
     return (
         <header className="header">
             <div className="container header-container">
-                {/* Mobile: Hamburger Button */}
+                {/* Mobile: User/Avatar Button */}
                 <button
                     className="btn-icon mobile-menu-toggle"
                     onClick={() => setMobileMenuOpen(true)}
                 >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="3" y1="12" x2="21" y2="12"></line>
-                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                        <line x1="3" y1="18" x2="21" y2="18"></line>
-                    </svg>
+                    {currentUser ? (
+                        <img
+                            src={currentUser.avatar || `https://ui-avatars.com/api/?name=${currentUser.displayName}`}
+                            alt=""
+                            className="mobile-avatar-btn"
+                        />
+                    ) : (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    )}
                 </button>
 
                 {/* Logo */}
@@ -238,7 +245,12 @@ const Header = () => {
                 <div className={`mobile-menu-drawer ${mobileMenuOpen ? 'open' : ''}`}>
                     <div className="mobile-menu-header">
                         <h3>Menu</h3>
-                        <button className="btn-icon" onClick={() => setMobileMenuOpen(false)}>&times;</button>
+                        <button className="mobile-close-btn" onClick={() => setMobileMenuOpen(false)}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
                     </div>
 
                     {currentUser && (
@@ -253,22 +265,22 @@ const Header = () => {
 
                     <div className="mobile-nav-links">
                         <Link to="/" className={`mobile-nav-item ${location.pathname === '/' ? 'active' : ''}`} onClick={closeMobileMenu}>
-                            🏠 Trang Chủ
+                            Trang Chủ
                         </Link>
                         <Link to="/blog" className={`mobile-nav-item ${location.pathname.startsWith('/blog') ? 'active' : ''}`} onClick={closeMobileMenu}>
-                            📰 Blog
+                            Blog
                         </Link>
 
                         {currentUser?.role === 'admin' && (
                             <Link to="/admin" className="mobile-nav-item" onClick={closeMobileMenu}>
-                                📊 Quản Lý (Admin)
+                                Quản Lý (Admin)
                             </Link>
                         )}
                     </div>
 
                     <div className="mobile-actions">
                         <button className="mobile-action-btn" onClick={() => { setShowCollectionsModal(true); closeMobileMenu(); }}>
-                            📦 Setup Đã Lưu
+                            Setup Đã Lưu
                         </button>
 
                         {currentUser?.role === 'admin' && (
@@ -279,12 +291,12 @@ const Header = () => {
 
                         {!currentUser && (
                             <button className="mobile-action-btn primary" onClick={() => { setShowAuthModal(true); closeMobileMenu(); }}>
-                                🔐 Đăng Nhập
+                                Đăng Nhập
                             </button>
                         )}
 
                         <button className="mobile-action-btn" onClick={toggleTheme}>
-                            {theme === 'light' ? '🌙 Chế Độ Tối' : '☀️ Chế Độ Sáng'}
+                            {theme === 'light' ? 'Chế Độ Tối' : 'Chế Độ Sáng'}
                         </button>
                     </div>
                 </div>

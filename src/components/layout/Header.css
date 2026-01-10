@@ -336,6 +336,40 @@
     margin-bottom: var(--space-md);
 }
 
+.mobile-menu-header h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+}
+
+/* Mobile Avatar Button (in header) */
+.mobile-avatar-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+    border: 2px solid var(--color-border);
+}
+
+/* Mobile Close Button */
+.mobile-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: none;
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-md);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.mobile-close-btn:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-primary);
+}
+
 .mobile-user-profile {
     display: flex;
     align-items: center;
