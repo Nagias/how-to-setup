@@ -245,15 +245,30 @@
     background: white;
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-    z-index: 10;
-    /* Very low z-index to not interfere with cards */
+    z-index: 9999;
+    /* High z-index but use pointer-events to allow clicks through */
     animation: slideUp 0.3s ease-out;
-    max-height: 70vh;
+    max-height: 40vh;
+    /* Smaller height to not cover cards */
     overflow-y: auto;
     will-change: transform;
     /* Optimize for mobile */
     transform: translateZ(0);
     /* Force GPU acceleration */
+    pointer-events: auto;
+}
+
+/* Allow clicks to pass through the area above popup */
+.mobile-menu-popup::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 40vh;
+    /* Match max-height */
+    pointer-events: none;
+    /* Clicks pass through */
 }
 
 @keyframes fadeIn {
