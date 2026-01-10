@@ -208,6 +208,7 @@
 /* Mobile Menu Button - Pinterest style */
 .mobile-menu-btn {
     display: none;
+    /* Hidden by default on desktop */
     position: absolute;
     bottom: var(--space-sm);
     right: var(--space-sm);
@@ -430,9 +431,24 @@
         display: none !important;
     }
 
-    /* Show mobile menu button */
+    /* Show mobile menu button ONLY on mobile */
     .mobile-menu-btn {
         display: flex !important;
+    }
+}
+
+/* Desktop - ensure mobile elements are hidden */
+@media (min-width: 769px) {
+    .mobile-menu-btn {
+        display: none !important;
+    }
+
+    .mobile-menu-backdrop {
+        display: none !important;
+    }
+
+    .mobile-menu-popup {
+        display: none !important;
     }
 }
 
