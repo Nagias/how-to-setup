@@ -201,11 +201,13 @@ const SetupCard = ({ setup, index }) => {
                 <div className="setup-card-meta" style={{ justifyContent: 'space-between', width: '100%', marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid var(--color-border)' }}>
                     <div className="setup-card-author">
                         <img
-                            src={setup.author.avatar}
-                            alt={setup.author.name}
+                            src={typeof setup.author === 'object' ? setup.author.avatar : setup.avatar}
+                            alt={typeof setup.author === 'object' ? setup.author.name : setup.author}
                             className="author-avatar"
                         />
-                        <span className="author-name">{setup.author.name}</span>
+                        <span className="author-name">
+                            {typeof setup.author === 'object' ? setup.author.name : setup.author}
+                        </span>
                     </div>
 
                     {/* Stats */}

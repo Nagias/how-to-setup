@@ -263,10 +263,16 @@ const SetupDetailPage = () => {
                     <div className="setup-details-section">
                         <div className="setup-header">
                             <div className="author-info">
-                                <img src={setup.avatar} alt={setup.author} className="author-avatar" />
+                                <img
+                                    src={typeof setup.author === 'object' ? setup.author.avatar : setup.avatar}
+                                    alt={typeof setup.author === 'object' ? setup.author.name : setup.author}
+                                    className="author-avatar"
+                                />
                                 <div>
                                     <h1 className="setup-title">{setup.title}</h1>
-                                    <p className="author-name">{setup.author}</p>
+                                    <p className="author-name">
+                                        {typeof setup.author === 'object' ? setup.author.name : setup.author}
+                                    </p>
                                 </div>
                             </div>
 
