@@ -559,7 +559,7 @@ const SetupDetailPage = () => {
                                 <div className="similar-setups-section mobile-similar">
                                     <h4>Setup tương tự</h4>
                                     <div className="similar-setups-grid">
-                                        {similarSetups.slice(0, 4).map(similar => (
+                                        {similarSetups.slice(0, 6).map(similar => (
                                             <div
                                                 key={similar.id}
                                                 className="similar-setup-card"
