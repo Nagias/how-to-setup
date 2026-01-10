@@ -446,21 +446,6 @@
     }
 }
 
-/* Desktop - ensure mobile elements are hidden */
-@media (min-width: 769px) {
-    .mobile-menu-btn {
-        display: none !important;
-    }
-
-    .mobile-menu-backdrop {
-        display: none !important;
-    }
-
-    .mobile-menu-popup {
-        display: none !important;
-    }
-}
-
 /* Responsive */
 @media (max-width: 768px) {
     .setup-card-content {
