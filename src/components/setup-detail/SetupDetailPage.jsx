@@ -136,7 +136,8 @@ const SetupDetailPage = () => {
         hasUserSaved,
         getSimilarSetups,
         currentUser,
-        setShowAuthModal
+        setShowAuthModal,
+        loading
     } = useApp();
 
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -155,6 +156,15 @@ const SetupDetailPage = () => {
 
     // Get setup by ID
     const setup = setups.find(s => s.id === setupId);
+
+    // Show loading if data is fetching
+    if (loading && !setup) {
+        return (
+            <div className="setup-detail-page" style={{ paddingTop: '100px', display: 'flex', justifyContent: 'center' }}>
+                <div style={{ color: 'var(--color-text-primary)' }}>Loading...</div>
+            </div>
+        );
+    }
 
     // Redirect if setup not found
     if (!setup) {
@@ -337,6 +347,42 @@ const SetupDetailPage = () => {
                                     style={{ transform: `scale(${zoomLevel})`, transition: 'transform 0.2s ease' }}
                                 />
 
+                                {/* Product Markers with full tooltip functionality */}
+                                {showProducts && currentMedia.products && currentMedia.products.map((product, index) => (
+                                    <ProductMarker
+                                        key={index}
+                                        product={product}
+                                        isActive={activeProduct === product}
+                                        onActivate={setActiveProduct}
+                                    />
+                                ))}
+
+                                {/* Toggle Products Button - Bottom Right with Text */}
+                                {currentMedia.products && currentMedia.products.length > 0 && (
+                                    <button
+                                        className="toggle-products-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowProducts(!showProducts);
+                                        }}
+                                    >
+                                        <div className="toggle-content">
+                                            {showProducts ? (
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                                    <line x1="1" y1="1" x2="23" y2="23" />
+                                                </svg>
+                                            ) : (
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                                    <circle cx="12" cy="12" r="3" />
+                                                </svg>
+                                            )}
+                                            <span>{showProducts ? 'Ẩn sản phẩm' : 'Hiện sản phẩm'}</span>
+                                        </div>
+                                    </button>
+                                )}
+
                                 {/* Zoom Controls - Desktop only, show on hover */}
                                 {!isMobile && showZoomControls && (
                                     <div className="zoom-controls">
@@ -378,34 +424,6 @@ const SetupDetailPage = () => {
                                             </button>
                                         )}
                                     </div>
-                                )}
-
-                                {/* Product Markers with full tooltip functionality */}
-                                {showProducts && currentMedia.products && currentMedia.products.map((product, index) => (
-                                    <ProductMarker
-                                        key={index}
-                                        product={product}
-                                        isActive={activeProduct === product}
-                                        onActivate={setActiveProduct}
-                                    />
-                                ))}
-
-                                {/* Toggle Products Button - Small icon only */}
-                                {currentMedia.products && currentMedia.products.length > 0 && (
-                                    <button
-                                        className="toggle-products-btn"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setShowProducts(!showProducts);
-                                        }}
-                                        title={showProducts ? 'Ẩn sản phẩm' : 'Hiện sản phẩm'}
-                                    >
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                                            <line x1="7" y1="7" x2="7.01" y2="7" />
-                                        </svg>
-                                        {!showProducts && <span className="products-badge">{currentMedia.products.length}</span>}
-                                    </button>
                                 )}
 
                                 {/* Navigation Arrows - Desktop only */}
@@ -557,7 +575,6 @@ const SetupDetailPage = () => {
                             {/* Similar Setups - MOBILE ONLY (shows below comments on mobile) */}
                             {isMobile && similarSetups.length > 0 && (
                                 <div className="similar-setups-section mobile-similar">
-                                    <h4>Setup tương tự</h4>
                                     <div className="similar-setups-grid">
                                         {similarSetups.slice(0, 6).map(similar => (
                                             <div

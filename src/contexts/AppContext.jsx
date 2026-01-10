@@ -537,6 +537,7 @@ export const AppProvider = ({ children }) => {
         theme,
         toggleTheme,
         setups,
+        loading,
         blogs,
         currentUser,
         refreshUser,
