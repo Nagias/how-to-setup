@@ -97,12 +97,30 @@
     }
 }
 
-
 .footer-content {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr;
     gap: var(--space-2xl);
     padding: var(--space-3xl) var(--space-lg);
+}
+
+/* Mobile Filter Strategy */
+.mobile-filter-wrapper {
+    display: none;
+}
+
+.desktop-sidebar-wrapper {
+    display: block;
+}
+
+@media (max-width: 1024px) {
+    .mobile-filter-wrapper {
+        display: block;
+    }
+
+    .desktop-sidebar-wrapper {
+        display: none;
+    }
 }
 
 .footer-section h4 {

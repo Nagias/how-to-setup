@@ -21,7 +21,9 @@ import './App.css';
 // Gallery Page Component
 const GalleryPage = () => (
     <div className="gallery-layout">
-        <FilterSidebar />
+        <div className="desktop-sidebar-wrapper">
+            <FilterSidebar />
+        </div>
         <div className="gallery-content">
             <MasonryGallery />
         </div>
@@ -112,6 +114,11 @@ const AppContent = () => {
                     <Route path="/admin" element={<AdminDashboard />} />
                 </Routes>
             </main>
+
+            {/* Global Mobile Filter Sidebar */}
+            <div className="mobile-filter-wrapper">
+                <FilterSidebar />
+            </div>
 
             {/* Modals - SetupDetailModal manages its own URL logic or stays as modal */}
             {selectedSetup && <SetupDetailModal />}
