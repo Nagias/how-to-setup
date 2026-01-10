@@ -184,7 +184,7 @@ const SetupDetailPage = () => {
     const isLiked = hasUserLiked(setup.id);
     const isSaved = hasUserSaved(setup.id);
     const comments = getComments(setup.id);
-    const similarSetups = getSimilarSetups(setup.id, 4);
+    const similarSetups = getSimilarSetups(setup.id, 8);
 
     // Detect mobile viewport
     useEffect(() => {
@@ -315,209 +315,232 @@ const SetupDetailPage = () => {
                 )}
 
                 <div className="setup-content">
-                    {/* Image Gallery Section */}
-                    <div className="setup-gallery-section">
-                        <div
-                            className="setup-main-image-container"
-                            onTouchStart={isMobile ? onTouchStart : undefined}
-                            onTouchMove={isMobile ? onTouchMove : undefined}
-                            onTouchEnd={isMobile ? onTouchEnd : undefined}
-                            onClick={handleImageClick}
-                        >
-                            <img
-                                src={currentMedia.url}
-                                alt={setup.title}
-                                className="setup-main-image"
-                            />
-
-                            {/* Product Markers with full tooltip functionality */}
-                            {showProducts && currentMedia.products && currentMedia.products.map((product, index) => (
-                                <ProductMarker
-                                    key={index}
-                                    product={product}
-                                    isActive={activeProduct === product}
-                                    onActivate={setActiveProduct}
+                    {/* LEFT COLUMN: Image + Details Below */}
+                    <div className="setup-left-column">
+                        {/* Image Gallery Section */}
+                        <div className="setup-gallery-section">
+                            <div
+                                className="setup-main-image-container"
+                                onTouchStart={isMobile ? onTouchStart : undefined}
+                                onTouchMove={isMobile ? onTouchMove : undefined}
+                                onTouchEnd={isMobile ? onTouchEnd : undefined}
+                                onClick={handleImageClick}
+                            >
+                                <img
+                                    src={currentMedia.url}
+                                    alt={setup.title}
+                                    className="setup-main-image"
                                 />
-                            ))}
 
-                            {/* Toggle Products Button */}
-                            {currentMedia.products && currentMedia.products.length > 0 && (
-                                <button
-                                    className="toggle-products-btn"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setShowProducts(!showProducts);
-                                    }}
-                                    style={{
-                                        position: 'absolute',
-                                        bottom: '60px',
-                                        right: '10px',
-                                        background: 'rgba(0,0,0,0.7)',
-                                        color: 'white',
-                                        border: 'none',
-                                        padding: '8px 12px',
-                                        borderRadius: '20px',
-                                        fontSize: '12px',
-                                        cursor: 'pointer',
-                                        zIndex: 10
-                                    }}
-                                >
-                                    {showProducts ? 'Ẩn sản phẩm' : 'Hiện sản phẩm'}
-                                </button>
-                            )}
+                                {/* Product Markers with full tooltip functionality */}
+                                {showProducts && currentMedia.products && currentMedia.products.map((product, index) => (
+                                    <ProductMarker
+                                        key={index}
+                                        product={product}
+                                        isActive={activeProduct === product}
+                                        onActivate={setActiveProduct}
+                                    />
+                                ))}
 
-                            {/* Navigation Arrows - Desktop only */}
-                            {!isMobile && mediaItems.length > 1 && (
-                                <>
+                                {/* Toggle Products Button */}
+                                {currentMedia.products && currentMedia.products.length > 0 && (
                                     <button
-                                        className="nav-arrow prev"
-                                        onClick={() => setCurrentImageIndex(prev => Math.max(0, prev - 1))}
-                                        disabled={currentImageIndex === 0}
+                                        className="toggle-products-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowProducts(!showProducts);
+                                        }}
+                                        style={{
+                                            position: 'absolute',
+                                            bottom: '60px',
+                                            right: '10px',
+                                            background: 'rgba(0,0,0,0.7)',
+                                            color: 'white',
+                                            border: 'none',
+                                            padding: '8px 12px',
+                                            borderRadius: '20px',
+                                            fontSize: '12px',
+                                            cursor: 'pointer',
+                                            zIndex: 10
+                                        }}
                                     >
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                            <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
+                                        {showProducts ? 'Ẩn sản phẩm' : 'Hiện sản phẩm'}
                                     </button>
-                                    <button
-                                        className="nav-arrow next"
-                                        onClick={() => setCurrentImageIndex(prev => Math.min(mediaItems.length - 1, prev + 1))}
-                                        disabled={currentImageIndex === mediaItems.length - 1}
-                                    >
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                            <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    </button>
-                                </>
-                            )}
+                                )}
 
-                            {/* Pagination dots */}
-                            {mediaItems.length > 1 && (
-                                <div className="image-pagination-dots">
-                                    {mediaItems.map((_, index) => (
+                                {/* Navigation Arrows - Desktop only */}
+                                {!isMobile && mediaItems.length > 1 && (
+                                    <>
                                         <button
-                                            key={index}
-                                            className={`pagination-dot ${index === currentImageIndex ? 'active' : ''}`}
-                                            onClick={() => setCurrentImageIndex(index)}
-                                        />
+                                            className="nav-arrow prev"
+                                            onClick={() => setCurrentImageIndex(prev => Math.max(0, prev - 1))}
+                                            disabled={currentImageIndex === 0}
+                                        >
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            className="nav-arrow next"
+                                            onClick={() => setCurrentImageIndex(prev => Math.min(mediaItems.length - 1, prev + 1))}
+                                            disabled={currentImageIndex === mediaItems.length - 1}
+                                        >
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        </button>
+                                    </>
+                                )}
+
+                                {/* Pagination dots */}
+                                {mediaItems.length > 1 && (
+                                    <div className="image-pagination-dots">
+                                        {mediaItems.map((_, index) => (
+                                            <button
+                                                key={index}
+                                                className={`pagination-dot ${index === currentImageIndex ? 'active' : ''}`}
+                                                onClick={() => setCurrentImageIndex(index)}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Details Section - Below Image on Desktop */}
+                        <div className="setup-details-section">
+                            {/* Author info + Action buttons in same row */}
+                            <div className="setup-header-row">
+                                <div className="setup-author-simple">
+                                    <img
+                                        src={typeof setup.author === 'object' ? setup.author.avatar : setup.avatar}
+                                        alt={typeof setup.author === 'object' ? setup.author.name : setup.author}
+                                        className="author-avatar-small"
+                                    />
+                                    <span className="author-name-simple">
+                                        {typeof setup.author === 'object' ? setup.author.name : setup.author}
+                                    </span>
+                                </div>
+
+                                {/* Action buttons - Like, Save, Share */}
+                                <div className="setup-actions-row">
+                                    <button className={`action-btn-icon ${isLiked ? 'active' : ''}`} onClick={handleLike} title="Thích">
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+                                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                                        </svg>
+                                    </button>
+                                    <button className={`action-btn-icon ${isSaved ? 'active' : ''}`} onClick={handleSave} title="Lưu">
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+                                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        className="action-btn-icon"
+                                        title="Chia sẻ"
+                                        onClick={() => {
+                                            if (navigator.share) {
+                                                navigator.share({
+                                                    title: setup.title,
+                                                    text: setup.caption,
+                                                    url: window.location.href
+                                                });
+                                            } else {
+                                                navigator.clipboard.writeText(window.location.href);
+                                                alert('Đã copy link!');
+                                            }
+                                        }}
+                                    >
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <circle cx="18" cy="5" r="3" />
+                                            <circle cx="6" cy="12" r="3" />
+                                            <circle cx="18" cy="19" r="3" />
+                                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <p className="setup-caption">{setup.caption}</p>
+
+                            {/* Tags */}
+                            {setup.tags && setup.tags.length > 0 && (
+                                <div className="setup-tags">
+                                    {setup.tags.map((tag, i) => (
+                                        <span key={i} className="setup-tag">#{tag}</span>
                                     ))}
+                                </div>
+                            )}
+
+                            {/* Comments - Preview mode */}
+                            <div className="comments-section">
+                                <h4>Bình luận ({comments.length})</h4>
+
+                                <form className="comment-form" onSubmit={handleComment}>
+                                    <input
+                                        type="text"
+                                        placeholder="Thêm bình luận..."
+                                        value={commentText}
+                                        onChange={(e) => setCommentText(e.target.value)}
+                                        className="comment-input"
+                                    />
+                                    <button type="submit" className="btn-primary">Gửi</button>
+                                </form>
+
+                                <div className="comments-list">
+                                    {comments.length === 0 ? (
+                                        <p className="no-comments">Chưa có bình luận nào</p>
+                                    ) : (
+                                        <>
+                                            {comments.slice(0, showAllComments ? comments.length : 2).map(comment => (
+                                                <div key={comment.id} className="comment">
+                                                    <img src={comment.avatar} alt={comment.author} className="comment-avatar" />
+                                                    <div className="comment-content">
+                                                        <p className="comment-author">{comment.author}</p>
+                                                        <p className="comment-text">{comment.text}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {comments.length > 2 && !showAllComments && (
+                                                <button
+                                                    className="show-more-comments"
+                                                    onClick={() => setShowAllComments(true)}
+                                                >
+                                                    Xem thêm {comments.length - 2} bình luận
+                                                </button>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Similar Setups - MOBILE ONLY (shows below comments on mobile) */}
+                            {isMobile && similarSetups.length > 0 && (
+                                <div className="similar-setups-section mobile-similar">
+                                    <h4>Setup tương tự</h4>
+                                    <div className="similar-setups-grid">
+                                        {similarSetups.slice(0, 4).map(similar => (
+                                            <div
+                                                key={similar.id}
+                                                className="similar-setup-card"
+                                                onClick={() => navigate(`/setup/${similar.id}`)}
+                                            >
+                                                <img src={similar.mainImage} alt={similar.title} />
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    {/* Details Sidebar - Pinterest style */}
-                    <div className="setup-details-section">
-                        {/* Author info + Action buttons in same row */}
-                        <div className="setup-header-row">
-                            <div className="setup-author-simple">
-                                <img
-                                    src={typeof setup.author === 'object' ? setup.author.avatar : setup.avatar}
-                                    alt={typeof setup.author === 'object' ? setup.author.name : setup.author}
-                                    className="author-avatar-small"
-                                />
-                                <span className="author-name-simple">
-                                    {typeof setup.author === 'object' ? setup.author.name : setup.author}
-                                </span>
-                            </div>
-
-                            {/* Action buttons - Like, Save, Share */}
-                            <div className="setup-actions-row">
-                                <button className={`action-btn-icon ${isLiked ? 'active' : ''}`} onClick={handleLike} title="Thích">
-                                    <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
-                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                                    </svg>
-                                </button>
-                                <button className={`action-btn-icon ${isSaved ? 'active' : ''}`} onClick={handleSave} title="Lưu">
-                                    <svg width="22" height="22" viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
-                                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                                    </svg>
-                                </button>
-                                <button
-                                    className="action-btn-icon"
-                                    title="Chia sẻ"
-                                    onClick={() => {
-                                        if (navigator.share) {
-                                            navigator.share({
-                                                title: setup.title,
-                                                text: setup.caption,
-                                                url: window.location.href
-                                            });
-                                        } else {
-                                            navigator.clipboard.writeText(window.location.href);
-                                            alert('Đã copy link!');
-                                        }
-                                    }}
-                                >
-                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <circle cx="18" cy="5" r="3" />
-                                        <circle cx="6" cy="12" r="3" />
-                                        <circle cx="18" cy="19" r="3" />
-                                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <p className="setup-caption">{setup.caption}</p>
-
-                        {/* Tags */}
-                        {setup.tags && setup.tags.length > 0 && (
-                            <div className="setup-tags">
-                                {setup.tags.map((tag, i) => (
-                                    <span key={i} className="setup-tag">#{tag}</span>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Comments - Preview mode */}
-                        <div className="comments-section">
-                            <h4>Bình luận ({comments.length})</h4>
-
-                            <form className="comment-form" onSubmit={handleComment}>
-                                <input
-                                    type="text"
-                                    placeholder="Thêm bình luận..."
-                                    value={commentText}
-                                    onChange={(e) => setCommentText(e.target.value)}
-                                    className="comment-input"
-                                />
-                                <button type="submit" className="btn-primary">Gửi</button>
-                            </form>
-
-                            <div className="comments-list">
-                                {comments.length === 0 ? (
-                                    <p className="no-comments">Chưa có bình luận nào</p>
-                                ) : (
-                                    <>
-                                        {comments.slice(0, showAllComments ? comments.length : 2).map(comment => (
-                                            <div key={comment.id} className="comment">
-                                                <img src={comment.avatar} alt={comment.author} className="comment-avatar" />
-                                                <div className="comment-content">
-                                                    <p className="comment-author">{comment.author}</p>
-                                                    <p className="comment-text">{comment.text}</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                        {comments.length > 2 && !showAllComments && (
-                                            <button
-                                                className="show-more-comments"
-                                                onClick={() => setShowAllComments(true)}
-                                            >
-                                                Xem thêm {comments.length - 2} bình luận
-                                            </button>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Similar Setups */}
-                        {similarSetups.length > 0 && (
-                            <div className="similar-setups-section">
+                    {/* RIGHT COLUMN: Similar Setups - DESKTOP ONLY */}
+                    {!isMobile && similarSetups.length > 0 && (
+                        <div className="setup-right-column">
+                            <div className="similar-setups-section-desktop">
                                 <h4>Setup tương tự</h4>
-                                <div className="similar-setups-grid">
-                                    {similarSetups.slice(0, 4).map(similar => (
+                                <div className="similar-setups-grid-desktop">
+                                    {similarSetups.map(similar => (
                                         <div
                                             key={similar.id}
                                             className="similar-setup-card"
@@ -528,8 +551,8 @@ const SetupDetailPage = () => {
                                     ))}
                                 </div>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
