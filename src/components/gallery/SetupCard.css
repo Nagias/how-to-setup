@@ -99,7 +99,7 @@
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     border-radius: var(--radius-full);
-    color: var(--color-text-secondary);
+    color: #6b7280;
     box-shadow: var(--shadow-lg);
     transition: all var(--transition-fast);
 }
@@ -107,12 +107,13 @@
 .action-btn svg {
     width: 20px;
     height: 20px;
-    stroke: currentColor;
+    stroke: #6b7280;
+    stroke-width: 1.5;
     fill: none;
 }
 
 .action-btn svg[fill="currentColor"] {
-    fill: currentColor;
+    fill: #6b7280;
     stroke: none;
 }
 
@@ -120,6 +121,14 @@
     transform: scale(1.1);
     background: white;
     color: var(--color-primary);
+}
+
+.action-btn:hover svg {
+    stroke: var(--color-primary);
+}
+
+.action-btn:hover svg[fill="currentColor"] {
+    fill: var(--color-primary);
 }
 
 .action-btn.active {
@@ -134,12 +143,28 @@
 
 [data-theme="dark"] .action-btn {
     background: rgba(30, 30, 40, 0.95);
-    color: var(--color-text-secondary);
+    color: #9ca3af;
+}
+
+[data-theme="dark"] .action-btn svg {
+    stroke: #9ca3af;
+}
+
+[data-theme="dark"] .action-btn svg[fill="currentColor"] {
+    fill: #9ca3af;
 }
 
 [data-theme="dark"] .action-btn:hover {
     background: rgba(40, 40, 50, 1);
     color: white;
+}
+
+[data-theme="dark"] .action-btn:hover svg {
+    stroke: white;
+}
+
+[data-theme="dark"] .action-btn:hover svg[fill="currentColor"] {
+    fill: white;
 }
 
 /* Tags */
