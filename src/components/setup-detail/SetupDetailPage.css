@@ -28,7 +28,7 @@
 .setup-content {
     max-width: 1600px;
     margin: 0 auto;
-    padding: var(--space-md) var(--space-xl) var(--space-xl);
+    padding: 0 var(--space-xl) var(--space-xl);
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-2xl);
