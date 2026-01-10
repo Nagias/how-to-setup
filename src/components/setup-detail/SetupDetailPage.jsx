@@ -402,18 +402,18 @@ const SetupDetailPage = () => {
                                             position: 'absolute',
                                             top: '20px',
                                             right: '20px',
-                                            background: 'rgba(0,0,0,0.6)',
+                                            background: 'rgba(0,0,0,0.5)', /* Slightly more transparent */
                                             backdropFilter: 'blur(4px)',
                                             color: 'white',
                                             border: 'none',
-                                            padding: '8px 16px',
-                                            borderRadius: '20px',
-                                            fontSize: '13px',
+                                            padding: '6px 12px', /* Reduced padding */
+                                            borderRadius: '16px', /* Slightly smaller radius */
+                                            fontSize: '12px', /* Smaller font */
                                             fontWeight: '500',
                                             cursor: 'pointer',
                                             zIndex: 25,
                                             transition: 'all 0.2s ease',
-                                            opacity: showZoomControls ? 0.3 : 1 // Fade out when zooming/hovering controls if needed, or keep simpler
+                                            opacity: showZoomControls ? 0.3 : 1
                                         }}
                                         onMouseEnter={(e) => e.target.style.opacity = '1'}
                                     >
