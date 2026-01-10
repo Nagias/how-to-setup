@@ -51,14 +51,17 @@ const SetupCard = ({ setup, index }) => {
         e.stopPropagation();
 
         // Close all other menus first
-        document.querySelectorAll('.mobile-menu-backdrop').forEach(backdrop => {
-            backdrop.click();
+        document.querySelectorAll('.mobile-menu-popup').forEach(popup => {
+            if (popup.dataset.cardId !== setup.id) {
+                const closeEvent = new Event('closemenu');
+                popup.dispatchEvent(closeEvent);
+            }
         });
 
         setShowMobileMenu(!showMobileMenu);
     };
 
-    // Close menu when clicking outside
+    // Close menu when clicking outside OR scrolling
     React.useEffect(() => {
         if (showMobileMenu) {
             const handleClickOutside = (e) => {
@@ -67,8 +70,17 @@ const SetupCard = ({ setup, index }) => {
                 }
             };
 
+            const handleScroll = () => {
+                setShowMobileMenu(false);
+            };
+
             document.addEventListener('click', handleClickOutside);
-            return () => document.removeEventListener('click', handleClickOutside);
+            window.addEventListener('scroll', handleScroll, { passive: true });
+
+            return () => {
+                document.removeEventListener('click', handleClickOutside);
+                window.removeEventListener('scroll', handleScroll);
+            };
         }
     }, [showMobileMenu]);
 
