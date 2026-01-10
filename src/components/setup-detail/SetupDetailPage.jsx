@@ -34,28 +34,6 @@ const SetupDetailPage = () => {
     // Get setup by ID
     const setup = setups.find(s => s.id === setupId);
 
-    // Detect mobile viewport
-    useEffect(() => {
-        const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
-
-    // Show swipe hint on mobile
-    useEffect(() => {
-        if (isMobile && setup && mediaItems.length > 1) {
-            const hasSeenHint = localStorage.getItem('hasSeenSwipeHint');
-            if (!hasSeenHint) {
-                setShowSwipeHint(true);
-                setTimeout(() => {
-                    setShowSwipeHint(false);
-                    localStorage.setItem('hasSeenSwipeHint', 'true');
-                }, 3000);
-            }
-        }
-    }, [isMobile, setup]);
-
     // Redirect if setup not found
     if (!setup) {
         return (
@@ -66,7 +44,7 @@ const SetupDetailPage = () => {
         );
     }
 
-    // Build media items
+    // Build media items - MUST be before useEffect
     const mediaItems = setup.images?.length > 0
         ? [
             ...setup.images.map(img => ({
@@ -87,6 +65,28 @@ const SetupDetailPage = () => {
     const isSaved = hasUserSaved(setup.id);
     const comments = getComments(setup.id);
     const similarSetups = getSimilarSetups(setup.id, 4);
+
+    // Detect mobile viewport
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // Show swipe hint on mobile
+    useEffect(() => {
+        if (isMobile && setup && mediaItems.length > 1) {
+            const hasSeenHint = localStorage.getItem('hasSeenSwipeHint');
+            if (!hasSeenHint) {
+                setShowSwipeHint(true);
+                setTimeout(() => {
+                    setShowSwipeHint(false);
+                    localStorage.setItem('hasSeenSwipeHint', 'true');
+                }, 3000);
+            }
+        }
+    }, [isMobile, setup, mediaItems.length]);
 
     // Swipe handlers
     const onTouchStart = (e) => {

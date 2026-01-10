@@ -104,6 +104,12 @@
     transition: all var(--transition-fast);
 }
 
+.action-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
+}
+
 .action-btn:hover {
     transform: scale(1.1);
     background: white;
@@ -112,6 +118,11 @@
 .action-btn.active {
     color: var(--color-accent);
     background: white;
+}
+
+.action-btn.active svg {
+    fill: var(--color-accent);
+    stroke: var(--color-accent);
 }
 
 [data-theme="dark"] .action-btn {
