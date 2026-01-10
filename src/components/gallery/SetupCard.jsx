@@ -120,12 +120,16 @@ const SetupCard = ({ setup, index }) => {
                     {/* Main Image */}
                     {setup.images && setup.images.length > 0 ? (
                         <img
-                            src={setup.images[0]}
+                            src={typeof setup.images[0] === 'string' ? setup.images[0] : setup.images[0]?.url || setup.images[0]?.src}
                             alt={setup.title || 'Setup image'}
                             className={`setup-card-image ${imageLoaded ? 'loaded' : ''}`}
                             onLoad={() => setImageLoaded(true)}
                             onError={(e) => {
-                                console.error('Image load error:', setup.images[0]);
+                                console.error('Image load error:', {
+                                    raw: setup.images[0],
+                                    type: typeof setup.images[0],
+                                    url: typeof setup.images[0] === 'string' ? setup.images[0] : setup.images[0]?.url
+                                });
                                 setImageError(true);
                             }}
                             style={{
