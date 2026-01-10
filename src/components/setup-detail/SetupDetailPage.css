@@ -62,18 +62,26 @@
     gap: var(--space-lg);
 }
 
+/* Header row - Author + Actions in same line */
+.setup-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+}
+
 /* Pinterest-style author info - small and simple */
 .setup-author-simple {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-    padding-bottom: var(--space-md);
-    border-bottom: 1px solid var(--color-border);
 }
 
 .author-avatar-small {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: var(--radius-full);
     object-fit: cover;
 }
@@ -84,12 +92,46 @@
     color: var(--color-text-primary);
 }
 
-/* Action buttons row */
-.setup-actions-row {
-    display: flex;
-    gap: var(--space-sm);
+/* Setup title */
+.setup-title-text {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
 }
 
+/* Action buttons row - icon only */
+.setup-actions-row {
+    display: flex;
+    gap: var(--space-xs);
+}
+
+.action-btn-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-full);
+    color: var(--color-text-secondary);
+    transition: all var(--transition-fast);
+    border: none;
+    cursor: pointer;
+}
+
+.action-btn-icon:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text-primary);
+    transform: scale(1.05);
+}
+
+.action-btn-icon.active {
+    background: var(--color-accent);
+    color: white;
+}
+
+/* Legacy action-btn-large for backward compat */
 .action-btn-large {
     flex: 1;
     display: flex;
@@ -206,6 +248,59 @@
 .comment-text {
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
+}
+
+/* Show more comments button */
+.show-more-comments {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    color: var(--color-primary);
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.show-more-comments:hover {
+    background: var(--color-bg-tertiary);
+    border-color: var(--color-primary);
+}
+
+/* Similar setups section */
+.similar-setups-section {
+    margin-top: var(--space-lg);
+}
+
+.similar-setups-section h4 {
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--space-md);
+}
+
+.similar-setups-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+}
+
+.similar-setup-card {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    aspect-ratio: 1;
+    cursor: pointer;
+    transition: transform var(--transition-fast);
+}
+
+.similar-setup-card:hover {
+    transform: scale(1.02);
+}
+
+.similar-setup-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 /* Setup not found */
