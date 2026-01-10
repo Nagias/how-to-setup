@@ -313,7 +313,6 @@ const SetupDetailPage = () => {
                             </div>
                         </div>
 
-                        <h2 className="setup-title-text">{setup.title}</h2>
                         <p className="setup-caption">{setup.caption}</p>
 
                         {/* Tags */}

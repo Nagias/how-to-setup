@@ -334,7 +334,7 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                 }));
 
             const setupData = {
-                title: formData.title,
+                title: formData.caption.substring(0, 50) || 'Setup', // Auto-generate from caption
                 caption: formData.caption,
                 filters: formData.filters,
                 tags: tagsArray,
@@ -385,21 +385,14 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                     <form id="setupForm" onSubmit={handleSubmit} className="setup-form-layout">
                         {/* Left Column: Info */}
                         <div className="form-column">
-                            {/* Standard Fields (Title, Caption) */}
+                            {/* Caption/Description */}
                             <div className="form-group">
-                                <label>Tiêu đề</label>
-                                <input
-                                    type="text" name="title"
-                                    value={formData.title} onChange={handleChange} required
-                                    placeholder="Ví dụ: Góc làm việc tối giản"
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Mô tả ngắn</label>
+                                <label>Mô tả</label>
                                 <textarea
                                     name="caption"
                                     value={formData.caption} onChange={handleChange} required
-                                    placeholder="Mô tả về setup này..."
+                                    placeholder="Mô tả về góc setup này..."
+                                    rows="4"
                                 />
                             </div>
 
