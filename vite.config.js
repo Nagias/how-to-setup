@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: './', // Use relative path to support both root domain and subdirectory deployments
+  base: '/', // Use absolute path for custom domain to fix nested route asset loading
   server: {
     port: 3000,
     open: true

@@ -1,7 +1,7 @@
 .setup-detail-page {
     min-height: 100vh;
     background: var(--color-bg-primary);
-    padding-top: var(--header-height);
+    padding-top: calc(var(--header-height) + 20px);
 }
 
 .back-btn {
