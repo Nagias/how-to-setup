@@ -1,18 +1,26 @@
+/* Card Container */
 .setup-card {
-    background: var(--color-surface);
-    border-radius: var(--radius-xl);
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border-radius: var(--radius-lg);
     overflow: hidden;
-    box-shadow: var(--shadow-md);
-    cursor: pointer;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
     transition: all var(--transition-base);
-    animation: scaleIn var(--transition-base) backwards;
-    display: flex;
-    flex-direction: column;
+    cursor: pointer;
+    /* Remove any outline that might appear */
+    outline: none;
+    border: none;
 }
 
 .setup-card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-2xl);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.setup-card:focus {
+    outline: none;
 }
 
 /* Image Container - Natural aspect ratio for Pinterest-style */
@@ -227,6 +235,8 @@
     background: rgba(0, 0, 0, 0.5);
     z-index: 9998;
     animation: fadeIn 0.2s ease-out;
+    /* Allow clicks to pass through to close menu */
+    pointer-events: auto;
 }
 
 @keyframes fadeIn {
