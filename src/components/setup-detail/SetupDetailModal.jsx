@@ -271,6 +271,23 @@ const SetupDetailModal = () => {
                                     )}
                                 </div>
                             )}
+
+                            {/* Pagination dots (Instagram-style) */}
+                            {mediaItems.length > 1 && (
+                                <div className="image-pagination-dots">
+                                    {mediaItems.map((_, index) => (
+                                        <button
+                                            key={index}
+                                            className={`pagination-dot ${index === currentImageIndex ? 'active' : ''}`}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setCurrentImageIndex(index);
+                                            }}
+                                            aria-label={`Go to image ${index + 1}`}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {/* Thumbnails */}
