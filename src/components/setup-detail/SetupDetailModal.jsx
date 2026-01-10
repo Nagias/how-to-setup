@@ -23,6 +23,15 @@ const SetupDetailModal = () => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [commentText, setCommentText] = useState('');
     const [showProducts, setShowProducts] = useState(true);
+    const [isMobile, setIsMobile] = useState(false);
+
+    // Detect mobile viewport
+    React.useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     // Early return if no setup is selected
     if (!selectedSetup) return null;
@@ -326,8 +335,8 @@ const SetupDetailModal = () => {
                 </div>
             </div>
 
-            {/* Product Tooltip Portal - E-commerce Style UI */}
-            {activeProduct && ReactDOM.createPortal(
+            {/* Product Tooltip Portal - Mobile Only - E-commerce Style UI */}
+            {isMobile && activeProduct && ReactDOM.createPortal(
                 <div
                     className="product-tooltip-portal"
                     style={{
@@ -520,6 +529,16 @@ const YouTubePlayer = ({ url, poster }) => {
 };
 
 const ProductMarker = ({ product, isActive, onActivate }) => {
+    const [isMobile, setIsMobile] = useState(false);
+
+    // Detect mobile on mount
+    React.useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     // Toggle on click for mobile mainly
     const handleClick = (e) => {
         e.stopPropagation(); // Prevent image click handling
@@ -530,8 +549,8 @@ const ProductMarker = ({ product, isActive, onActivate }) => {
         <div
             className="product-marker"
             style={{ left: `${product.x}%`, top: `${product.y}%` }}
-            onMouseEnter={() => onActivate(product)}
-            // onMouseLeave={() => onActivate(null)} // Disabled to keep it open on hover for stability
+            onMouseEnter={() => !isMobile && onActivate(product)}
+            onMouseLeave={() => !isMobile && onActivate(null)}
             onClick={handleClick}
         >
             <button className={`marker-btn ${isActive ? 'active' : ''}`}>
@@ -540,6 +559,105 @@ const ProductMarker = ({ product, isActive, onActivate }) => {
                     <path d="M10 6v8M6 10h8" stroke="white" strokeWidth="2" strokeLinecap="round" />
                 </svg>
             </button>
+
+            {/* Desktop Tooltip - Show inline next to marker */}
+            {!isMobile && isActive && (
+                <div
+                    className="product-tooltip-desktop"
+                    style={{
+                        position: 'absolute',
+                        left: '100%',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        marginLeft: '12px',
+                        background: 'white',
+                        color: '#333',
+                        padding: '16px',
+                        borderRadius: '12px',
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)',
+                        minWidth: '280px',
+                        maxWidth: '320px',
+                        zIndex: 1000,
+                        animation: 'fadeIn 0.2s ease-out',
+                        border: '1px solid rgba(0, 0, 0, 0.08)'
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {/* Product Name */}
+                    <h3 style={{
+                        fontSize: '15px',
+                        fontWeight: 600,
+                        color: '#333',
+                        margin: '0 0 8px 0',
+                        lineHeight: '1.4'
+                    }}>
+                        {product.name}
+                    </h3>
+
+                    {/* Price - Large and Orange */}
+                    <div style={{
+                        fontSize: '24px',
+                        fontWeight: 700,
+                        color: '#ff6b35',
+                        margin: '0 0 12px 0',
+                        lineHeight: '1.2'
+                    }}>
+                        {product.price}
+                    </div>
+
+                    {/* CTA Button - Orange */}
+                    {product.link && (
+                        <a
+                            href={product.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                fontSize: '14px',
+                                fontWeight: 600,
+                                color: 'white',
+                                textDecoration: 'none',
+                                background: 'linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%)',
+                                padding: '10px 20px',
+                                borderRadius: '8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px',
+                                boxShadow: '0 4px 12px rgba(255, 107, 53, 0.3)',
+                                transition: 'all 0.2s',
+                                border: 'none'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.transform = 'translateY(-2px)';
+                                e.target.style.boxShadow = '0 6px 16px rgba(255, 107, 53, 0.4)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.transform = 'translateY(0)';
+                                e.target.style.boxShadow = '0 4px 12px rgba(255, 107, 53, 0.3)';
+                            }}
+                        >
+                            <span>Xem sản phẩm</span>
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                                <path d="M6 3L11 8L6 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </a>
+                    )}
+
+                    {/* Arrow pointing to marker */}
+                    <div style={{
+                        position: 'absolute',
+                        right: '100%',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: 0,
+                        height: 0,
+                        borderTop: '8px solid transparent',
+                        borderBottom: '8px solid transparent',
+                        borderRight: '8px solid white',
+                        filter: 'drop-shadow(-1px 0 1px rgba(0, 0, 0, 0.05))'
+                    }}></div>
+                </div>
+            )}
         </div>
     );
 };
