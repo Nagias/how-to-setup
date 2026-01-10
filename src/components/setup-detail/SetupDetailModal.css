@@ -278,6 +278,23 @@
     background: rgba(40, 40, 50, 1);
 }
 
+/* Mobile arrow adjustments */
+@media (max-width: 768px) {
+    .nav-arrow {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    .nav-arrow.prev {
+        left: var(--space-sm);
+    }
+
+    .nav-arrow.next {
+        right: var(--space-sm);
+    }
+}
+
 
 /* Thumbnails */
 .image-thumbnails {
@@ -672,11 +689,11 @@
         padding: var(--space-sm);
     }
 
-    /* Ensure image fits nicely - FIXED HEIGHT to avoid scroll */
+    /* Ensure image fits nicely - MAXIMIZED for mobile vertical screens */
     .main-image-container {
-        /* Force a specific max-height so it fits in the top portion of screen */
-        max-height: 55vh;
-        min-height: 40vh;
+        /* Maximize height for mobile vertical viewing */
+        max-height: 70vh;
+        min-height: 50vh;
         background: black;
         display: flex;
         align-items: center;
@@ -684,7 +701,7 @@
     }
 
     .main-image {
-        max-height: 55vh;
+        max-height: 70vh;
         width: auto;
         max-width: 100%;
         object-fit: contain;
@@ -693,7 +710,12 @@
 
     .main-image-container video,
     .main-image-container iframe {
-        max-height: 55vh;
+        max-height: 70vh;
+    }
+
+    /* Hide thumbnails on mobile - use arrows instead */
+    .image-thumbnails {
+        display: none;
     }
 
     .similar-grid {
