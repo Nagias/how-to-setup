@@ -189,53 +189,6 @@ const SetupCard = ({ setup, index }) => {
                     ))}
                 </div>
             </div>
-
-            {/* Content */}
-            <div className="setup-card-content">
-                <h3 className="setup-card-title">{setup.title}</h3>
-
-                {/* NEW: Caption */}
-                <p className="setup-card-caption">{setup.caption}</p>
-
-                {/* NEW: Meta & Stats Layout */}
-                <div className="setup-card-meta" style={{ justifyContent: 'space-between', width: '100%', marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid var(--color-border)' }}>
-                    <div className="setup-card-author">
-                        <img
-                            src={typeof setup.author === 'object' ? setup.author.avatar : setup.avatar}
-                            alt={typeof setup.author === 'object' ? setup.author.name : setup.author}
-                            className="author-avatar"
-                        />
-                        <span className="author-name">
-                            {typeof setup.author === 'object' ? setup.author.name : setup.author}
-                        </span>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="setup-card-stats-row" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                        {/* Likes */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
-                            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M10 17.5l-1.45-1.32C4.4 12.36 2 10.28 2 7.5 2 5.42 3.42 4 5.5 4c1.74 0 3.41.81 4.5 2.09C11.09 4.81 12.76 4 14.5 4 16.58 4 18 5.42 18 7.5c0 2.78-2.4 4.86-6.55 8.68L10 17.5z" />
-                            </svg>
-                            <span>{setup.likes.length}</span>
-                        </div>
-                        {/* Saves */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
-                            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M5 3h10a2 2 0 012 2v14l-7-4-7 4V5a2 2 0 012-2z" />
-                            </svg>
-                            <span>{setup.saves.length}</span>
-                        </div>
-                        {/* Shares (Fake count as requested 'số đếm share') */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
-                            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M15 13v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3M10 3v10M10 3l-3 3M10 3l3 3" strokeLinecap="round" />
-                            </svg>
-                            <span>0</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </Link>
     );
 };
