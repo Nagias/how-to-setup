@@ -24,6 +24,12 @@ const SetupDetailModal = () => {
     const [commentText, setCommentText] = useState('');
     const [showProducts, setShowProducts] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
+    const [showSwipeHint, setShowSwipeHint] = useState(false);
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+
+    // Minimum swipe distance (in px)
+    const minSwipeDistance = 50;
 
     // Detect mobile viewport
     React.useEffect(() => {
@@ -32,6 +38,20 @@ const SetupDetailModal = () => {
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
+
+    // Show swipe hint on mobile when modal opens
+    React.useEffect(() => {
+        if (isMobile && selectedSetup && mediaItems.length > 1) {
+            const hasSeenHint = localStorage.getItem('hasSeenSwipeHint');
+            if (!hasSeenHint) {
+                setShowSwipeHint(true);
+                setTimeout(() => {
+                    setShowSwipeHint(false);
+                    localStorage.setItem('hasSeenSwipeHint', 'true');
+                }, 3000);
+            }
+        }
+    }, [isMobile, selectedSetup]);
 
     // Early return if no setup is selected
     if (!selectedSetup) return null;
@@ -118,6 +138,30 @@ const SetupDetailModal = () => {
         ]
     };
 
+    // Swipe handlers for mobile
+    const onTouchStart = (e) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe && currentImageIndex < mediaItems.length - 1) {
+            setCurrentImageIndex(prev => prev + 1);
+        }
+        if (isRightSwipe && currentImageIndex > 0) {
+            setCurrentImageIndex(prev => prev - 1);
+        }
+    };
+
     return (
         <div className="modal-overlay" onClick={handleOverlayClick}>
             <SeoHead
@@ -134,10 +178,27 @@ const SetupDetailModal = () => {
                     </svg>
                 </button>
 
+                {/* Swipe hint popup for mobile */}
+                {showSwipeHint && isMobile && (
+                    <div className="swipe-hint-popup">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                            <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M9 18l6-6-6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <p>Vuốt để xem ảnh tiếp theo</p>
+                    </div>
+                )}
+
                 <div className="modal-layout">
                     {/* Left: Media Gallery */}
                     <div className="modal-gallery">
-                        <div className="main-image-container" onClick={handleImageAreaClick}>
+                        <div
+                            className="main-image-container"
+                            onClick={handleImageAreaClick}
+                            onTouchStart={isMobile ? onTouchStart : undefined}
+                            onTouchMove={isMobile ? onTouchMove : undefined}
+                            onTouchEnd={isMobile ? onTouchEnd : undefined}
+                        >
                             {currentMedia.type === 'video' ? (
                                 <video
                                     src={currentMedia.url}
