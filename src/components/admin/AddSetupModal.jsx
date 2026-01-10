@@ -187,7 +187,7 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
     // --- Submit ---
 
     // Helper: Compress Image for Base64 Fallback (Firestore limit < 1MB)
-    const compressImage = (file, maxWidth = 1920, quality = 0.8) => {
+    const compressImage = (file, maxWidth = 2560, quality = 0.95) => {
         return new Promise((resolve) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
@@ -273,7 +273,7 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                     try {
                         // Image upload only
                         console.log(`🟡 Compressing image: ${item.file.name}`);
-                        const compressedBase64 = await compressImage(item.file, 1920);
+                        const compressedBase64 = await compressImage(item.file, 2560, 0.95);
                         const blob = await (await fetch(compressedBase64)).blob();
                         const compressedFile = new File([blob], item.file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: "image/jpeg" });
 
@@ -304,9 +304,9 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                         // If we reached here, upload failed. Use Fallback.
                         // Silent Fallback: No Alert, just save as Base64.
                         console.log('⚠️ Using Silent Base64 fallback');
-                        // Reduce to 600px, 0.5 quality to ensure multiple images (e.g. 7) fit in 1MB Firestore limit
-                        // 600px ~ 40-50KB per image -> 10 images = 500KB (Safe)
-                        const fallbackBase64 = await compressImage(item.file, 600, 0.5);
+                        // Reduce to 1280px, 0.7 quality for better quality while staying under Firestore limit
+                        // 1280px ~ 80-100KB per image -> 10 images = 1MB (Safe)
+                        const fallbackBase64 = await compressImage(item.file, 1280, 0.7);
                         return { ...item, url: fallbackBase64, file: null };
 
                     } catch (err) {

@@ -39,11 +39,21 @@ const SetupDetailModal = () => {
     // All currentSetup-dependent variables MUST be declared after the early return check
     const currentSetup = selectedSetup;
 
-    const mediaItems = [
-        { type: 'image', url: currentSetup.mainImage, products: currentSetup.products },
-        ...(currentSetup.moreImages || []).map(img => ({ type: 'image', url: img })),
-        ...(currentSetup.youtubeVideo ? [{ type: 'youtube', url: currentSetup.youtubeVideo, poster: currentSetup.mainImage }] : [])
-    ];
+    // Build media items from images array (new format) or fallback to legacy format
+    const mediaItems = currentSetup.images?.length > 0
+        ? [
+            ...currentSetup.images.map(img => ({
+                type: 'image',
+                url: img.url,
+                products: img.products || []
+            })),
+            ...(currentSetup.youtubeVideo ? [{ type: 'youtube', url: currentSetup.youtubeVideo, poster: currentSetup.mainImage }] : [])
+        ]
+        : [
+            { type: 'image', url: currentSetup.mainImage, products: currentSetup.products || [] },
+            ...(currentSetup.moreImages || []).map(img => ({ type: 'image', url: img })),
+            ...(currentSetup.youtubeVideo ? [{ type: 'youtube', url: currentSetup.youtubeVideo, poster: currentSetup.mainImage }] : [])
+        ];
     const currentMedia = mediaItems[currentImageIndex] || mediaItems[0];
 
     const isLiked = hasUserLiked(currentSetup.id);
@@ -351,7 +361,7 @@ const SetupDetailModal = () => {
                         color: 'white',
                         border: '1px solid rgba(255, 255, 255, 0.1)',
                         padding: '20px',
-                        zIndex: 99999,
+                        zIndex: 100000,
                         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3)',
                         borderRadius: '16px',
                         display: 'flex',
@@ -575,7 +585,7 @@ const ProductMarker = ({ product, isActive, onActivate }) => {
                         boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)',
                         minWidth: '280px',
                         maxWidth: '320px',
-                        zIndex: 1000,
+                        zIndex: 10000,
                         animation: 'fadeIn 0.2s ease-out',
                         border: '1px solid rgba(0, 0, 0, 0.08)'
                     }}
