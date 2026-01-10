@@ -481,6 +481,15 @@
     }
 }
 
+/* Show filter button on tablets too (where Sidebar is hidden drawer) */
+@media (max-width: 1024px) {
+    .mobile-filter-btn.mobile-only {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
 
 /* Responsive Tweaks */
 @media (max-width: 768px) {

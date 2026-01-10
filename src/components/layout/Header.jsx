@@ -24,6 +24,7 @@ const Header = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
+    const isGalleryPage = location.pathname === '/' || location.pathname === '/gallery';
 
     const handleSearch = (e) => {
         setFilters({ ...filters, search: e.target.value });
@@ -120,19 +121,21 @@ const Header = () => {
                         </svg>
                     </div>
 
-                    {/* Mobile: Filter Button */}
-                    <button
-                        className="btn-icon mobile-filter-btn mobile-only"
-                        onClick={() => setShowMobileFilter(true)}
-                        title="Bộ lọc"
-                    >
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                        </svg>
-                        {activeFilterCount > 0 && (
-                            <span className="filter-badge">{activeFilterCount}</span>
-                        )}
-                    </button>
+                    {/* Mobile: Filter Button - Only on Gallery Page */}
+                    {isGalleryPage && (
+                        <button
+                            className="btn-icon mobile-filter-btn mobile-only"
+                            onClick={() => setShowMobileFilter(true)}
+                            title="Bộ lọc"
+                        >
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                            </svg>
+                            {activeFilterCount > 0 && (
+                                <span className="filter-badge">{activeFilterCount}</span>
+                            )}
+                        </button>
+                    )}
 
                     {/* Mobile: User/Avatar Button */}
                     <button

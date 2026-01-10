@@ -285,7 +285,7 @@
         right: 0;
         /* Changed from left to right */
         height: 100vh;
-        z-index: 1000;
+        z-index: 2000;
         transform: translateX(100%);
         /* Start from right */
         border-radius: 0;
@@ -297,7 +297,7 @@
 
     /* Open state controlled by class */
     .filter-sidebar.mobile-open {
-        transform: translateX(0);
+        transform: translateX(0) !important;
     }
 
     /* Hide desktop controls on mobile */
