@@ -1,25 +1,32 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import SetupCard from './SetupCard';
-import SeoHead from '../common/SeoHead';
 import './MasonryGallery.css';
 
 const MasonryGallery = () => {
     const { getFilteredSetups } = useApp();
     const [displayedSetups, setDisplayedSetups] = useState([]);
     const [page, setPage] = useState(1);
-    const [loading, setLoading] = useState(false);
-    const observerRef = useRef(null);
-    const loadMoreRef = useRef(null);
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
+    const observerTarget = useRef(null);
+    const [activeMobileMenu, setActiveMobileMenu] = useState(null);
 
     const ITEMS_PER_PAGE = 12;
 
     // Memoize filtered setups to prevent unnecessary re-renders
-    const filteredSetups = React.useMemo(() => getFilteredSetups(), [getFilteredSetups]);
+    const filteredSetups = useMemo(() => getFilteredSetups(), [getFilteredSetups]);
 
     useEffect(() => {
-        loadSetups(1);
+        loadSetups();
     }, [filteredSetups]);
+
+    const loadSetups = () => {
+        const newSetups = filteredSetups.slice(0, ITEMS_PER_PAGE);
+        setDisplayedSetups(newSetups);
+        setPage(1);
+        setHasMore(filteredSetups.length > ITEMS_PER_PAGE);
+    };
 
     useEffect(() => {
         // Intersection Observer for infinite scroll
@@ -29,8 +36,8 @@ const MasonryGallery = () => {
             threshold: 0.1
         };
 
-        observerRef.current = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && !loading) {
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && !isLoading && hasMore) {
                 loadMore();
             }
         }, options);

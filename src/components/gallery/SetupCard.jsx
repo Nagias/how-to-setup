@@ -48,8 +48,31 @@ const SetupCard = ({ setup, index }) => {
     const toggleMobileMenu = (e) => {
         e.preventDefault();
         e.stopPropagation();
+
+        // Close all other menus first
+        const allMenus = document.querySelectorAll('.mobile-menu-popup');
+        allMenus.forEach(menu => {
+            if (menu.parentElement !== e.currentTarget.parentElement) {
+                menu.remove();
+            }
+        });
+
         setShowMobileMenu(!showMobileMenu);
     };
+
+    // Close menu when clicking outside
+    React.useEffect(() => {
+        if (showMobileMenu) {
+            const handleClickOutside = (e) => {
+                if (!e.target.closest('.mobile-menu-popup') && !e.target.closest('.mobile-menu-btn')) {
+                    setShowMobileMenu(false);
+                }
+            };
+
+            document.addEventListener('click', handleClickOutside);
+            return () => document.removeEventListener('click', handleClickOutside);
+        }
+    }, [showMobileMenu]);
 
     const handleMouseEnter = () => {
         if (setup.thumbnailVideo && videoRef.current) {
