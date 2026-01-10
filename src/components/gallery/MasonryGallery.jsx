@@ -73,8 +73,13 @@ const MasonryGallery = () => {
 
     const hasMore = displayedSetups.length < filteredSetups.length;
 
-    // Show loading state when no data yet
-    const isInitialLoading = loading && filteredSetups.length === 0;
+    // Show loading when:
+    // 1. Global loading is true (fetching from Firestore)
+    // 2. OR displayedSetups is empty but filteredSetups has data (still populating)
+    const isLoading = loading || (displayedSetups.length === 0 && filteredSetups.length === 0);
+
+    // Empty state: NOT loading AND no data after filters applied
+    const showEmptyState = !loading && filteredSetups.length === 0;
 
     return (
         <div className="masonry-gallery">
@@ -84,7 +89,7 @@ const MasonryGallery = () => {
             />
 
             {/* Loading State with friendly message */}
-            {isInitialLoading && (
+            {isLoading && (
                 <div className="loading-state">
                     <div className="loading-spinner"></div>
                     <h3>Sắp load xong các góc setup, bạn đừng thoát nhé 🥺</h3>
@@ -92,8 +97,8 @@ const MasonryGallery = () => {
                 </div>
             )}
 
-            {/* Empty State - Only show if not loading and truly empty (after filter) */}
-            {!isInitialLoading && displayedSetups.length === 0 && !loading && (
+            {/* Empty State - Only show if loading finished AND truly no results from filter/search */}
+            {showEmptyState && (
                 <div className="empty-state">
                     <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
                         <path d="M60 20L20 100h80L60 20z" stroke="currentColor" strokeWidth="4" />
@@ -105,7 +110,7 @@ const MasonryGallery = () => {
             )}
 
             {/* Main Gallery Content */}
-            {!isInitialLoading && displayedSetups.length > 0 && (
+            {!isLoading && displayedSetups.length > 0 && (
                 <>
                     <div className="masonry-grid">
                         {displayedSetups.map((setup, index) => (
