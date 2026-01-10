@@ -17,7 +17,8 @@ const Header = () => {
         setShowProfileModal,
         setShowNewsletterModal,
         setShowCollectionsModal,
-        setShowAddSetupModal
+        setShowAddSetupModal,
+        setShowMobileFilter
     } = useApp();
     const [searchExpanded, setSearchExpanded] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
