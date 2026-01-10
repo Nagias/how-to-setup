@@ -23,35 +23,66 @@ export const AppProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // Cache keys
+    const CACHE_KEY_SETUPS = 'deskhub_cache_setups';
+    const CACHE_KEY_BLOGS = 'deskhub_cache_blogs';
+    const CACHE_TIMESTAMP = 'deskhub_cache_timestamp';
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
     const loadData = async () => {
         setLoading(true);
 
         try {
+            // Step 1: Load from cache IMMEDIATELY for instant display
+            const cachedSetups = localStorage.getItem(CACHE_KEY_SETUPS);
+            const cachedBlogs = localStorage.getItem(CACHE_KEY_BLOGS);
+            const cacheTime = localStorage.getItem(CACHE_TIMESTAMP);
+
+            if (cachedSetups) {
+                const parsedSetups = JSON.parse(cachedSetups);
+                if (parsedSetups.length > 0) {
+                    console.log('⚡ Loaded', parsedSetups.length, 'setups from cache');
+                    setSetups(parsedSetups);
+                }
+            }
+            if (cachedBlogs) {
+                const parsedBlogs = JSON.parse(cachedBlogs);
+                if (parsedBlogs.length > 0) {
+                    setBlogs(parsedBlogs);
+                }
+            }
+
+            // If cache is still fresh, skip Firestore fetch
+            const isCacheFresh = cacheTime && (Date.now() - parseInt(cacheTime)) < CACHE_DURATION;
+            if (isCacheFresh && cachedSetups) {
+                console.log('✅ Cache is fresh, skipping Firestore fetch');
+                setLoading(false);
+                return;
+            }
+
+            // Step 2: Fetch from Firestore in background
+            console.log('🔄 Fetching fresh data from Firestore...');
             const data = await api.getData();
 
-            // Debug logging
-            console.log('📊 Firestore data loaded:', {
-                setupsCount: data.setups?.length || 0,
-                blogsCount: data.blogs?.length || 0,
-                firstSetup: data.setups?.[0]
-            });
-
-            // Always update with fetched data (even if empty)
-            if (data.setups) {
-                console.log("Loaded", data.setups.length, "setups from Firestore");
+            if (data.setups && data.setups.length > 0) {
+                console.log('📊 Loaded', data.setups.length, 'setups from Firestore');
                 setSetups(data.setups);
-            } else {
-                console.warn('⚠️ No setups returned from Firestore');
+                // Update cache
+                localStorage.setItem(CACHE_KEY_SETUPS, JSON.stringify(data.setups));
             }
 
-            if (data.blogs) {
+            if (data.blogs && data.blogs.length > 0) {
                 setBlogs(data.blogs);
+                localStorage.setItem(CACHE_KEY_BLOGS, JSON.stringify(data.blogs));
             }
+
+            // Update cache timestamp
+            localStorage.setItem(CACHE_TIMESTAMP, Date.now().toString());
 
             setAllComments(data.comments || {});
         } catch (error) {
-            console.error("❌ Error loading data, using sample data:", error);
-            // Already set to sample data above
+            console.error('❌ Error loading data:', error);
+            // Already showing cached/sample data
         } finally {
             setLoading(false);
         }
