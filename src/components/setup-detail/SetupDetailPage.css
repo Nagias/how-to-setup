@@ -231,10 +231,10 @@
         background: black;
     }
 
-    /* Back button - Icon only, inside image area, fixed position */
+    /* Back button - White background, inside image area */
     .back-btn {
         position: fixed;
-        top: 70px;
+        top: 80px;
         left: var(--space-md);
         z-index: 1000;
         width: 40px;
@@ -243,14 +243,13 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(8px);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #333;
+        border: none;
         border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
         font-size: 0;
-        /* Hide any text */
     }
 
     .back-btn span {
@@ -259,7 +258,8 @@
 
     .back-btn:hover {
         transform: none;
-        background: rgba(0, 0, 0, 0.7);
+        background: white;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     }
 
     .setup-content {
@@ -283,12 +283,12 @@
         width: 100%;
     }
 
-    /* Details section - card style below image */
+    /* Details section - Below image, no overlap */
     .setup-details-section {
-        padding: var(--space-md);
+        padding: var(--space-lg);
         background: var(--color-surface);
-        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-        margin-top: -16px;
+        border-radius: 0;
+        margin-top: 0;
         position: relative;
         z-index: 10;
     }
