@@ -490,28 +490,32 @@
         gap: 0;
     }
 
-    /* Gallery section - Adds padding for "floating" card look */
+    /* Gallery section - Full width minus small margin */
     .setup-gallery-section {
         background: transparent;
-        padding: var(--space-md);
-        padding-bottom: 0;
+        padding: 0;
+        display: block;
+        /* Ensure block layout */
     }
 
     .setup-main-image-container {
-        border-radius: var(--radius-xl);
+        border-radius: var(--radius-lg);
         background: transparent;
         box-shadow: none;
-        /* Remove shadow to avoid gray box look */
-        width: 100%;
+        width: calc(100% - 16px);
+        margin: 8px auto 0;
+        /* Centered with small top margin */
         overflow: hidden;
+        display: block;
     }
 
     .setup-main-image {
         max-height: 75vh;
-        border-radius: var(--radius-xl);
+        border-radius: var(--radius-lg);
         width: 100%;
+        display: block;
+        /* Remove inline-block spacing */
         object-fit: contain;
-        /* Ensure full image is seen */
     }
 
     /* Mobile Masonry Grid for Similar Setups */
