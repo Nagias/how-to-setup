@@ -387,7 +387,7 @@ export const api = {
 
     // ImgBB API Key (Free tier: 100 uploads/hour)
     // Get your own key at: https://api.imgbb.com/
-    _imgbbApiKey: '7a8f1e2b3c4d5e6f7a8b9c0d1e2f3a4b', // Replace with your key
+    _imgbbApiKey: '2a4945145b81f0e070078eeb4571403c', // Replace with your key
 
     uploadFile: async (file) => {
         try {
