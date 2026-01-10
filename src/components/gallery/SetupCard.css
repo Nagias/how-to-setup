@@ -238,22 +238,24 @@
 
 /* Mobile Menu Popup - Pinterest Bottom Sheet */
 .mobile-menu-popup {
-    position: absolute;
+    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     background: white;
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-    z-index: 10;
+    z-index: 9999;
+    /* High z-index but use pointer-events to allow clicks through */
     animation: slideUp 0.3s ease-out;
     max-height: 40vh;
+    /* Smaller height to not cover cards */
     overflow-y: auto;
-}
-
-/* Ensure card has position relative for absolute positioning */
-.setup-card {
-    position: relative;
+    will-change: transform;
+    /* Optimize for mobile */
+    transform: translateZ(0);
+    /* Force GPU acceleration */
+    pointer-events: auto;
 }
 
 @keyframes fadeIn {
