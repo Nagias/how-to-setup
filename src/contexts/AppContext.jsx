@@ -7,6 +7,54 @@ import { sampleSetups, sampleBlogs } from '../data/sampleData';
 
 const AppContext = createContext();
 
+// Cache keys (defined outside component to avoid recreating)
+const CACHE_KEY_SETUPS = 'deskhub_cache_setups';
+const CACHE_KEY_BLOGS = 'deskhub_cache_blogs';
+const CACHE_TIMESTAMP = 'deskhub_cache_timestamp';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+// Helper to get initial data from cache SYNCHRONOUSLY
+const getInitialSetups = () => {
+    try {
+        const cached = localStorage.getItem(CACHE_KEY_SETUPS);
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed && parsed.length > 0) {
+                console.log('⚡ Instant load:', parsed.length, 'setups from cache');
+                return parsed;
+            }
+        }
+    } catch (e) {
+        console.warn('Cache parse error:', e);
+    }
+    return sampleSetups;
+};
+
+const getInitialBlogs = () => {
+    try {
+        const cached = localStorage.getItem(CACHE_KEY_BLOGS);
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed && parsed.length > 0) {
+                return parsed;
+            }
+        }
+    } catch (e) {
+        console.warn('Cache parse error:', e);
+    }
+    return sampleBlogs;
+};
+
+// Check if cache is fresh (sync check)
+const isCacheFresh = () => {
+    try {
+        const cacheTime = localStorage.getItem(CACHE_TIMESTAMP);
+        return cacheTime && (Date.now() - parseInt(cacheTime)) < CACHE_DURATION;
+    } catch (e) {
+        return false;
+    }
+};
+
 export const useApp = () => {
     const context = useContext(AppContext);
     if (!context) {
@@ -17,63 +65,48 @@ export const useApp = () => {
 
 export const AppProvider = ({ children }) => {
     const [theme, setTheme] = useState('light');
-    // Initialize with sample data for instant display, will be replaced by Firestore data
-    const [setups, setSetups] = useState(sampleSetups);
-    const [blogs, setBlogs] = useState(sampleBlogs);
+    // Initialize DIRECTLY from cache for instant display (no async wait)
+    const [setups, setSetups] = useState(getInitialSetups);
+    const [blogs, setBlogs] = useState(getInitialBlogs);
     const [currentUser, setCurrentUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    // Cache keys
-    const CACHE_KEY_SETUPS = 'deskhub_cache_setups';
-    const CACHE_KEY_BLOGS = 'deskhub_cache_blogs';
-    const CACHE_TIMESTAMP = 'deskhub_cache_timestamp';
-    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+    // Only show loading if we DON'T have cached data
+    const [loading, setLoading] = useState(() => {
+        const hasCache = localStorage.getItem(CACHE_KEY_SETUPS);
+        return !hasCache; // Only loading=true if no cache exists
+    });
 
     const loadData = async () => {
-        setLoading(true);
+        // Check if cache is fresh - if so, skip network entirely
+        if (isCacheFresh()) {
+            console.log('✅ Cache is fresh, no network fetch needed');
+            setLoading(false);
+            return;
+        }
+
+        // Fetch from Firestore in TRUE background (don't block UI)
+        console.log('🔄 Background fetching fresh data from Firestore...');
 
         try {
-            // Step 1: Load from cache IMMEDIATELY for instant display
-            const cachedSetups = localStorage.getItem(CACHE_KEY_SETUPS);
-            const cachedBlogs = localStorage.getItem(CACHE_KEY_BLOGS);
-            const cacheTime = localStorage.getItem(CACHE_TIMESTAMP);
-
-            if (cachedSetups) {
-                const parsedSetups = JSON.parse(cachedSetups);
-                if (parsedSetups.length > 0) {
-                    console.log('⚡ Loaded', parsedSetups.length, 'setups from cache');
-                    setSetups(parsedSetups);
-                }
-            }
-            if (cachedBlogs) {
-                const parsedBlogs = JSON.parse(cachedBlogs);
-                if (parsedBlogs.length > 0) {
-                    setBlogs(parsedBlogs);
-                }
-            }
-
-            // If cache is still fresh, skip Firestore fetch
-            const isCacheFresh = cacheTime && (Date.now() - parseInt(cacheTime)) < CACHE_DURATION;
-            if (isCacheFresh && cachedSetups) {
-                console.log('✅ Cache is fresh, skipping Firestore fetch');
-                setLoading(false);
-                return;
-            }
-
-            // Step 2: Fetch from Firestore in background
-            console.log('🔄 Fetching fresh data from Firestore...');
             const data = await api.getData();
 
             if (data.setups && data.setups.length > 0) {
-                console.log('📊 Loaded', data.setups.length, 'setups from Firestore');
+                console.log('📊 Updated with', data.setups.length, 'setups from Firestore');
                 setSetups(data.setups);
                 // Update cache
-                localStorage.setItem(CACHE_KEY_SETUPS, JSON.stringify(data.setups));
+                try {
+                    localStorage.setItem(CACHE_KEY_SETUPS, JSON.stringify(data.setups));
+                } catch (e) {
+                    console.warn('Cache storage failed:', e);
+                }
             }
 
             if (data.blogs && data.blogs.length > 0) {
                 setBlogs(data.blogs);
-                localStorage.setItem(CACHE_KEY_BLOGS, JSON.stringify(data.blogs));
+                try {
+                    localStorage.setItem(CACHE_KEY_BLOGS, JSON.stringify(data.blogs));
+                } catch (e) {
+                    console.warn('Cache storage failed:', e);
+                }
             }
 
             // Update cache timestamp
@@ -81,8 +114,8 @@ export const AppProvider = ({ children }) => {
 
             setAllComments(data.comments || {});
         } catch (error) {
-            console.error('❌ Error loading data:', error);
-            // Already showing cached/sample data
+            console.error('❌ Error loading data from Firestore:', error);
+            // Keep showing cached data - no problem
         } finally {
             setLoading(false);
         }

@@ -1,21 +1,32 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import SetupCard from './SetupCard';
 import SeoHead from '../common/SeoHead';
 import './MasonryGallery.css';
 
+// Skeleton Card Component for loading state
+const SkeletonCard = ({ index }) => (
+    <div className="skeleton-card" style={{ animationDelay: `${index * 0.1}s` }}>
+        <div className="skeleton-image" />
+        <div className="skeleton-content">
+            <div className="skeleton-title" />
+            <div className="skeleton-caption" />
+        </div>
+    </div>
+);
+
 const MasonryGallery = () => {
-    const { getFilteredSetups } = useApp();
+    const { getFilteredSetups, loading } = useApp();
     const [displayedSetups, setDisplayedSetups] = useState([]);
     const [page, setPage] = useState(1);
-    const [loading, setLoading] = useState(false);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const observerRef = useRef(null);
     const loadMoreRef = useRef(null);
 
     const ITEMS_PER_PAGE = 12;
 
     // Memoize filtered setups to prevent unnecessary re-renders
-    const filteredSetups = React.useMemo(() => getFilteredSetups(), [getFilteredSetups]);
+    const filteredSetups = useMemo(() => getFilteredSetups(), [getFilteredSetups]);
 
     useEffect(() => {
         loadSetups(1);
@@ -30,7 +41,7 @@ const MasonryGallery = () => {
         };
 
         observerRef.current = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && !loading) {
+            if (entries[0].isIntersecting && !isLoadingMore) {
                 loadMore();
             }
         }, options);
@@ -44,17 +55,17 @@ const MasonryGallery = () => {
                 observerRef.current.disconnect();
             }
         };
-    }, [loading, page]);
+    }, [isLoadingMore, page]);
 
     const loadSetups = (pageNum) => {
-        setLoading(true);
+        setIsLoadingMore(true);
         const startIndex = 0;
         const endIndex = pageNum * ITEMS_PER_PAGE;
         const newSetups = filteredSetups.slice(startIndex, endIndex);
 
         setDisplayedSetups(newSetups);
         setPage(pageNum);
-        setLoading(false);
+        setIsLoadingMore(false);
     };
 
     const loadMore = () => {
@@ -62,15 +73,18 @@ const MasonryGallery = () => {
         const endIndex = nextPage * ITEMS_PER_PAGE;
 
         if (displayedSetups.length < filteredSetups.length) {
-            setLoading(true);
+            setIsLoadingMore(true);
             const newSetups = filteredSetups.slice(0, endIndex);
             setDisplayedSetups(newSetups);
             setPage(nextPage);
-            setLoading(false);
+            setIsLoadingMore(false);
         }
     };
 
     const hasMore = displayedSetups.length < filteredSetups.length;
+
+    // Show skeleton if loading globally (no cache) and no data yet
+    const showSkeleton = loading && filteredSetups.length === 0;
 
     return (
         <div className="masonry-gallery">
@@ -78,7 +92,18 @@ const MasonryGallery = () => {
                 title="Khám Phá Góc Làm Việc - DeskHub"
                 description="Bộ sưu tập những góc làm việc, setup bàn phím, màn hình đẹp nhất được chia sẻ bởi cộng đồng."
             />
-            {displayedSetups.length === 0 && !loading ? (
+
+            {/* Skeleton Loading State */}
+            {showSkeleton && (
+                <div className="masonry-grid">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <SkeletonCard key={`skeleton-${i}`} index={i} />
+                    ))}
+                </div>
+            )}
+
+            {/* Empty State - Only show if not loading and truly empty */}
+            {!showSkeleton && displayedSetups.length === 0 && !loading && (
                 <div className="empty-state">
                     <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
                         <path d="M60 20L20 100h80L60 20z" stroke="currentColor" strokeWidth="4" />
@@ -87,7 +112,10 @@ const MasonryGallery = () => {
                     <h3>Không tìm thấy setup nào</h3>
                     <p>Thử thay đổi bộ lọc hoặc tìm kiếm với từ khóa khác</p>
                 </div>
-            ) : (
+            )}
+
+            {/* Main Gallery Content */}
+            {!showSkeleton && displayedSetups.length > 0 && (
                 <>
                     <div className="masonry-grid">
                         {displayedSetups.map((setup, index) => (
@@ -98,7 +126,7 @@ const MasonryGallery = () => {
                     {/* Load More Trigger */}
                     {hasMore && (
                         <div ref={loadMoreRef} className="load-more-trigger">
-                            {loading && (
+                            {isLoadingMore && (
                                 <div style={{ textAlign: 'center', padding: '2rem' }}>
                                     <p>Đang tải...</p>
                                 </div>
