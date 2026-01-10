@@ -549,8 +549,6 @@ const ProductMarker = ({ product, isActive, onActivate }) => {
         <div
             className="product-marker"
             style={{ left: `${product.x}%`, top: `${product.y}%` }}
-            onMouseEnter={() => !isMobile && onActivate(product)}
-            onMouseLeave={() => !isMobile && onActivate(null)}
             onClick={handleClick}
         >
             <button className={`marker-btn ${isActive ? 'active' : ''}`}>

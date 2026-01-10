@@ -14,9 +14,12 @@ const MasonryGallery = () => {
 
     const ITEMS_PER_PAGE = 12;
 
+    // Memoize filtered setups to prevent unnecessary re-renders
+    const filteredSetups = React.useMemo(() => getFilteredSetups(), [getFilteredSetups]);
+
     useEffect(() => {
         loadSetups(1);
-    }, [getFilteredSetups]);
+    }, [filteredSetups]);
 
     useEffect(() => {
         // Intersection Observer for infinite scroll
@@ -45,35 +48,29 @@ const MasonryGallery = () => {
 
     const loadSetups = (pageNum) => {
         setLoading(true);
-        const filteredSetups = getFilteredSetups();
         const startIndex = 0;
         const endIndex = pageNum * ITEMS_PER_PAGE;
         const newSetups = filteredSetups.slice(startIndex, endIndex);
 
-        setTimeout(() => {
-            setDisplayedSetups(newSetups);
-            setPage(pageNum);
-            setLoading(false);
-        }, 300);
+        setDisplayedSetups(newSetups);
+        setPage(pageNum);
+        setLoading(false);
     };
 
     const loadMore = () => {
-        const filteredSetups = getFilteredSetups();
         const nextPage = page + 1;
         const endIndex = nextPage * ITEMS_PER_PAGE;
 
         if (displayedSetups.length < filteredSetups.length) {
             setLoading(true);
-            setTimeout(() => {
-                const newSetups = filteredSetups.slice(0, endIndex);
-                setDisplayedSetups(newSetups);
-                setPage(nextPage);
-                setLoading(false);
-            }, 500);
+            const newSetups = filteredSetups.slice(0, endIndex);
+            setDisplayedSetups(newSetups);
+            setPage(nextPage);
+            setLoading(false);
         }
     };
 
-    const hasMore = displayedSetups.length < getFilteredSetups().length;
+    const hasMore = displayedSetups.length < filteredSetups.length;
 
     return (
         <div className="masonry-gallery">

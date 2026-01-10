@@ -63,7 +63,6 @@ const SetupCard = ({ setup, index }) => {
         <article
             className="setup-card"
             onClick={handleCardClick}
-            style={{ animationDelay: `${index * 0.05}s` }}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >
