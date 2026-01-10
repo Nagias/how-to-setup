@@ -51,11 +51,8 @@ const SetupCard = ({ setup, index }) => {
         e.stopPropagation();
 
         // Close all other menus first
-        const allMenus = document.querySelectorAll('.mobile-menu-popup');
-        allMenus.forEach(menu => {
-            if (menu.parentElement !== e.currentTarget.parentElement) {
-                menu.remove();
-            }
+        document.querySelectorAll('.mobile-menu-backdrop').forEach(backdrop => {
+            backdrop.click();
         });
 
         setShowMobileMenu(!showMobileMenu);
@@ -95,212 +92,188 @@ const SetupCard = ({ setup, index }) => {
     };
 
     return (
-        <Link
-            to={`/setup/${setup.id}`}
-            className="setup-card"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-        >
-            {/* Image Container */}
-            <div className="setup-card-image-container">
-                {/* Skeleton */}
-                {!imageLoaded && !imageError && !setup.thumbnailVideo && (
-                    <div className="skeleton skeleton-image-placeholder"></div>
-                )}
-
-                {/* Media Layer */}
-                {setup.thumbnailVideo ? (
-                    <>
+        <>
+            <Link
+                to={`/setup/${setup.id}`}
+                className="setup-card"
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+            >
+                {/* Image Container */}
+                <div className="setup-card-image-container">
+                    {/* Thumbnail Video (if exists) */}
+                    {setup.thumbnailVideo && (
                         <video
                             ref={videoRef}
-                            src={setup.thumbnailVideo}
-                            className="setup-card-video"
-                            poster={setup.mainImage}
+                            className={`setup-card-image ${imageLoaded ? 'loaded' : ''}`}
                             muted
                             loop
                             playsInline
+                            onLoadedData={() => setImageLoaded(true)}
                             style={{
-                                opacity: isVideoPlaying ? 1 : 0,
+                                opacity: imageLoaded ? 1 : 0,
                                 position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                                zIndex: 2,
-                                transition: 'opacity 0.3s ease'
+                                inset: 0
                             }}
-                        />
-                        <img
-                            src={setup.mainImage}
-                            alt={setup.title}
-                            className={`setup-card-image ${imageLoaded ? 'loaded' : ''}`}
-                            onLoad={() => setImageLoaded(true)}
-                            onError={() => setImageError(true)}
-                            loading="lazy"
-                            style={{ opacity: 1, position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 1 }}
-                        />
-                        {/* Play Indicator */}
-                        <div className="video-indicator" style={{
-                            position: 'absolute',
-                            top: '12px',
-                            left: '12px',
-                            background: 'rgba(0,0,0,0.6)',
-                            borderRadius: '50%',
-                            width: '24px',
-                            height: '24px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            zIndex: 3,
-                            opacity: isVideoPlaying ? 0 : 1,
-                            transition: 'opacity 0.3s',
-                            pointerEvents: 'none'
-                        }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
-                                <path d="M8 5v14l11-7z" />
-                            </svg>
-                        </div>
-                    </>
-                ) : (
+                        >
+                            <source src={setup.thumbnailVideo} type="video/mp4" />
+                        </video>
+                    )}
+
+                    {/* Main Image */}
                     <img
-                        src={setup.mainImage}
+                        src={setup.images[0]}
                         alt={setup.title}
                         className={`setup-card-image ${imageLoaded ? 'loaded' : ''}`}
                         onLoad={() => setImageLoaded(true)}
                         onError={() => setImageError(true)}
-                        loading="lazy"
+                        style={{
+                            opacity: setup.thumbnailVideo && isVideoPlaying ? 0 : (imageLoaded ? 1 : 0),
+                            position: setup.thumbnailVideo ? 'absolute' : 'relative',
+                            inset: 0
+                        }}
                     />
-                )}
 
-                {imageError && !setup.thumbnailVideo && (
-                    <div className="image-error">
-                        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                            <path d="M24 4L4 44h40L24 4z" stroke="currentColor" strokeWidth="2" />
-                            <path d="M24 18v12M24 34v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                        </svg>
-                        <span>Ảnh lỗi</span>
-                    </div>
-                )}
+                    {/* Loading Skeleton */}
+                    {!imageLoaded && !imageError && (
+                        <div className="skeleton-image-placeholder"></div>
+                    )}
 
-                <div className="setup-card-overlay" style={{ zIndex: 4 }}></div>
-
-                {/* Quick Actions */}
-                <div className="setup-card-actions" style={{ zIndex: 5 }}>
-                    <button
-                        className={`action-btn ${isLiked ? 'active' : ''}`}
-                        onClick={handleLike}
-                        title={isLiked ? 'Bỏ thích' : 'Thích'}
-                    >
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill={isLiked ? 'currentColor' : 'none'}>
-                            <path d="M10 17.5l-1.45-1.32C4.4 12.36 2 10.28 2 7.5 2 5.42 3.42 4 5.5 4c1.74 0 3.41.81 4.5 2.09C11.09 4.81 12.76 4 14.5 4 16.58 4 18 5.42 18 7.5c0 2.78-2.4 4.86-6.55 8.68L10 17.5z" stroke="currentColor" strokeWidth="1.5" />
-                        </svg>
-                    </button>
-                    <button
-                        className={`action-btn ${isSaved ? 'active' : ''}`}
-                        onClick={handleSave}
-                        title={isSaved ? 'Bỏ lưu' : 'Lưu'}
-                    >
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill={isSaved ? 'currentColor' : 'none'}>
-                            <path d="M5 3h10a2 2 0 012 2v14l-7-4-7 4V5a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.5" />
-                        </svg>
-                    </button>
-                    <button
-                        className="action-btn"
-                        onClick={handleShare}
-                        title="Chia sẻ"
-                    >
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M15 13v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3M10 3v10M10 3l-3 3M10 3l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                        </svg>
-                    </button>
-                </div>
-
-                {/* Tags (Absolute) */}
-                <div className="setup-card-tags" style={{ zIndex: 5 }}>
-                    {setup.tags.slice(0, 3).map(tag => (
-                        <span key={tag} className="tag">#{tag}</span>
-                    ))}
-                </div>
-
-                {/* Mobile Menu Button - Pinterest style */}
-                <button
-                    className="mobile-menu-btn"
-                    onClick={toggleMobileMenu}
-                    style={{ zIndex: 6 }}
-                >
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <circle cx="10" cy="4" r="1.5" fill="currentColor" />
-                        <circle cx="10" cy="10" r="1.5" fill="currentColor" />
-                        <circle cx="10" cy="16" r="1.5" fill="currentColor" />
-                    </svg>
-                </button>
-            </div>
-        </Link>
-
-            {/* Mobile Menu Portal - Render at document root */ }
-    {
-        showMobileMenu && ReactDOM.createPortal(
-            <>
-                {/* Backdrop */}
-                <div
-                    className="mobile-menu-backdrop"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setShowMobileMenu(false);
-                    }}
-                />
-
-                {/* Bottom Sheet */}
-                <div className="mobile-menu-popup">
-                    {/* Header */}
-                    <div className="mobile-menu-header">
-                        <button
-                            className="mobile-menu-close"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setShowMobileMenu(false);
-                            }}
-                        >
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    {/* Video Play Indicator */}
+                    {setup.thumbnailVideo && !isVideoPlaying && (
+                        <div className="video-play-indicator">
+                            <svg width="48" height="48" viewBox="0 0 48 48" fill="white">
+                                <circle cx="24" cy="24" r="24" opacity="0.9" />
+                                <path d="M18 14l16 10-16 10V14z" fill="black" />
                             </svg>
-                        </button>
-                        <h3>Tùy chọn</h3>
-                        <div style={{ width: '24px' }}></div>
-                    </div>
+                        </div>
+                    )}
 
-                    {/* Actions */}
-                    <div className="mobile-menu-actions">
-                        <button onClick={handleLike} className={isLiked ? 'active' : ''}>
-                            <svg width="24" height="24" viewBox="0 0 20 20" fill={isLiked ? 'currentColor' : 'none'}>
+                    {imageError && !setup.thumbnailVideo && (
+                        <div className="image-error">
+                            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                <path d="M24 4L4 44h40L24 4z" stroke="currentColor" strokeWidth="2" />
+                                <path d="M24 18v12M24 34v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                            <span>Ảnh lỗi</span>
+                        </div>
+                    )}
+
+                    <div className="setup-card-overlay" style={{ zIndex: 4 }}></div>
+
+                    {/* Quick Actions */}
+                    <div className="setup-card-actions" style={{ zIndex: 5 }}>
+                        <button
+                            className={`action-btn ${isLiked ? 'active' : ''}`}
+                            onClick={handleLike}
+                            title={isLiked ? 'Bỏ thích' : 'Thích'}
+                        >
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill={isLiked ? 'currentColor' : 'none'}>
                                 <path d="M10 17.5l-1.45-1.32C4.4 12.36 2 10.28 2 7.5 2 5.42 3.42 4 5.5 4c1.74 0 3.41.81 4.5 2.09C11.09 4.81 12.76 4 14.5 4 16.58 4 18 5.42 18 7.5c0 2.78-2.4 4.86-6.55 8.68L10 17.5z" stroke="currentColor" strokeWidth="1.5" />
                             </svg>
-                            <span>{isLiked ? 'Bỏ thích' : 'Thích'}</span>
                         </button>
-                        <button onClick={handleSave} className={isSaved ? 'active' : ''}>
-                            <svg width="24" height="24" viewBox="0 0 20 20" fill={isSaved ? 'currentColor' : 'none'}>
+                        <button
+                            className={`action-btn ${isSaved ? 'active' : ''}`}
+                            onClick={handleSave}
+                            title={isSaved ? 'Bỏ lưu' : 'Lưu'}
+                        >
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill={isSaved ? 'currentColor' : 'none'}>
                                 <path d="M5 3h10a2 2 0 012 2v14l-7-4-7 4V5a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.5" />
                             </svg>
-                            <span>{isSaved ? 'Đã lưu' : 'Lưu'}</span>
                         </button>
-                        <button onClick={handleShare}>
-                            <svg width="24" height="24" viewBox="0 0 20 20" fill="none">
+                        <button
+                            className="action-btn"
+                            onClick={handleShare}
+                            title="Chia sẻ"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                                 <path d="M15 13v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3M10 3v10M10 3l-3 3M10 3l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                             </svg>
-                            <span>Chia sẻ</span>
                         </button>
                     </div>
+
+                    {/* Tags (Absolute) */}
+                    <div className="setup-card-tags" style={{ zIndex: 5 }}>
+                        {setup.tags.slice(0, 3).map(tag => (
+                            <span key={tag} className="tag">#{tag}</span>
+                        ))}
+                    </div>
+
+                    {/* Mobile Menu Button - Pinterest style */}
+                    <button
+                        className="mobile-menu-btn"
+                        onClick={toggleMobileMenu}
+                        style={{ zIndex: 6 }}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <circle cx="10" cy="4" r="1.5" fill="currentColor" />
+                            <circle cx="10" cy="10" r="1.5" fill="currentColor" />
+                            <circle cx="10" cy="16" r="1.5" fill="currentColor" />
+                        </svg>
+                    </button>
                 </div>
-            </>,
-            document.body
-        )
-    }
+            </Link>
+
+            {/* Mobile Menu Portal - Render at document root */}
+            {showMobileMenu && ReactDOM.createPortal(
+                <>
+                    {/* Backdrop */}
+                    <div
+                        className="mobile-menu-backdrop"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setShowMobileMenu(false);
+                        }}
+                    />
+
+                    {/* Bottom Sheet */}
+                    <div className="mobile-menu-popup">
+                        {/* Header */}
+                        <div className="mobile-menu-header">
+                            <button
+                                className="mobile-menu-close"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setShowMobileMenu(false);
+                                }}
+                            >
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                                </svg>
+                            </button>
+                            <h3>Tùy chọn</h3>
+                            <div style={{ width: '24px' }}></div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="mobile-menu-actions">
+                            <button onClick={handleLike} className={isLiked ? 'active' : ''}>
+                                <svg width="24" height="24" viewBox="0 0 20 20" fill={isLiked ? 'currentColor' : 'none'}>
+                                    <path d="M10 17.5l-1.45-1.32C4.4 12.36 2 10.28 2 7.5 2 5.42 3.42 4 5.5 4c1.74 0 3.41.81 4.5 2.09C11.09 4.81 12.76 4 14.5 4 16.58 4 18 5.42 18 7.5c0 2.78-2.4 4.86-6.55 8.68L10 17.5z" stroke="currentColor" strokeWidth="1.5" />
+                                </svg>
+                                <span>{isLiked ? 'Bỏ thích' : 'Thích'}</span>
+                            </button>
+                            <button onClick={handleSave} className={isSaved ? 'active' : ''}>
+                                <svg width="24" height="24" viewBox="0 0 20 20" fill={isSaved ? 'currentColor' : 'none'}>
+                                    <path d="M5 3h10a2 2 0 012 2v14l-7-4-7 4V5a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.5" />
+                                </svg>
+                                <span>{isSaved ? 'Đã lưu' : 'Lưu'}</span>
+                            </button>
+                            <button onClick={handleShare}>
+                                <svg width="24" height="24" viewBox="0 0 20 20" fill="none">
+                                    <path d="M15 13v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3M10 3v10M10 3l-3 3M10 3l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                </svg>
+                                <span>Chia sẻ</span>
+                            </button>
+                        </div>
+                    </div>
+                </>,
+                document.body
+            )}
         </>
     );
 };
 
 export default SetupCard;
-```
