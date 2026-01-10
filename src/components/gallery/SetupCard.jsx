@@ -118,16 +118,29 @@ const SetupCard = ({ setup, index }) => {
                     )}
 
                     {/* Main Image */}
-                    <img
-                        src={setup.images[0]}
-                        alt={setup.title}
-                        className={`setup-card-image ${imageLoaded ? 'loaded' : ''}`}
-                        onLoad={() => setImageLoaded(true)}
-                        onError={() => setImageError(true)}
-                        style={{
-                            display: setup.thumbnailVideo && isVideoPlaying ? 'none' : 'block'
-                        }}
-                    />
+                    {setup.images && setup.images.length > 0 ? (
+                        <img
+                            src={setup.images[0]}
+                            alt={setup.title || 'Setup image'}
+                            className={`setup-card-image ${imageLoaded ? 'loaded' : ''}`}
+                            onLoad={() => setImageLoaded(true)}
+                            onError={(e) => {
+                                console.error('Image load error:', setup.images[0]);
+                                setImageError(true);
+                            }}
+                            style={{
+                                display: setup.thumbnailVideo && isVideoPlaying ? 'none' : 'block'
+                            }}
+                        />
+                    ) : (
+                        <div className="image-error">
+                            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                <path d="M24 4L4 44h40L24 4z" stroke="currentColor" strokeWidth="2" />
+                                <path d="M24 18v12M24 34v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                            <span>Không có ảnh</span>
+                        </div>
+                    )}
 
                     {/* Loading Skeleton */}
                     {!imageLoaded && !imageError && (

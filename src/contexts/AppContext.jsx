@@ -26,15 +26,22 @@ export const AppProvider = ({ children }) => {
     const loadData = async () => {
         setLoading(true);
 
-        // Start with empty or cached data? No, let's wait for fetch.
-        // setSetups([]); // Optional: Clear while loading? No, keep prev state.
-
         try {
             const data = await api.getData();
+
+            // Debug logging
+            console.log('📊 Firestore data loaded:', {
+                setupsCount: data.setups?.length || 0,
+                blogsCount: data.blogs?.length || 0,
+                firstSetup: data.setups?.[0]
+            });
+
             // Always update with fetched data (even if empty)
             if (data.setups) {
                 console.log("Loaded", data.setups.length, "setups from Firestore");
                 setSetups(data.setups);
+            } else {
+                console.warn('⚠️ No setups returned from Firestore');
             }
 
             if (data.blogs) {
@@ -43,7 +50,7 @@ export const AppProvider = ({ children }) => {
 
             setAllComments(data.comments || {});
         } catch (error) {
-            console.error("Error loading data, using sample data:", error);
+            console.error("❌ Error loading data, using sample data:", error);
             // Already set to sample data above
         } finally {
             setLoading(false);
