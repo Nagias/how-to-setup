@@ -236,28 +236,6 @@
     box-shadow: var(--shadow-lg);
 }
 
-/* Mobile Menu Backdrop */
-.mobile-menu-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    /* Lower z-index to not cover cards */
-    animation: fadeIn 0.2s ease-out;
-    /* Allow clicks to pass through to close menu */
-    pointer-events: auto;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
 /* Mobile Menu Popup - Pinterest Bottom Sheet */
 .mobile-menu-popup {
     position: fixed;
@@ -272,6 +250,26 @@
     animation: slideUp 0.3s ease-out;
     max-height: 70vh;
     overflow-y: auto;
+}
+
+/* Add backdrop effect directly to popup */
+.mobile-menu-popup::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes slideUp {

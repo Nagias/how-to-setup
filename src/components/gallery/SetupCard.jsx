@@ -229,16 +229,6 @@ const SetupCard = ({ setup, index }) => {
             {/* Mobile Menu Portal - Render at document root */}
             {showMobileMenu && ReactDOM.createPortal(
                 <>
-                    {/* Backdrop */}
-                    <div
-                        className="mobile-menu-backdrop"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setShowMobileMenu(false);
-                        }}
-                    />
-
                     {/* Bottom Sheet */}
                     <div className="mobile-menu-popup">
                         {/* Header */}
