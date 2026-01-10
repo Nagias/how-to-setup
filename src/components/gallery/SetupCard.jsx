@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
 import './SetupCard.css';
 
 const SetupCard = ({ setup, index }) => {
-    const { setSelectedSetup, toggleLike, toggleSave, hasUserLiked, hasUserSaved } = useApp();
+    const { toggleLike, toggleSave, hasUserLiked, hasUserSaved } = useApp();
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
     const videoRef = useRef(null);
@@ -12,30 +13,30 @@ const SetupCard = ({ setup, index }) => {
     const isLiked = hasUserLiked(setup.id);
     const isSaved = hasUserSaved(setup.id);
 
-    const handleCardClick = () => {
-        setSelectedSetup(setup);
-    };
-
     const handleLike = (e) => {
+        e.preventDefault();
         e.stopPropagation();
         toggleLike(setup.id);
     };
 
     const handleSave = (e) => {
+        e.preventDefault();
         e.stopPropagation();
         toggleSave(setup.id);
     };
 
     const handleShare = (e) => {
+        e.preventDefault();
         e.stopPropagation();
+        const setupUrl = `${window.location.origin}/setup/${setup.id}`;
         if (navigator.share) {
             navigator.share({
                 title: setup.title,
                 text: setup.caption,
-                url: window.location.href
+                url: setupUrl
             });
         } else {
-            navigator.clipboard.writeText(window.location.href);
+            navigator.clipboard.writeText(setupUrl);
             alert('Đã copy link!');
         }
     };
@@ -60,9 +61,9 @@ const SetupCard = ({ setup, index }) => {
     };
 
     return (
-        <article
+        <Link
+            to={`/setup/${setup.id}`}
             className="setup-card"
-            onClick={handleCardClick}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >
@@ -233,7 +234,7 @@ const SetupCard = ({ setup, index }) => {
                     </div>
                 </div>
             </div>
-        </article>
+        </Link>
     );
 };
 

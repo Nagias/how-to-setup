@@ -14,6 +14,7 @@ import ProfileModal from './components/common/ProfileModal';
 import NewsletterModal from './components/common/NewsletterModal';
 import CollectionsModal from './components/common/CollectionsModal';
 import AddSetupModal from './components/admin/AddSetupModal';
+import SetupDetailPage from './components/setup-detail/SetupDetailPage';
 import './index.css';
 import './App.css';
 
@@ -103,6 +104,7 @@ const AppContent = () => {
                 <Routes>
                     <Route path="/" element={<GalleryPage />} />
                     <Route path="/gallery" element={<GalleryPage />} />
+                    <Route path="/setup/:setupId" element={<SetupDetailPage />} />
                     <Route path="/blog" element={<BlogView />} />
                     <Route path="/blog/:slug" element={<BlogDetail />} />
                     <Route path="/blog/new" element={<BlogEditor />} />
