@@ -410,7 +410,8 @@
 @media (max-width: 768px) {
     .setup-detail-page {
         padding-top: 0;
-        background: black;
+        background: var(--color-bg-primary);
+        /* Reset to default */
     }
 
     /* Back button - White background, inside image area */
@@ -451,17 +452,30 @@
 
     /* Gallery section - NO top gap, image close to menu */
     .setup-gallery-section {
-        background: black;
+        background: transparent;
     }
 
     .setup-main-image-container {
         border-radius: 0;
-        background: black;
+        background: transparent;
     }
 
     .setup-main-image {
         max-height: 75vh;
         border-radius: 0;
+        width: 100%;
+    }
+
+    /* Mobile Masonry Grid for Similar Setups */
+    .similar-setups-grid {
+        display: block;
+        column-count: 2;
+        column-gap: var(--space-sm);
+    }
+
+    .similar-setup-card {
+        margin-bottom: var(--space-sm);
+        display: inline-block;
         width: 100%;
     }
 
