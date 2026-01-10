@@ -400,7 +400,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-sm);
-    flex: 1;
+    /* Removed flex: 1 to prevent pushing content to bottom */
 }
 
 .mobile-nav-item {
@@ -421,7 +421,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-md);
-    margin-top: auto;
+    margin-top: var(--space-xl);
+    /* Standard spacing instead of auto */
     padding-top: var(--space-md);
     border-top: 1px solid var(--color-border);
 }
