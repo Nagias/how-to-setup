@@ -157,6 +157,50 @@ const SetupDetailPage = () => {
     // Get setup by ID
     const setup = setups.find(s => s.id === setupId);
 
+    // Build media items - safe even if setup is undefined
+    const mediaItems = setup?.images?.length > 0
+        ? [
+            ...setup.images.map(img => ({
+                type: 'image',
+                url: img.url,
+                products: img.products || []
+            })),
+            ...(setup.youtubeVideo ? [{ type: 'youtube', url: setup.youtubeVideo, poster: setup.mainImage }] : [])
+        ]
+        : setup
+            ? [
+                { type: 'image', url: setup.mainImage, products: setup.products || [] },
+                ...(setup.moreImages || []).map(img => ({ type: 'image', url: img })),
+                ...(setup.youtubeVideo ? [{ type: 'youtube', url: setup.youtubeVideo, poster: setup.mainImage }] : [])
+            ]
+            : [];
+
+    // ALL HOOKS MUST BE CALLED BEFORE ANY RETURNS - React Rules of Hooks!
+
+    // Detect mobile viewport
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // Show swipe hint on mobile
+    useEffect(() => {
+        if (isMobile && setup && mediaItems.length > 1) {
+            const hasSeenHint = localStorage.getItem('hasSeenSwipeHint');
+            if (!hasSeenHint) {
+                setShowSwipeHint(true);
+                setTimeout(() => {
+                    setShowSwipeHint(false);
+                    localStorage.setItem('hasSeenSwipeHint', 'true');
+                }, 3000);
+            }
+        }
+    }, [isMobile, setup, mediaItems.length]);
+
+    // NOW we can have conditional returns AFTER all hooks
+
     // Show loading if data is still being fetched OR if we have no setups yet
     if (loading || (setups.length === 0 && !setup)) {
         return (
@@ -185,49 +229,12 @@ const SetupDetailPage = () => {
         );
     }
 
-    // Build media items - MUST be before useEffect
-    const mediaItems = setup.images?.length > 0
-        ? [
-            ...setup.images.map(img => ({
-                type: 'image',
-                url: img.url,
-                products: img.products || []
-            })),
-            ...(setup.youtubeVideo ? [{ type: 'youtube', url: setup.youtubeVideo, poster: setup.mainImage }] : [])
-        ]
-        : [
-            { type: 'image', url: setup.mainImage, products: setup.products || [] },
-            ...(setup.moreImages || []).map(img => ({ type: 'image', url: img })),
-            ...(setup.youtubeVideo ? [{ type: 'youtube', url: setup.youtubeVideo, poster: setup.mainImage }] : [])
-        ];
-
+    // Safe to use setup now
     const currentMedia = mediaItems[currentImageIndex] || mediaItems[0];
     const isLiked = hasUserLiked(setup.id);
     const isSaved = hasUserSaved(setup.id);
     const comments = getComments(setup.id);
     const similarSetups = getSimilarSetups(setup.id, 16);
-
-    // Detect mobile viewport
-    useEffect(() => {
-        const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
-
-    // Show swipe hint on mobile
-    useEffect(() => {
-        if (isMobile && setup && mediaItems.length > 1) {
-            const hasSeenHint = localStorage.getItem('hasSeenSwipeHint');
-            if (!hasSeenHint) {
-                setShowSwipeHint(true);
-                setTimeout(() => {
-                    setShowSwipeHint(false);
-                    localStorage.setItem('hasSeenSwipeHint', 'true');
-                }, 3000);
-            }
-        }
-    }, [isMobile, setup, mediaItems.length]);
 
     // Swipe handlers
     const onTouchStart = (e) => {
