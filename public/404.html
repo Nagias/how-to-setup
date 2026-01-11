@@ -6,32 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Redirecting...</title>
     <script>
-        // Single Page Apps for GitHub Pages
-        // https://github.com/rafgraph/spa-github-pages
-        // When GitHub Pages serves a 404, this script redirects to index.html
-        // with the original path stored in sessionStorage for the SPA router
-
-        (function () {
-            var pathSegmentsToKeep = 0; // Set to 1 if using project page (e.g., /repo-name/)
-            var l = window.location;
-
-            // Store the current path for the SPA to restore
-            sessionStorage.setItem('redirect', l.pathname + l.search + l.hash);
-
-            // Redirect to root with the path stored
-            l.replace(
-                l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-                l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?p=' +
-                l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-                (l.search ? '&q=' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-                l.hash
-            );
-        })();
+        // Preserve the original path and redirect to index.html with hash routing for HashRouter
+        const path = window.location.pathname + window.location.search + window.location.hash;
+        window.location.replace('/#' + path);
     </script>
 </head>
 
 <body>
-    <p>Đang chuyển hướng...</p>
+    <p>Redirecting...</p>
 </body>
 
 </html>
