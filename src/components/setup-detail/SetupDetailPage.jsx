@@ -157,21 +157,30 @@ const SetupDetailPage = () => {
     // Get setup by ID
     const setup = setups.find(s => s.id === setupId);
 
-    // Show loading if data is fetching
-    if (loading && !setup) {
+    // Show loading if data is still being fetched OR if we have no setups yet
+    if (loading || (setups.length === 0 && !setup)) {
         return (
-            <div className="setup-detail-page" style={{ paddingTop: '100px', display: 'flex', justifyContent: 'center' }}>
-                <div style={{ color: 'var(--color-text-primary)' }}>Loading...</div>
+            <div className="setup-detail-page" style={{ paddingTop: '100px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+                <div style={{ color: 'var(--color-text-primary)', fontSize: '18px' }}>Đang tải...</div>
             </div>
         );
     }
 
-    // Redirect if setup not found
+    // Only show "not found" if loading is done AND we have setups but this specific one isn't found
+    if (!loading && setups.length > 0 && !setup) {
+        return (
+            <div className="setup-not-found" style={{ paddingTop: '100px', textAlign: 'center' }}>
+                <h2>Setup không tồn tại</h2>
+                <button onClick={() => navigate('/')} style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}>Quay về trang chủ</button>
+            </div>
+        );
+    }
+
+    // Edge case: if somehow we still don't have setup, show loading
     if (!setup) {
         return (
-            <div className="setup-not-found">
-                <h2>Setup không tồn tại</h2>
-                <button onClick={() => navigate('/')}>Quay về trang chủ</button>
+            <div className="setup-detail-page" style={{ paddingTop: '100px', display: 'flex', justifyContent: 'center' }}>
+                <div style={{ color: 'var(--color-text-primary)' }}>Đang tải...</div>
             </div>
         );
     }

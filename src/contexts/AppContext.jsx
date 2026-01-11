@@ -97,7 +97,19 @@ export const AppProvider = ({ children }) => {
     });
     const [currentUser, setCurrentUser] = useState(null);
     // Show loading only when we have no data at all
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(() => {
+        // If we have cache, we're not loading. Otherwise, we are.
+        try {
+            const cached = localStorage.getItem(CACHE_KEY_SETUPS);
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                return !(parsed && parsed.length > 0); // Not loading if we have data
+            }
+        } catch (e) {
+            // Ignore
+        }
+        return true; // Loading if no cache
+    });
 
     const loadData = async () => {
         // Check localStorage directly (not state) to avoid stale closure
@@ -135,6 +147,10 @@ export const AppProvider = ({ children }) => {
                 } catch (e) {
                     console.warn('Cache storage failed:', e);
                 }
+            } else if (!hasData) {
+                // No data from Firestore and no cache - use sample data as fallback
+                console.warn('⚠️ No data from Firestore, using sample data');
+                setSetups(sampleSetups);
             }
 
             if (data.blogs && data.blogs.length > 0) {
@@ -144,6 +160,8 @@ export const AppProvider = ({ children }) => {
                 } catch (e) {
                     console.warn('Cache storage failed:', e);
                 }
+            } else {
+                setBlogs(sampleBlogs);
             }
 
             // Update cache timestamp
@@ -152,6 +170,12 @@ export const AppProvider = ({ children }) => {
             setAllComments(data.comments || {});
         } catch (error) {
             console.error('❌ Error loading data from Firestore:', error);
+            // On error, use sample data as fallback if we have no data
+            if (!hasData) {
+                console.log('📌 Using sample data as fallback');
+                setSetups(sampleSetups);
+                setBlogs(sampleBlogs);
+            }
         } finally {
             setLoading(false);
         }
