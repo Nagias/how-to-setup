@@ -2,47 +2,36 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="./vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description"
-    content="DeskHub - Discover, save, and share inspiring desk setup ideas. Browse curated workspaces, gaming setups, and creative studios." />
-  <meta name="keywords" content="desk setup, workspace inspiration, home office, gaming setup, productivity" />
-  <meta name="version" content="1.0.1" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
-    rel="stylesheet">
-  <title>DeskHub - Inspiring Desk Setup Gallery</title>
-  <!-- Start Single Page Apps for GitHub Pages -->
-  <script type="text/javascript">
-    // Single Page Apps for GitHub Pages
-    // https://github.com/rafgraph/spa-github-pages
-    (function (l) {
-      if (l.search[1] === '/') {
-        var decoded = l.search.slice(1).split('&').map(function (s) {
-          return s.replace(/~and~/g, '&')
-        }).join('?');
-        window.history.replaceState(null, null,
-          l.pathname.slice(0, -1) + decoded + l.hash
-        );
-      }
-      // Also check sessionStorage for redirect path
-      var redirect = sessionStorage.getItem('redirect');
-      if (redirect) {
-        sessionStorage.removeItem('redirect');
-        window.history.replaceState(null, null, redirect);
-      }
-    }(window.location))
-  </script>
-  <!-- End Single Page Apps for GitHub Pages -->
-  <script type="module" crossorigin src="/assets/index-D5t2adYp.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-D3yyaP8-.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecting...</title>
+    <script>
+        // Single Page Apps for GitHub Pages
+        // https://github.com/rafgraph/spa-github-pages
+        // When GitHub Pages serves a 404, this script redirects to index.html
+        // with the original path stored in sessionStorage for the SPA router
+
+        (function () {
+            var pathSegmentsToKeep = 0; // Set to 1 if using project page (e.g., /repo-name/)
+            var l = window.location;
+
+            // Store the current path for the SPA to restore
+            sessionStorage.setItem('redirect', l.pathname + l.search + l.hash);
+
+            // Redirect to root with the path stored
+            l.replace(
+                l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+                l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?p=' +
+                l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+                (l.search ? '&q=' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+                l.hash
+            );
+        })();
+    </script>
 </head>
 
 <body>
-  <div id="root"></div>
+    <p>Đang chuyển hướng...</p>
 </body>
 
 </html>
