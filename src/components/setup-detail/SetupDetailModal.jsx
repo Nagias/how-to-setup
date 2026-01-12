@@ -12,6 +12,7 @@ const SetupDetailModal = () => {
         toggleSave,
         addComment,
         getComments,
+        fetchCommentsForSetup,
         hasUserLiked,
         hasUserSaved,
         getSimilarSetups,
@@ -30,6 +31,13 @@ const SetupDetailModal = () => {
 
     // Minimum swipe distance (in px)
     const minSwipeDistance = 50;
+
+    // Fetch comments when modal opens with a setup
+    React.useEffect(() => {
+        if (selectedSetup?.id) {
+            fetchCommentsForSetup(selectedSetup.id);
+        }
+    }, [selectedSetup?.id, fetchCommentsForSetup]);
 
     // Detect mobile viewport
     React.useEffect(() => {

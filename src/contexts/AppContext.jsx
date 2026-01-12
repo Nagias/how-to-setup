@@ -408,9 +408,24 @@ export const AppProvider = ({ children }) => {
         ));
     };
 
-    // Get comments for setup
+    // Get comments for setup - returns cached comments
     const getComments = (setupId) => {
         return allComments[setupId] || [];
+    };
+
+    // Fetch comments from Firestore for a specific setup
+    const fetchCommentsForSetup = async (setupId) => {
+        try {
+            const comments = await api.getCommentsForSetup(setupId);
+            setAllComments(prev => ({
+                ...prev,
+                [setupId]: comments
+            }));
+            return comments;
+        } catch (error) {
+            console.error('Error fetching comments:', error);
+            return [];
+        }
     };
 
     // Newsletter subscription
@@ -614,6 +629,7 @@ export const AppProvider = ({ children }) => {
         getSavedSetups,
         addComment,
         getComments,
+        fetchCommentsForSetup,
         subscribeNewsletter,
         addBlog,
         updateBlog,

@@ -125,11 +125,13 @@
 }
 
 .action-btn-icon {
-    width: 40px;
+    min-width: 40px;
     height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
+    padding: 0 12px;
     background: var(--color-bg-tertiary);
     border-radius: var(--radius-full);
     color: var(--color-text-secondary);
@@ -147,6 +149,11 @@
 .action-btn-icon.active {
     background: var(--color-accent);
     color: white;
+}
+
+.action-count {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
 }
 
 /* Legacy action-btn-large for backward compat */

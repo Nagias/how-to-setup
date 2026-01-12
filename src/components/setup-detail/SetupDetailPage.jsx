@@ -132,6 +132,7 @@ const SetupDetailPage = () => {
         toggleSave,
         addComment,
         getComments,
+        fetchCommentsForSetup,
         hasUserLiked,
         hasUserSaved,
         getSimilarSetups,
@@ -176,6 +177,13 @@ const SetupDetailPage = () => {
             : [];
 
     // ALL HOOKS MUST BE CALLED BEFORE ANY RETURNS - React Rules of Hooks!
+
+    // Fetch comments when setup is loaded
+    useEffect(() => {
+        if (setupId) {
+            fetchCommentsForSetup(setupId);
+        }
+    }, [setupId, fetchCommentsForSetup]);
 
     // Detect mobile viewport
     useEffect(() => {
@@ -488,17 +496,19 @@ const SetupDetailPage = () => {
                                     </span>
                                 </div>
 
-                                {/* Action buttons - Like, Save, Share */}
+                                {/* Action buttons - Like, Save, Share with counts */}
                                 <div className="setup-actions-row">
                                     <button className={`action-btn-icon ${isLiked ? 'active' : ''}`} onClick={handleLike} title="Thích">
                                         <svg width="22" height="22" viewBox="0 0 24 24" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
                                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                                         </svg>
+                                        <span className="action-count">{setup.likes?.length || 0}</span>
                                     </button>
                                     <button className={`action-btn-icon ${isSaved ? 'active' : ''}`} onClick={handleSave} title="Lưu">
                                         <svg width="22" height="22" viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
                                             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                                         </svg>
+                                        <span className="action-count">{setup.saves?.length || 0}</span>
                                     </button>
                                     <button
                                         className="action-btn-icon"

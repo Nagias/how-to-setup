@@ -246,6 +246,22 @@ export const api = {
         }
     },
 
+    // Fetch comments for a specific setup from Firestore
+    getCommentsForSetup: async (setupId) => {
+        try {
+            const commentsQuery = query(
+                commentsCol,
+                where('setupId', '==', setupId),
+                orderBy('timestamp', 'desc')
+            );
+            const snapshot = await getDocs(commentsQuery);
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (error) {
+            console.error('Error fetching comments:', error);
+            return [];
+        }
+    },
+
     // Setup Management
     addSetup: async (setupData) => {
         try {
