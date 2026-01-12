@@ -247,15 +247,21 @@ export const api = {
     },
 
     // Fetch comments for a specific setup from Firestore
+    // Note: Sorting done client-side to avoid Firestore composite index requirement
     getCommentsForSetup: async (setupId) => {
         try {
             const commentsQuery = query(
                 commentsCol,
-                where('setupId', '==', setupId),
-                orderBy('timestamp', 'desc')
+                where('setupId', '==', setupId)
             );
             const snapshot = await getDocs(commentsQuery);
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const comments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            // Sort client-side by timestamp (newest first)
+            return comments.sort((a, b) => {
+                const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+                const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+                return timeB - timeA;
+            });
         } catch (error) {
             console.error('Error fetching comments:', error);
             return [];
