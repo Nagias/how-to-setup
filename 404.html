@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Redirecting...</title>
+    <title>DeskHub</title>
     <script>
-        // Preserve the original path and redirect to index.html with hash routing for HashRouter
-        const path = window.location.pathname + window.location.search + window.location.hash;
-        window.location.replace('/#' + path);
+        // For HashRouter, just redirect to index.html
+        // The hash part (#/setup/123) will be preserved automatically by the browser
+        window.location.replace('/');
     </script>
 </head>
 
