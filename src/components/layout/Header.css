@@ -534,3 +534,16 @@
         display: none;
     }
 }
+
+/* Fix Invisible Icons */
+.theme-toggle,
+.header-actions .btn-icon {
+    color: var(--color-text-primary) !important;
+    opacity: 1 !important;
+}
+
+.theme-toggle svg,
+.header-actions .btn-icon svg {
+    display: block !important;
+    visibility: visible !important;
+}
