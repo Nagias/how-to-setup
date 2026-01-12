@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
 import { sampleBlogs } from '../../data/sampleData';
-import SeoHead from '../common/SeoHead';
+import { Helmet } from 'react-helmet';
+import SchemaGenerator, { generateMetaTags, generateCanonicalLink } from './seo/SchemaGenerator';
 import './BlogDetail.css';
 
 import { api } from '../../utils/api';
@@ -18,7 +19,6 @@ const BlogDetail = () => {
     // Find blog from Slug or ID
     useEffect(() => {
         // Try to find in current blogs state
-        // Match either slug (exact) or id (loose equality - in case slug is actually an ID)
         let foundBlog = blogs.find(b => b.slug === slug || b.id == slug);
 
         // If not found in state, try looking directly in sampleBlogs (fallback)
@@ -74,7 +74,12 @@ const BlogDetail = () => {
     };
 
     const handleEdit = () => {
-        navigate(`/blog/edit/${blog.id}`);
+        // Check if it's an SEO-style blog (has 'seo' field)
+        if (blog.seo) {
+            navigate(`/blog/seo-edit/${blog.id}`);
+        } else {
+            navigate(`/blog/edit/${blog.id}`);
+        }
     };
 
     const handleDelete = async () => {
@@ -88,36 +93,24 @@ const BlogDetail = () => {
         }
     };
 
-    const schema = {
-        "@context": "https://schema.org",
-        "@type": "BlogPosting",
-        "headline": blog.title,
-        "image": blog.coverImage,
-        "author": {
-            "@type": "Person",
-            "name": blog.author.name
-        },
-        "publisher": {
-            "@type": "Organization",
-            "name": "DeskHub",
-            "logo": {
-                "@type": "ImageObject",
-                "url": "https://deskhub.demo/logo.png"
-            }
-        },
-        "datePublished": blog.publishedAt,
-        "description": blog.excerpt
-    };
+    // Prepare SEO components
+    const metaTags = generateMetaTags(blog);
+    const canonicalLink = generateCanonicalLink(blog);
+
+    // Determine content to render (prefer contentHtml from TipTap, fallback to content)
+    const contentToRender = blog.contentHtml || blog.content;
 
     return (
         <div className="blog-detail-page">
-            <SeoHead
-                title={blog.title}
-                description={blog.excerpt}
-                image={blog.coverImage}
-                type="article"
-                schema={schema}
-            />
+            <Helmet>
+                <title>{blog.seo?.seoTitle || blog.title} | DeskHub</title>
+                {metaTags.map((tag, i) => (
+                    <meta key={i} {...tag} />
+                ))}
+                {canonicalLink && <link rel="canonical" href={canonicalLink} />}
+            </Helmet>
+
+            <SchemaGenerator blogData={blog} />
 
             <div className="blog-detail-actions" style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-md)' }}>
                 <button className="back-btn" onClick={handleBack}>
@@ -193,12 +186,12 @@ const BlogDetail = () => {
                 {/* Article Content */}
                 <div
                     className="blog-content"
-                    dangerouslySetInnerHTML={{ __html: blog.content }}
+                    dangerouslySetInnerHTML={{ __html: contentToRender }}
                 />
 
                 {/* Tags */}
                 <div className="blog-tags">
-                    {blog.tags.map(tag => (
+                    {blog.tags?.map(tag => (
                         <span key={tag} className="blog-tag">#{tag}</span>
                     ))}
                 </div>

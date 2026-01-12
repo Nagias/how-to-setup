@@ -8,6 +8,7 @@ import SetupDetailModal from './components/setup-detail/SetupDetailModal';
 import BlogView from './components/blog/BlogView';
 import BlogDetail from './components/blog/BlogDetail';
 import BlogEditor from './components/blog/BlogEditor';
+import SeoBlogEditor from './components/blog/SeoBlogEditor';
 import AdminDashboard from './components/admin/AdminDashboard';
 import AuthModal from './components/common/AuthModal';
 import ProfileModal from './components/common/ProfileModal';
@@ -109,6 +110,10 @@ const AppContent = () => {
                     <Route path="/setup/:setupId" element={<SetupDetailPage />} />
                     <Route path="/blog" element={<BlogView />} />
                     <Route path="/blog/:slug" element={<BlogDetail />} />
+                    {/* SEO Blog Editor (New) */}
+                    <Route path="/blog/seo-new" element={<SeoBlogEditor />} />
+                    <Route path="/blog/seo-edit/:id" element={<SeoBlogEditor />} />
+                    {/* Legacy Blog Editor */}
                     <Route path="/blog/new" element={<BlogEditor />} />
                     <Route path="/blog/edit/:id" element={<BlogEditor />} />
                     <Route path="/admin" element={<AdminDashboard />} />
