@@ -79,7 +79,7 @@ const Header = () => {
                     {currentUser?.role === 'admin' && (
                         <div className="desktop-only" style={{ display: 'flex', alignItems: 'center' }}>
                             <Link
-                                to="/blog/new"
+                                to="/blog/seo-new"
                                 className="btn"
                                 style={{
                                     padding: '0.5rem 1rem',
