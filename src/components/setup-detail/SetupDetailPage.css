@@ -263,16 +263,97 @@
     flex: 1;
 }
 
+.comment-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xs);
+}
+
 .comment-author {
     font-weight: 600;
     font-size: var(--font-size-sm);
     color: var(--color-text-primary);
-    margin-bottom: var(--space-xs);
+    margin: 0;
 }
 
 .comment-text {
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
+    line-height: 1.5;
+}
+
+/* Reply button */
+.reply-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-tertiary);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.reply-btn:hover {
+    color: var(--color-primary);
+    background: var(--color-bg-tertiary);
+}
+
+/* Reply indicator above input */
+.reply-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.reply-indicator strong {
+    color: var(--color-primary);
+}
+
+.cancel-reply-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-tertiary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.cancel-reply-btn:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text-primary);
+}
+
+/* Reply to indicator in comment */
+.reply-to-indicator {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    margin-bottom: var(--space-xs);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Mention tag highlighting */
+.mention-tag {
+    color: var(--color-primary);
+    font-weight: 600;
+    background: rgba(var(--color-primary-rgb), 0.1);
+    padding: 1px 4px;
+    border-radius: 4px;
 }
 
 /* Show more comments button */

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
@@ -152,6 +152,8 @@ const SetupDetailPage = () => {
     const [showAllComments, setShowAllComments] = useState(false);
     const [zoomLevel, setZoomLevel] = useState(1);
     const [showZoomControls, setShowZoomControls] = useState(false);
+    const [replyingTo, setReplyingTo] = useState(null); // { id, author } of comment being replied to
+    const commentInputRef = useRef(null);
 
     const minSwipeDistance = 50;
 
@@ -294,14 +296,48 @@ const SetupDetailPage = () => {
             // Ensure avatar has a fallback - Firebase doesn't accept undefined values
             const userAvatar = currentUser.photoURL || currentUser.avatar ||
                 `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'User')}&background=random`;
-            addComment(setup.id, {
+
+            const commentData = {
                 text: commentText,
                 author: currentUser.displayName,
                 userId: currentUser.id,
                 avatar: userAvatar
-            });
+            };
+
+            // Add replyTo info if replying to someone
+            if (replyingTo) {
+                commentData.replyTo = {
+                    commentId: replyingTo.id,
+                    author: replyingTo.author
+                };
+            }
+
+            addComment(setup.id, commentData);
             setCommentText('');
+            setReplyingTo(null);
         }
+    };
+
+    // Handle reply to a comment
+    const handleReply = (comment) => {
+        if (!currentUser) {
+            setShowAuthModal(true);
+            return;
+        }
+        const authorName = typeof comment.author === 'string' ? comment.author :
+            (comment.author?.name || comment.author?.displayName || 'Ẩn danh');
+        setReplyingTo({ id: comment.id, author: authorName });
+        setCommentText(`@${authorName} `);
+        // Focus the input
+        if (commentInputRef.current) {
+            commentInputRef.current.focus();
+        }
+    };
+
+    // Cancel reply
+    const cancelReply = () => {
+        setReplyingTo(null);
+        setCommentText('');
     };
 
     // Close active product when clicking outside
@@ -552,10 +588,23 @@ const SetupDetailPage = () => {
                             <div className="comments-section">
                                 <h4>Bình luận ({comments.length})</h4>
 
+                                {/* Reply indicator */}
+                                {replyingTo && (
+                                    <div className="reply-indicator">
+                                        <span>Đang trả lời <strong>@{replyingTo.author}</strong></span>
+                                        <button type="button" className="cancel-reply-btn" onClick={cancelReply}>
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M18 6L6 18M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                )}
+
                                 <form className="comment-form" onSubmit={handleComment}>
                                     <input
+                                        ref={commentInputRef}
                                         type="text"
-                                        placeholder="Thêm bình luận..."
+                                        placeholder={replyingTo ? `Trả lời @${replyingTo.author}...` : "Thêm bình luận..."}
                                         value={commentText}
                                         onChange={(e) => setCommentText(e.target.value)}
                                         className="comment-input"
@@ -570,19 +619,58 @@ const SetupDetailPage = () => {
                                         <>
                                             {comments.slice(0, showAllComments ? comments.length : 2).map(comment => {
                                                 // Ensure comment fields are strings, not objects
-                                                const commentText = typeof comment.text === 'string' ? comment.text :
+                                                const rawText = typeof comment.text === 'string' ? comment.text :
                                                     (comment.text?.text || JSON.stringify(comment.text) || '');
                                                 const commentAuthor = typeof comment.author === 'string' ? comment.author :
                                                     (comment.author?.name || comment.author?.displayName || 'Ẩn danh');
                                                 const commentAvatar = typeof comment.avatar === 'string' ? comment.avatar :
                                                     (comment.avatar?.url || 'https://ui-avatars.com/api/?name=User&background=random');
 
+                                                // Parse @mentions in comment text
+                                                const renderTextWithMentions = (text) => {
+                                                    const mentionRegex = /@(\S+)/g;
+                                                    const parts = [];
+                                                    let lastIndex = 0;
+                                                    let match;
+
+                                                    while ((match = mentionRegex.exec(text)) !== null) {
+                                                        // Add text before mention
+                                                        if (match.index > lastIndex) {
+                                                            parts.push(text.substring(lastIndex, match.index));
+                                                        }
+                                                        // Add highlighted mention
+                                                        parts.push(
+                                                            <span key={match.index} className="mention-tag">@{match[1]}</span>
+                                                        );
+                                                        lastIndex = match.index + match[0].length;
+                                                    }
+                                                    // Add remaining text
+                                                    if (lastIndex < text.length) {
+                                                        parts.push(text.substring(lastIndex));
+                                                    }
+                                                    return parts.length > 0 ? parts : text;
+                                                };
+
                                                 return (
                                                     <div key={comment.id} className="comment">
                                                         <img src={commentAvatar} alt={commentAuthor} className="comment-avatar" />
                                                         <div className="comment-content">
-                                                            <p className="comment-author">{commentAuthor}</p>
-                                                            <p className="comment-text">{commentText}</p>
+                                                            <div className="comment-header">
+                                                                <p className="comment-author">{commentAuthor}</p>
+                                                                <button
+                                                                    type="button"
+                                                                    className="reply-btn"
+                                                                    onClick={() => handleReply(comment)}
+                                                                >
+                                                                    Trả lời
+                                                                </button>
+                                                            </div>
+                                                            {comment.replyTo && (
+                                                                <p className="reply-to-indicator">
+                                                                    ↳ Trả lời <span className="mention-tag">@{comment.replyTo.author}</span>
+                                                                </p>
+                                                            )}
+                                                            <p className="comment-text">{renderTextWithMentions(rawText)}</p>
                                                         </div>
                                                     </div>
                                                 );

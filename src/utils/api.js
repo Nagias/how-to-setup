@@ -231,6 +231,11 @@ export const api = {
                 timestamp: new Date().toISOString()
             };
 
+            // Add replyTo if present
+            if (commentData.replyTo) {
+                newComment.replyTo = commentData.replyTo;
+            }
+
             const docRef = await addDoc(commentsCol, newComment);
 
             // Increment comment count
