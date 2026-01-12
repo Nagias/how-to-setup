@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
+import { api } from '../../utils/api';
 import { vietnameseToSlug } from '../../utils/slugify';
 import { defaultSeoBlogPost, searchIntentConfig } from '../../types/blogTypes';
 import TipTapEditor from './editor/TipTapEditor';
@@ -28,6 +29,7 @@ const SeoBlogEditor = () => {
     });
 
     const [saving, setSaving] = useState(false);
+    const [uploadingCover, setUploadingCover] = useState(false);
     const [contentJson, setContentJson] = useState(null);
     const [images, setImages] = useState([]);
 
@@ -130,6 +132,41 @@ const SeoBlogEditor = () => {
             imagesMissingAlt.length === 0
         );
     }, [blogData, contentJson, images]);
+
+    // Handle cover image upload
+    const handleCoverUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Vui lòng chọn file ảnh!');
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File ảnh quá lớn (tối đa 5MB)');
+            return;
+        }
+
+        setUploadingCover(true);
+        try {
+            const url = await api.uploadFile(file);
+            setBlogData(prev => ({
+                ...prev,
+                coverImage: url,
+                seo: { ...prev.seo, ogImage: url }
+            }));
+        } catch (error) {
+            console.error('Upload failed:', error);
+            alert(`Tải ảnh thất bại: ${error.message}`);
+        } finally {
+            setUploadingCover(false);
+            // Reset input value to allow re-selecting same file
+            e.target.value = null;
+        }
+    };
 
     // Handle form submission
     const handleSubmit = async (status = 'draft') => {
@@ -273,22 +310,59 @@ const SeoBlogEditor = () => {
                     {/* Cover Image */}
                     <div className="cover-section">
                         <label>Ảnh Bìa / OG Image:</label>
-                        <input
-                            type="url"
-                            value={blogData.coverImage}
-                            onChange={(e) => setBlogData(prev => ({
-                                ...prev,
-                                coverImage: e.target.value,
-                                seo: { ...prev.seo, ogImage: e.target.value }
-                            }))}
-                            placeholder="https://example.com/cover.jpg"
-                            className="cover-input"
-                        />
-                        {blogData.coverImage && (
-                            <div className="cover-preview">
-                                <img src={blogData.coverImage} alt="Cover preview" />
+
+                        {!blogData.coverImage ? (
+                            <div className="cover-upload-box" onClick={() => document.getElementById('cover-upload').click()}>
+                                <input
+                                    id="cover-upload"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleCoverUpload}
+                                    style={{ display: 'none' }}
+                                    disabled={uploadingCover}
+                                />
+                                <div className="upload-label">
+                                    {uploadingCover ? (
+                                        <>
+                                            <span className="upload-icon">⏳</span>
+                                            <span>Đang tải ảnh lên...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="upload-icon">📤</span>
+                                            <span>Nhấn để tải ảnh lên</span>
+                                            <small>(Max 5MB)</small>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="cover-preview-container">
+                                <img src={blogData.coverImage} className="cover-preview-img" alt="Cover" />
+                                <button
+                                    className="remove-cover-btn"
+                                    onClick={() => setBlogData(prev => ({ ...prev, coverImage: '', seo: { ...prev.seo, ogImage: '' } }))}
+                                >
+                                    ✕ Gỡ ảnh
+                                </button>
                             </div>
                         )}
+
+                        <details className="url-fallback">
+                            <summary>Hoặc nhập URL ảnh thủ công</summary>
+                            <input
+                                type="url"
+                                value={blogData.coverImage}
+                                onChange={(e) => setBlogData(prev => ({
+                                    ...prev,
+                                    coverImage: e.target.value,
+                                    seo: { ...prev.seo, ogImage: e.target.value }
+                                }))}
+                                placeholder="https://example.com/cover.jpg"
+                                className="cover-input"
+                                style={{ marginTop: '8px' }}
+                            />
+                        </details>
                     </div>
 
                     {/* Excerpt */}
