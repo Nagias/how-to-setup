@@ -364,18 +364,36 @@ export const AppProvider = ({ children }) => {
         return saves.some(s => (s.userId === user.id || s === user.id));
     };
 
-    // Add comment
-    const addComment = async (setupId, commentText, authorName) => {
+    // Add comment - handles both formats:
+    // 1. addComment(setupId, commentText) - string format from SetupDetailModal
+    // 2. addComment(setupId, {text, author, userId, avatar}) - object format from SetupDetailPage
+    const addComment = async (setupId, commentData) => {
         const user = currentUser || getCurrentUser();
+
         // Ensure avatar has a fallback - Firebase doesn't accept undefined values
-        const authorAvatar = user.photoURL || user.avatar ||
+        const defaultAvatar = user.photoURL || user.avatar ||
             `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=random`;
-        const comment = {
-            text: commentText,
-            author: authorName || user.displayName,
-            avatar: authorAvatar,
-            userId: user.id
-        };
+
+        let comment;
+
+        // Check if commentData is an object or a string
+        if (typeof commentData === 'object' && commentData !== null) {
+            // Object format from SetupDetailPage
+            comment = {
+                text: commentData.text,
+                author: commentData.author || user.displayName,
+                avatar: commentData.avatar || defaultAvatar,
+                userId: commentData.userId || user.id
+            };
+        } else {
+            // String format from SetupDetailModal
+            comment = {
+                text: commentData,
+                author: user.displayName,
+                avatar: defaultAvatar,
+                userId: user.id
+            };
+        }
 
         const newComment = await api.addComment(setupId, comment);
 
