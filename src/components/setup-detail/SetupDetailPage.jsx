@@ -568,15 +568,25 @@ const SetupDetailPage = () => {
                                         <p className="no-comments">Chưa có bình luận nào</p>
                                     ) : (
                                         <>
-                                            {comments.slice(0, showAllComments ? comments.length : 2).map(comment => (
-                                                <div key={comment.id} className="comment">
-                                                    <img src={comment.avatar} alt={comment.author} className="comment-avatar" />
-                                                    <div className="comment-content">
-                                                        <p className="comment-author">{comment.author}</p>
-                                                        <p className="comment-text">{comment.text}</p>
+                                            {comments.slice(0, showAllComments ? comments.length : 2).map(comment => {
+                                                // Ensure comment fields are strings, not objects
+                                                const commentText = typeof comment.text === 'string' ? comment.text :
+                                                    (comment.text?.text || JSON.stringify(comment.text) || '');
+                                                const commentAuthor = typeof comment.author === 'string' ? comment.author :
+                                                    (comment.author?.name || comment.author?.displayName || 'Ẩn danh');
+                                                const commentAvatar = typeof comment.avatar === 'string' ? comment.avatar :
+                                                    (comment.avatar?.url || 'https://ui-avatars.com/api/?name=User&background=random');
+
+                                                return (
+                                                    <div key={comment.id} className="comment">
+                                                        <img src={commentAvatar} alt={commentAuthor} className="comment-avatar" />
+                                                        <div className="comment-content">
+                                                            <p className="comment-author">{commentAuthor}</p>
+                                                            <p className="comment-text">{commentText}</p>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                             {comments.length > 2 && !showAllComments && (
                                                 <button
                                                     className="show-more-comments"

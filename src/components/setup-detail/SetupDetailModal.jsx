@@ -427,18 +427,30 @@ const SetupDetailModal = () => {
                                 {setupComments.length === 0 ? (
                                     <p className="no-comments">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
                                 ) : (
-                                    setupComments.map(comment => (
-                                        <div key={comment.id} className="comment">
-                                            <img src={comment.avatar} alt={comment.author} className="comment-avatar" />
-                                            <div className="comment-content">
-                                                <div className="comment-header">
-                                                    <span className="comment-author">{comment.author}</span>
-                                                    <span className="comment-time">{new Date(comment.timestamp).toLocaleDateString('vi-VN')}</span>
+                                    setupComments.map(comment => {
+                                        // Ensure comment fields are strings, not objects
+                                        const commentText = typeof comment.text === 'string' ? comment.text :
+                                            (comment.text?.text || JSON.stringify(comment.text) || '');
+                                        const commentAuthor = typeof comment.author === 'string' ? comment.author :
+                                            (comment.author?.name || comment.author?.displayName || 'Ẩn danh');
+                                        const commentAvatar = typeof comment.avatar === 'string' ? comment.avatar :
+                                            (comment.avatar?.url || 'https://ui-avatars.com/api/?name=User&background=random');
+                                        const commentTime = comment.timestamp ?
+                                            new Date(comment.timestamp).toLocaleDateString('vi-VN') : '';
+
+                                        return (
+                                            <div key={comment.id} className="comment">
+                                                <img src={commentAvatar} alt={commentAuthor} className="comment-avatar" />
+                                                <div className="comment-content">
+                                                    <div className="comment-header">
+                                                        <span className="comment-author">{commentAuthor}</span>
+                                                        <span className="comment-time">{commentTime}</span>
+                                                    </div>
+                                                    <p className="comment-text">{commentText}</p>
                                                 </div>
-                                                <p className="comment-text">{comment.text}</p>
                                             </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 )}
                             </div>
                         </div>
