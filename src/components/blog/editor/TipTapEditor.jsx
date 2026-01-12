@@ -4,10 +4,10 @@ import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
-import Table from '@tiptap/extension-table';
-import TableRow from '@tiptap/extension-table-row';
-import TableHeader from '@tiptap/extension-table-header';
-import TableCell from '@tiptap/extension-table-cell';
+import { Table } from '@tiptap/extension-table';
+import { TableRow } from '@tiptap/extension-table-row';
+import { TableHeader } from '@tiptap/extension-table-header';
+import { TableCell } from '@tiptap/extension-table-cell';
 import './TipTapEditor.css';
 
 // Custom heading extension that enforces hierarchy
