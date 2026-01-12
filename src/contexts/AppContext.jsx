@@ -367,10 +367,13 @@ export const AppProvider = ({ children }) => {
     // Add comment
     const addComment = async (setupId, commentText, authorName) => {
         const user = currentUser || getCurrentUser();
+        // Ensure avatar has a fallback - Firebase doesn't accept undefined values
+        const authorAvatar = user.photoURL || user.avatar ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=random`;
         const comment = {
             text: commentText,
             author: authorName || user.displayName,
-            avatar: user.avatar,
+            avatar: authorAvatar,
             userId: user.id
         };
 

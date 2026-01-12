@@ -283,11 +283,14 @@ const SetupDetailPage = () => {
             return;
         }
         if (commentText.trim()) {
+            // Ensure avatar has a fallback - Firebase doesn't accept undefined values
+            const userAvatar = currentUser.photoURL || currentUser.avatar ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'User')}&background=random`;
             addComment(setup.id, {
                 text: commentText,
                 author: currentUser.displayName,
                 userId: currentUser.id,
-                avatar: currentUser.photoURL
+                avatar: userAvatar
             });
             setCommentText('');
         }

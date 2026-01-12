@@ -388,7 +388,7 @@ const SetupDetailModal = () => {
                             <form className="comment-form" onSubmit={handleSubmitComment}>
                                 <div className="comment-input-wrapper">
                                     <img
-                                        src={currentUser?.avatar || 'https://ui-avatars.com/api/?name=User&background=random'}
+                                        src={currentUser?.photoURL || currentUser?.avatar || 'https://ui-avatars.com/api/?name=User&background=random'}
                                         alt="Avatar"
                                         className="comment-user-avatar"
                                     />
