@@ -8,6 +8,7 @@ import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableHeader } from '@tiptap/extension-table-header';
 import { TableCell } from '@tiptap/extension-table-cell';
+import { uploadToCloudinary } from '../../../config/cloudinary';
 import './TipTapEditor.css';
 
 // Custom heading extension that enforces hierarchy
@@ -92,7 +93,7 @@ const TipTapEditor = ({
         }
     }, [editor]);
 
-    // Handle image upload
+    // Handle image upload - Using Cloudinary
     const handleImageUpload = useCallback(() => {
         const input = document.createElement('input');
         input.type = 'file';
@@ -100,13 +101,17 @@ const TipTapEditor = ({
         input.onchange = async (e) => {
             const file = e.target.files[0];
             if (file) {
-                // For now, use base64. In production, upload to server
-                const reader = new FileReader();
-                reader.onload = (event) => {
+                try {
+                    // Get alt text first
                     const alt = prompt('Nhập Alt text cho ảnh (bắt buộc cho SEO):') || '';
-                    insertImage(event.target.result, alt);
-                };
-                reader.readAsDataURL(file);
+
+                    // Upload to Cloudinary
+                    const result = await uploadToCloudinary(file, 'blog-content');
+                    insertImage(result.url, alt);
+                } catch (error) {
+                    console.error('Image upload failed:', error);
+                    alert('Tải ảnh thất bại: ' + error.message);
+                }
             }
         };
         input.click();

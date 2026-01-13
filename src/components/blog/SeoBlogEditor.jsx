@@ -7,6 +7,7 @@ import { defaultSeoBlogPost, searchIntentConfig } from '../../types/blogTypes';
 import TipTapEditor from './editor/TipTapEditor';
 import SeoPanel from './seo/SeoPanel';
 import { KeywordAnalyzer, ReadabilityChecker, PublishChecklist } from './seo/SeoAnalyzers';
+import { uploadToCloudinary } from '../../config/cloudinary';
 import './SeoBlogEditor.css';
 
 const SeoBlogEditor = () => {
@@ -133,7 +134,7 @@ const SeoBlogEditor = () => {
         );
     }, [blogData, contentJson, images]);
 
-    // Handle cover image upload
+    // Handle cover image upload - Using Cloudinary
     const handleCoverUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -144,19 +145,19 @@ const SeoBlogEditor = () => {
             return;
         }
 
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            alert('File ảnh quá lớn (tối đa 5MB)');
+        // Validate file size (max 10MB for Cloudinary)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File ảnh quá lớn (tối đa 10MB)');
             return;
         }
 
         setUploadingCover(true);
         try {
-            const url = await api.uploadFile(file);
+            const result = await uploadToCloudinary(file, 'blog-covers');
             setBlogData(prev => ({
                 ...prev,
-                coverImage: url,
-                seo: { ...prev.seo, ogImage: url }
+                coverImage: result.url,
+                seo: { ...prev.seo, ogImage: result.url }
             }));
         } catch (error) {
             console.error('Upload failed:', error);
