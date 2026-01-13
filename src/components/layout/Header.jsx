@@ -160,29 +160,13 @@ const Header = () => {
 
 
                     {/* Theme Toggle (Desktop) */}
-                    <button className="btn btn-icon theme-toggle desktop-only" onClick={toggleTheme} title="Đổi theme">
-                        {theme === 'light' ? (
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                                <defs>
-                                    <linearGradient id="sun-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" stopColor="#FF6B35" />
-                                        <stop offset="100%" stopColor="#F7931E" />
-                                    </linearGradient>
-                                </defs>
-                                <circle cx="12" cy="12" r="5" fill="url(#sun-gradient)" />
-                                <path d="M12 1v2M12 21v2M23 12h-2M3 12H1M20.49 3.51l-1.41 1.41M4.92 19.08l-1.41 1.41M20.49 20.49l-1.41-1.41M4.92 4.92L3.51 3.51" stroke="url(#sun-gradient)" strokeWidth="2" strokeLinecap="round" />
-                            </svg>
-                        ) : (
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                                <defs>
-                                    <linearGradient id="moon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" stopColor="#4A90E2" />
-                                        <stop offset="100%" stopColor="#7B68EE" />
-                                    </linearGradient>
-                                </defs>
-                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="url(#moon-gradient)" />
-                            </svg>
-                        )}
+                    <button
+                        className="btn btn-icon theme-toggle desktop-only"
+                        onClick={toggleTheme}
+                        title="Đổi theme"
+                        style={{ fontSize: '22px', lineHeight: 1 }}
+                    >
+                        {theme === 'light' ? '☀️' : '🌙'}
                     </button>
 
                     {/* User Menu - Always visible but simplified on mobile? No, hide on mobile and put in drawer */}
