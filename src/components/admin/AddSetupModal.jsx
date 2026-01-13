@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { api } from '../../utils/api';
 import './AddSetupModal.css';
 import { filterOptions } from '../../data/sampleData';
+import { uploadToCloudinary } from '../../config/cloudinary';
 
 const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
     const [formData, setFormData] = useState({
@@ -242,75 +243,30 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
 
             console.log('🟡 Processing media uploads...');
 
-            // Upload avatar first if exists
+            // Upload avatar first if exists - Using Cloudinary
             let avatarUrl = avatarPreview; // Use existing preview if no new file
             if (avatarFile) {
                 try {
-                    console.log('🟡 Uploading avatar...');
-                    // Compress avatar (limit 500px)
-                    const avatarBase64 = await compressImage(avatarFile, 500);
-                    // Convert to blob for upload
-                    const avatarBlob = await (await fetch(avatarBase64)).blob();
-                    const compressedAvatar = new File([avatarBlob], "avatar.jpg", { type: "image/jpeg" });
-
-                    avatarUrl = await api.uploadFile(compressedAvatar);
-                    console.log('✅ Avatar uploaded:', avatarUrl);
+                    console.log('🟡 Uploading avatar to Cloudinary...');
+                    const result = await uploadToCloudinary(avatarFile, 'avatars');
+                    avatarUrl = result.url;
+                    console.log('✅ Avatar uploaded to Cloudinary:', avatarUrl);
                 } catch (err) {
                     console.error('❌ Avatar upload failed:', err);
-                    // Fallback to base64
-                    try {
-                        avatarUrl = await compressImage(avatarFile, 300);
-                    } catch (compErr) {
-                        console.error('Avatar compression failed:', compErr);
-                        avatarUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(formData.authorName || 'User');
-                    }
+                    // Fallback to UI Avatars
+                    avatarUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(formData.authorName || 'User');
                 }
             }
 
-            // Upload files first - Force Firebase Storage, NO BASE64 FALLBACK
+            // Upload files to Cloudinary - Fast and reliable!
             const processedMedia = await Promise.all(mediaList.map(async (item) => {
                 if (item.file) {
                     try {
-                        // Image upload only - Keep high quality
-                        console.log(`🟡 Compressing image: ${item.file.name}`);
-                        // High quality compression: 2560px width, 0.92 quality
-                        const compressedBase64 = await compressImage(item.file, 2560, 0.92);
-                        const blob = await (await fetch(compressedBase64)).blob();
-                        const compressedFile = new File([blob], item.file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: "image/jpeg" });
+                        console.log(`🟡 Uploading image to Cloudinary: ${item.file.name}`);
+                        const result = await uploadToCloudinary(item.file, 'desk-setups');
+                        console.log(`✅ Image uploaded to Cloudinary:`, result.url);
 
-                        console.log(`🟡 Starting upload (Compressed): ${(compressedFile.size / 1024).toFixed(0)} KB`);
-
-                        // Retry logic - 3 attempts with 60s timeout each
-                        let downloadUrl = null;
-                        let lastError = null;
-
-                        for (let attempt = 1; attempt <= 3; attempt++) {
-                            try {
-                                console.log(`🔄 Upload attempt ${attempt}/3...`);
-                                const uploadPromise = api.uploadFile(compressedFile);
-                                const timeoutPromise = new Promise((_, reject) =>
-                                    setTimeout(() => reject(new Error('TIMEOUT')), 60000)
-                                );
-
-                                downloadUrl = await Promise.race([uploadPromise, timeoutPromise]);
-                                console.log(`✅ Image uploaded on attempt ${attempt}: ${downloadUrl}`);
-                                break; // Success, exit retry loop
-                            } catch (uploadErr) {
-                                lastError = uploadErr;
-                                console.warn(`⚠️ Attempt ${attempt} failed:`, uploadErr.message);
-                                if (attempt < 3) {
-                                    console.log(`⏳ Waiting 2s before retry...`);
-                                    await new Promise(r => setTimeout(r, 2000));
-                                }
-                            }
-                        }
-
-                        if (!downloadUrl) {
-                            throw new Error(`Upload thất bại sau 3 lần thử: ${lastError?.message || 'Network error'}`);
-                        }
-
-                        return { ...item, url: downloadUrl, file: null };
-
+                        return { ...item, url: result.url, file: null };
                     } catch (err) {
                         console.error('❌ Image upload failed:', err);
                         throw new Error(`Không thể tải ảnh "${item.file.name}": ${err.message}`);

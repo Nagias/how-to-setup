@@ -1,0 +1,127 @@
+.cloudinary-upload {
+    width: 100%;
+}
+
+.upload-area {
+    position: relative;
+}
+
+.upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    padding: 2rem;
+    border: 2px dashed var(--border-color, #ddd);
+    border-radius: 12px;
+    background: var(--bg-secondary, #f8f9fa);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upload-label:hover {
+    border-color: var(--primary-color, hsl(220, 90%, 56%));
+    background: var(--bg-hover, #f0f2f5);
+}
+
+.upload-label.uploading {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.upload-label svg {
+    color: var(--text-secondary, #666);
+    margin-bottom: 1rem;
+}
+
+.upload-label p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-primary, #333);
+}
+
+.upload-hint {
+    font-size: 0.875rem;
+    color: var(--text-secondary, #666);
+}
+
+.upload-progress {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border-color, #ddd);
+    border-top-color: var(--primary-color, hsl(220, 90%, 56%));
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--border-color, #ddd);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, hsl(220, 90%, 56%), hsl(280, 70%, 60%));
+    transition: width 0.3s ease;
+}
+
+.upload-preview {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+.upload-error {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: #fee;
+    border: 1px solid #fcc;
+    border-radius: 8px;
+    color: #c33;
+    font-size: 0.875rem;
+}
+
+.upload-error svg {
+    flex-shrink: 0;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .upload-label {
+        background: var(--bg-secondary, #1a1a1a);
+        border-color: var(--border-color, #333);
+    }
+
+    .upload-label:hover {
+        background: var(--bg-hover, #252525);
+    }
+
+    .upload-error {
+        background: rgba(255, 50, 50, 0.1);
+        border-color: rgba(255, 50, 50, 0.3);
+        color: #ff6b6b;
+    }
+}
