@@ -121,7 +121,6 @@ const SeoBlogEditor = () => {
     const canPublish = useMemo(() => {
         const { seo, keywords, title, slug } = blogData;
         const h2Count = countHeadings(contentJson, 2);
-        const imagesMissingAlt = images.filter(img => !img.alt);
 
         return (
             seo.seoTitle && seo.seoTitle.length >= 30 &&
@@ -129,10 +128,10 @@ const SeoBlogEditor = () => {
             keywords.primaryKeyword && keywords.primaryKeyword.trim() !== '' &&
             h2Count >= 1 &&
             slug && slug.trim() !== '' &&
-            title && title.trim() !== '' &&
-            imagesMissingAlt.length === 0
+            title && title.trim() !== ''
+            // Note: Image alt text is recommended but not required for publishing
         );
-    }, [blogData, contentJson, images]);
+    }, [blogData, contentJson]);
 
     // Handle cover image upload - Using Cloudinary
     const handleCoverUpload = async (e) => {

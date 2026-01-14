@@ -278,9 +278,11 @@ const PublishChecklist = ({
             {
                 id: 'imageAlt',
                 label: 'Ảnh có Alt text',
-                passed: imagesMissingAlt.length === 0 || images?.length === 0,
-                blocking: true,
-                hint: imagesMissingAlt.length > 0 ? `${imagesMissingAlt.length} ảnh thiếu alt` : ''
+                passed: images?.length > 0 && imagesMissingAlt.length === 0,
+                blocking: false, // Changed to non-blocking since images are optional
+                hint: images?.length === 0
+                    ? 'Chưa có ảnh trong bài viết'
+                    : (imagesMissingAlt.length > 0 ? `${imagesMissingAlt.length} ảnh thiếu alt` : '')
             },
             {
                 id: 'author',
