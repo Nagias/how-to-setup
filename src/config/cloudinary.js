@@ -29,7 +29,18 @@ export const uploadToCloudinary = async (file, folder = 'desk-setups') => {
         );
 
         if (!response.ok) {
-            throw new Error('Upload failed');
+            const errorData = await response.json().catch(() => ({}));
+            console.error('❌ Cloudinary API Error:', {
+                status: response.status,
+                statusText: response.statusText,
+                error: errorData,
+                config: {
+                    cloudName: cloudinaryConfig.cloudName,
+                    uploadPreset: cloudinaryConfig.uploadPreset,
+                    hasApiKey: !!cloudinaryConfig.apiKey
+                }
+            });
+            throw new Error(`Upload failed: ${errorData.error?.message || response.statusText}`);
         }
 
         const data = await response.json();
