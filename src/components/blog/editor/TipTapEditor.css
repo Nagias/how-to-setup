@@ -72,6 +72,9 @@
     font-size: var(--font-size-base);
     line-height: 1.8;
     color: var(--color-text-primary);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 /* Placeholder */
@@ -110,6 +113,8 @@
 /* Paragraphs */
 .tiptap-content .ProseMirror p {
     margin: 0 0 var(--space-md);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 /* Lists */

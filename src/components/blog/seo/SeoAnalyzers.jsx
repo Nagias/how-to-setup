@@ -329,9 +329,11 @@ const PublishChecklist = ({
 
 // Helper functions
 function stripHtml(html) {
+    if (!html || typeof html !== 'string') return '';
     const div = document.createElement('div');
     div.innerHTML = html;
-    return div.textContent || div.innerText || '';
+    const text = div.textContent || div.innerText || '';
+    return text.trim();
 }
 
 function extractHeadings(json, level) {
