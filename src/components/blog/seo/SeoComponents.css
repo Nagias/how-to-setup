@@ -589,10 +589,11 @@ textarea.seo-input {
 .blocking-badge {
     font-size: 10px;
     padding: 2px 6px;
-    background: var(--color-error);
+    background: var(--color-warning);
     color: white;
     border-radius: 4px;
     font-weight: 600;
+    text-transform: uppercase;
 }
 
 .checklist-hint {
