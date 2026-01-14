@@ -298,6 +298,83 @@ const SeoBlogEditor = () => {
                         </div>
                     </div>
 
+                    {/* ========== ESSENTIAL SEO FIELDS - ALWAYS VISIBLE ========== */}
+                    <div className="essential-seo-section">
+                        <div className="essential-seo-header">
+                            <span className="essential-seo-icon">🎯</span>
+                            <h3>Thông tin SEO bắt buộc</h3>
+                        </div>
+
+                        {/* SEO Title */}
+                        <div className="essential-seo-field">
+                            <label htmlFor="main-seo-title">
+                                SEO Title <span className="required-star">*</span>
+                                <span className={`field-counter ${(blogData.seo?.seoTitle?.length || 0) === 0 ? 'empty' :
+                                        (blogData.seo?.seoTitle?.length || 0) < 30 ? 'warning' :
+                                            (blogData.seo?.seoTitle?.length || 0) > 60 ? 'warning' : 'good'
+                                    }`}>
+                                    {blogData.seo?.seoTitle?.length || 0}/60
+                                </span>
+                            </label>
+                            <input
+                                id="main-seo-title"
+                                type="text"
+                                value={blogData.seo?.seoTitle || ''}
+                                onChange={(e) => handleSeoChange({ ...blogData.seo, seoTitle: e.target.value })}
+                                placeholder="Tiêu đề hiển thị trên Google (30-60 ký tự)"
+                                className="essential-seo-input"
+                                maxLength={70}
+                            />
+                            {(blogData.seo?.seoTitle?.length || 0) > 0 && (blogData.seo?.seoTitle?.length || 0) < 30 && (
+                                <span className="field-hint warning">⚠️ Cần tối thiểu 30 ký tự</span>
+                            )}
+                        </div>
+
+                        {/* Meta Description */}
+                        <div className="essential-seo-field">
+                            <label htmlFor="main-meta-desc">
+                                Meta Description <span className="required-star">*</span>
+                                <span className={`field-counter ${(blogData.seo?.metaDescription?.length || 0) === 0 ? 'empty' :
+                                        (blogData.seo?.metaDescription?.length || 0) < 120 ? 'warning' :
+                                            (blogData.seo?.metaDescription?.length || 0) > 155 ? 'warning' : 'good'
+                                    }`}>
+                                    {blogData.seo?.metaDescription?.length || 0}/155
+                                </span>
+                            </label>
+                            <textarea
+                                id="main-meta-desc"
+                                value={blogData.seo?.metaDescription || ''}
+                                onChange={(e) => handleSeoChange({ ...blogData.seo, metaDescription: e.target.value })}
+                                placeholder="Mô tả ngắn hiển thị trên kết quả tìm kiếm (120-155 ký tự)"
+                                className="essential-seo-input"
+                                rows={3}
+                                maxLength={160}
+                            />
+                            {(blogData.seo?.metaDescription?.length || 0) > 0 && (blogData.seo?.metaDescription?.length || 0) < 120 && (
+                                <span className="field-hint warning">⚠️ Cần tối thiểu 120 ký tự</span>
+                            )}
+                        </div>
+
+                        {/* Primary Keyword */}
+                        <div className="essential-seo-field">
+                            <label htmlFor="main-primary-keyword">
+                                Primary Keyword <span className="required-star">*</span>
+                            </label>
+                            <input
+                                id="main-primary-keyword"
+                                type="text"
+                                value={blogData.keywords?.primaryKeyword || ''}
+                                onChange={(e) => handleKeywordsChange({ ...blogData.keywords, primaryKeyword: e.target.value })}
+                                placeholder="Từ khóa chính bạn muốn xếp hạng trên Google"
+                                className="essential-seo-input"
+                            />
+                            {!blogData.keywords?.primaryKeyword && (
+                                <span className="field-hint error">❌ Bắt buộc nhập Primary Keyword</span>
+                            )}
+                        </div>
+                    </div>
+                    {/* ========== END ESSENTIAL SEO FIELDS ========== */}
+
                     {/* Intent Suggestion */}
                     {intentConfig && (
                         <div className="intent-suggestion">
