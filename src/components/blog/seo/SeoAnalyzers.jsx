@@ -222,7 +222,7 @@ const ReadabilityChecker = ({
 };
 
 /**
- * Publishing Checklist - Blocking rules
+ * Publishing Checklist - Blocking rules with clickable navigation
  */
 const PublishChecklist = ({
     seoData,
@@ -232,7 +232,8 @@ const PublishChecklist = ({
     content,
     contentJson,
     images,
-    author
+    author,
+    onNavigate // New prop: callback to navigate to specific field
 }) => {
     const checks = useMemo(() => {
         const h2Count = countHeadings(contentJson, 2);
@@ -243,43 +244,59 @@ const PublishChecklist = ({
                 id: 'seoTitle',
                 label: 'SEO Title',
                 passed: seoData?.seoTitle && seoData.seoTitle.length >= 30,
-                blocking: true
+                blocking: true,
+                tab: 'meta',
+                field: 'seoTitle',
+                hint: !seoData?.seoTitle ? 'Nhấn để nhập' : (seoData.seoTitle.length < 30 ? `Tối thiểu 30 ký tự (hiện có ${seoData.seoTitle.length})` : '')
             },
             {
                 id: 'metaDesc',
                 label: 'Meta Description',
                 passed: seoData?.metaDescription && seoData.metaDescription.length >= 120,
-                blocking: true
+                blocking: true,
+                tab: 'meta',
+                field: 'metaDescription',
+                hint: !seoData?.metaDescription ? 'Nhấn để nhập' : (seoData.metaDescription.length < 120 ? `Tối thiểu 120 ký tự (hiện có ${seoData.metaDescription.length})` : '')
             },
             {
                 id: 'primaryKeyword',
                 label: 'Primary Keyword',
                 passed: keywords?.primaryKeyword && keywords.primaryKeyword.trim() !== '',
-                blocking: true
+                blocking: true,
+                tab: 'keywords',
+                field: 'primaryKeyword',
+                hint: !keywords?.primaryKeyword ? 'Nhấn để nhập' : ''
             },
             {
                 id: 'hasH2',
                 label: 'Có ít nhất 1 H2',
                 passed: h2Count >= 1,
-                blocking: true
+                blocking: true,
+                navigable: false,
+                hint: h2Count === 0 ? 'Thêm heading H2 vào nội dung' : ''
             },
             {
                 id: 'slug',
                 label: 'URL Slug',
                 passed: slug && slug.trim() !== '',
-                blocking: true
+                blocking: true,
+                scrollTo: '.slug-section',
+                hint: !slug ? 'Nhấn để nhập' : ''
             },
             {
                 id: 'title',
                 label: 'Tiêu đề bài viết',
                 passed: title && title.trim() !== '',
-                blocking: true
+                blocking: true,
+                scrollTo: '.title-section',
+                hint: !title ? 'Nhấn để nhập' : ''
             },
             {
                 id: 'imageAlt',
                 label: 'Ảnh có Alt text',
                 passed: images?.length > 0 && imagesMissingAlt.length === 0,
-                blocking: false, // Changed to non-blocking since images are optional
+                blocking: false,
+                navigable: false,
                 hint: images?.length === 0
                     ? 'Chưa có ảnh trong bài viết'
                     : (imagesMissingAlt.length > 0 ? `${imagesMissingAlt.length} ảnh thiếu alt` : '')
@@ -288,10 +305,34 @@ const PublishChecklist = ({
                 id: 'author',
                 label: 'Tác giả',
                 passed: author && author.name,
-                blocking: false
+                blocking: false,
+                navigable: false
             }
         ];
     }, [seoData, keywords, title, slug, content, contentJson, images, author]);
+
+    const handleItemClick = (check) => {
+        if (check.passed) return; // Don't navigate if already passed
+
+        // If item has tab and field mapping, use onNavigate callback
+        if (check.tab && check.field && onNavigate) {
+            onNavigate(check.tab, check.field);
+            return;
+        }
+
+        // If item has scrollTo selector (for title/slug in main editor)
+        if (check.scrollTo) {
+            const element = document.querySelector(check.scrollTo);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const input = element.querySelector('input, textarea');
+                if (input) {
+                    setTimeout(() => input.focus(), 300);
+                }
+            }
+            return;
+        }
+    };
 
     const canPublish = checks.filter(c => c.blocking).every(c => c.passed);
     const passedCount = checks.filter(c => c.passed).length;
@@ -306,23 +347,41 @@ const PublishChecklist = ({
             </div>
 
             <div className="checklist-items">
-                {checks.map(check => (
-                    <div key={check.id} className={`checklist-item ${check.passed ? 'passed' : 'failed'}`}>
-                        <span className="checklist-icon">
-                            {check.passed ? '✅' : (check.blocking ? '❌' : '⚠️')}
-                        </span>
-                        <span className="checklist-label">
-                            {check.label}
-                            {check.blocking && !check.passed && <span className="blocking-badge">Bắt buộc</span>}
-                        </span>
-                        {check.hint && <span className="checklist-hint">{check.hint}</span>}
-                    </div>
-                ))}
+                {checks.map(check => {
+                    const isClickable = !check.passed && (check.tab || check.scrollTo) && check.navigable !== false;
+
+                    return (
+                        <div
+                            key={check.id}
+                            className={`checklist-item ${check.passed ? 'passed' : 'failed'} ${isClickable ? 'clickable' : ''}`}
+                            onClick={() => isClickable && handleItemClick(check)}
+                            title={isClickable ? 'Nhấn để điền thông tin' : ''}
+                        >
+                            <span className="checklist-icon">
+                                {check.passed ? '✅' : (check.blocking ? '❌' : '⚠️')}
+                            </span>
+                            <span className="checklist-label">
+                                {check.label}
+                                {check.blocking && !check.passed && <span className="blocking-badge">Bắt buộc</span>}
+                            </span>
+                            {isClickable && (
+                                <span className="checklist-action">✏️ Nhập</span>
+                            )}
+                            {check.hint && <span className="checklist-hint">{check.hint}</span>}
+                        </div>
+                    );
+                })}
             </div>
 
             <div className="checklist-summary">
                 {passedCount}/{checks.length} hoàn thành
             </div>
+
+            {!canPublish && (
+                <div className="checklist-help">
+                    💡 Click vào các mục đỏ để điền thông tin trực tiếp
+                </div>
+            )}
         </div>
     );
 };

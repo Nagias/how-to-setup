@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
 import { api } from '../../utils/api';
@@ -33,6 +33,9 @@ const SeoBlogEditor = () => {
     const [uploadingCover, setUploadingCover] = useState(false);
     const [contentJson, setContentJson] = useState(null);
     const [images, setImages] = useState([]);
+
+    // Ref to control SeoPanel from PublishChecklist
+    const seoPanelRef = useRef(null);
 
     // Load blog data if editing
     useEffect(() => {
@@ -115,6 +118,14 @@ const SeoBlogEditor = () => {
     // Update search intent
     const handleIntentChange = useCallback((intent) => {
         setBlogData(prev => ({ ...prev, searchIntent: intent }));
+    }, []);
+
+    // Handle navigation from PublishChecklist to SEO fields
+    const handleChecklistNavigate = useCallback((tab, field) => {
+        if (seoPanelRef.current) {
+            seoPanelRef.current.switchToTab(tab);
+            seoPanelRef.current.focusField(field);
+        }
     }, []);
 
     // Calculate if can publish
@@ -426,6 +437,7 @@ const SeoBlogEditor = () => {
                 <div className="editor-sidebar">
                     {/* SEO Panel */}
                     <SeoPanel
+                        ref={seoPanelRef}
                         seoData={blogData.seo}
                         onChange={handleSeoChange}
                         content={blogData.contentHtml}
@@ -460,6 +472,7 @@ const SeoBlogEditor = () => {
                         contentJson={contentJson}
                         images={images}
                         author={blogData.author}
+                        onNavigate={handleChecklistNavigate}
                     />
                 </div>
             </div>

@@ -1,11 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, forwardRef, useImperativeHandle } from 'react';
 import { seoRules } from '../../../types/blogTypes';
 import './SeoComponents.css';
 
 /**
  * SEO Panel - Main container for all SEO configuration
+ * Now supports external tab control via ref
  */
-const SeoPanel = ({
+const SeoPanel = forwardRef(({
     seoData,
     onChange,
     content,
@@ -13,62 +14,159 @@ const SeoPanel = ({
     onKeywordsChange,
     searchIntent,
     onIntentChange
-}) => {
-    const [activeTab, setActiveTab] = React.useState('meta');
+}, ref) => {
+    const [activeTab, setActiveTab] = React.useState('keywords');
+
+    // Expose methods to parent component
+    useImperativeHandle(ref, () => ({
+        switchToTab: (tabId) => {
+            setActiveTab(tabId);
+            // Scroll the panel into view
+            const panel = document.querySelector('.seo-panel');
+            if (panel) {
+                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        },
+        focusField: (fieldId) => {
+            setTimeout(() => {
+                const field = document.querySelector(`#seo-field-${fieldId}`);
+                if (field) {
+                    field.focus();
+                    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        }
+    }));
 
     const tabs = [
-        { id: 'meta', label: 'Meta Tags', icon: '🏷️' },
         { id: 'keywords', label: 'Keywords', icon: '🔑' },
         { id: 'social', label: 'Social', icon: '📱' },
         { id: 'intent', label: 'Intent', icon: '🎯' }
     ];
 
+    // Calculate field status for real-time feedback
+    const seoTitleLength = seoData?.seoTitle?.length || 0;
+    const metaDescLength = seoData?.metaDescription?.length || 0;
+    const hasPrimaryKeyword = keywords?.primaryKeyword && keywords.primaryKeyword.trim() !== '';
+
     return (
         <div className="seo-panel">
             <div className="seo-panel-header">
-                <h3>SEO Settings</h3>
+                <h3>⚙️ SEO Settings</h3>
             </div>
 
-            {/* Tab Navigation */}
-            <div className="seo-tabs">
-                {tabs.map(tab => (
-                    <button
-                        key={tab.id}
-                        type="button"
-                        className={`seo-tab ${activeTab === tab.id ? 'active' : ''}`}
-                        onClick={() => setActiveTab(tab.id)}
-                    >
-                        <span className="tab-icon">{tab.icon}</span>
-                        <span className="tab-label">{tab.label}</span>
-                    </button>
-                ))}
+            {/* ESSENTIAL SEO FIELDS - Always visible at the top */}
+            <div className="seo-essential-fields">
+                <div className="essential-field-header">
+                    <span className="essential-icon">🎯</span>
+                    <span>Các trường bắt buộc</span>
+                </div>
+
+                {/* SEO Title */}
+                <div className="seo-field">
+                    <label htmlFor="seo-field-seoTitle">
+                        SEO Title <span className="required">*</span>
+                        <span className={`char-counter ${seoTitleLength === 0 ? 'empty' : seoTitleLength < 30 ? 'short' : seoTitleLength > 60 ? 'long' : 'good'}`}>
+                            {seoTitleLength}/60
+                        </span>
+                    </label>
+                    <input
+                        id="seo-field-seoTitle"
+                        type="text"
+                        value={seoData?.seoTitle || ''}
+                        onChange={(e) => onChange({ ...seoData, seoTitle: e.target.value })}
+                        placeholder="Nhập tiêu đề SEO (30-60 ký tự)"
+                        className="seo-input"
+                        maxLength={70}
+                    />
+                    {seoTitleLength < 30 && seoTitleLength > 0 && (
+                        <div className="seo-hint warning">⚠️ Cần tối thiểu 30 ký tự</div>
+                    )}
+                </div>
+
+                {/* Meta Description */}
+                <div className="seo-field">
+                    <label htmlFor="seo-field-metaDescription">
+                        Meta Description <span className="required">*</span>
+                        <span className={`char-counter ${metaDescLength === 0 ? 'empty' : metaDescLength < 120 ? 'short' : metaDescLength > 155 ? 'long' : 'good'}`}>
+                            {metaDescLength}/155
+                        </span>
+                    </label>
+                    <textarea
+                        id="seo-field-metaDescription"
+                        value={seoData?.metaDescription || ''}
+                        onChange={(e) => onChange({ ...seoData, metaDescription: e.target.value })}
+                        placeholder="Nhập mô tả SEO (120-155 ký tự)"
+                        className="seo-input"
+                        rows={3}
+                        maxLength={160}
+                    />
+                    {metaDescLength < 120 && metaDescLength > 0 && (
+                        <div className="seo-hint warning">⚠️ Cần tối thiểu 120 ký tự</div>
+                    )}
+                </div>
+
+                {/* Primary Keyword */}
+                <div className="seo-field">
+                    <label htmlFor="seo-field-primaryKeyword">
+                        Primary Keyword <span className="required">*</span>
+                    </label>
+                    <input
+                        id="seo-field-primaryKeyword"
+                        type="text"
+                        value={keywords?.primaryKeyword || ''}
+                        onChange={(e) => onKeywordsChange({ ...keywords, primaryKeyword: e.target.value })}
+                        placeholder="Từ khóa chính bạn muốn rank trên Google"
+                        className="seo-input primary-keyword-input"
+                    />
+                    {!hasPrimaryKeyword && (
+                        <div className="seo-hint error">❌ Bắt buộc nhập Primary Keyword</div>
+                    )}
+                </div>
             </div>
 
-            {/* Tab Content */}
-            <div className="seo-tab-content">
-                {activeTab === 'meta' && (
-                    <MetaTab seoData={seoData} onChange={onChange} />
-                )}
-                {activeTab === 'keywords' && (
-                    <KeywordsTab
-                        keywords={keywords}
-                        onChange={onKeywordsChange}
-                        content={content}
-                    />
-                )}
-                {activeTab === 'social' && (
-                    <SocialTab seoData={seoData} onChange={onChange} />
-                )}
-                {activeTab === 'intent' && (
-                    <IntentTab
-                        searchIntent={searchIntent}
-                        onChange={onIntentChange}
-                    />
-                )}
+            {/* Tab Navigation for Advanced Settings */}
+            <div className="seo-advanced-section">
+                <div className="advanced-header">
+                    <span>Cài đặt nâng cao</span>
+                </div>
+                <div className="seo-tabs">
+                    {tabs.map(tab => (
+                        <button
+                            key={tab.id}
+                            type="button"
+                            className={`seo-tab ${activeTab === tab.id ? 'active' : ''}`}
+                            onClick={() => setActiveTab(tab.id)}
+                        >
+                            <span className="tab-icon">{tab.icon}</span>
+                            <span className="tab-label">{tab.label}</span>
+                        </button>
+                    ))}
+                </div>
+
+                {/* Tab Content */}
+                <div className="seo-tab-content">
+                    {activeTab === 'keywords' && (
+                        <KeywordsTab
+                            keywords={keywords}
+                            onChange={onKeywordsChange}
+                            content={content}
+                        />
+                    )}
+                    {activeTab === 'social' && (
+                        <SocialTab seoData={seoData} onChange={onChange} />
+                    )}
+                    {activeTab === 'intent' && (
+                        <IntentTab
+                            searchIntent={searchIntent}
+                            onChange={onIntentChange}
+                        />
+                    )}
+                </div>
             </div>
         </div>
     );
-};
+});
 
 /**
  * Meta Tab - SEO Title & Meta Description
@@ -102,6 +200,7 @@ const MetaTab = ({ seoData, onChange }) => {
                     </span>
                 </label>
                 <input
+                    id="seo-field-seoTitle"
                     type="text"
                     value={seoData.seoTitle || ''}
                     onChange={(e) => onChange({ ...seoData, seoTitle: e.target.value })}
@@ -126,6 +225,7 @@ const MetaTab = ({ seoData, onChange }) => {
                     </span>
                 </label>
                 <textarea
+                    id="seo-field-metaDescription"
                     value={seoData.metaDescription || ''}
                     onChange={(e) => onChange({ ...seoData, metaDescription: e.target.value })}
                     placeholder="Mô tả ngắn hiển thị trên kết quả tìm kiếm"
@@ -206,6 +306,7 @@ const KeywordsTab = ({ keywords, onChange, content }) => {
                     Primary Keyword <span className="required">*</span>
                 </label>
                 <input
+                    id="seo-field-primaryKeyword"
                     type="text"
                     value={keywords.primaryKeyword || ''}
                     onChange={(e) => onChange({ ...keywords, primaryKeyword: e.target.value })}
