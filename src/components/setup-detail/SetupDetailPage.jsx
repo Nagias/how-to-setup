@@ -427,6 +427,17 @@ const SetupDetailPage = () => {
                                 }}
                                 onMouseUp={() => setIsPanning(false)}
                                 onMouseLeaveCapture={() => setIsPanning(false)}
+                                onWheel={(e) => {
+                                    if (!isMobile) {
+                                        e.preventDefault();
+                                        const delta = e.deltaY > 0 ? -0.15 : 0.15;
+                                        setZoomLevel(prev => {
+                                            const newZoom = Math.max(1, Math.min(3, prev + delta));
+                                            if (newZoom === 1) setPanPosition({ x: 0, y: 0 });
+                                            return newZoom;
+                                        });
+                                    }
+                                }}
                                 style={{ cursor: zoomLevel > 1 ? (isPanning ? 'grabbing' : 'grab') : 'default' }}
                             >
                                 {/* Back button - INSIDE image container for mobile positioning */}
@@ -504,22 +515,6 @@ const SetupDetailPage = () => {
                                                 <line x1="5" y1="12" x2="19" y2="12" />
                                             </svg>
                                         </button>
-                                        {zoomLevel !== 1 && (
-                                            <button
-                                                className="zoom-btn zoom-reset"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setZoomLevel(1);
-                                                    setPanPosition({ x: 0, y: 0 });
-                                                }}
-                                                title="Reset zoom"
-                                            >
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                                                    <path d="M3 3v5h5" />
-                                                </svg>
-                                            </button>
-                                        )}
                                     </div>
                                 )}
 
