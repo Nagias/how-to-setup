@@ -466,13 +466,21 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                 </div>
                             </div>
 
-                            <div className="form-group">
-                                <label>Tags (ngăn cách bởi dấu phẩy)</label>
-                                <input
-                                    type="text" name="tags"
-                                    value={formData.tags} onChange={handleChange}
-                                    placeholder="gaming, minimal, rgb..."
-                                />
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Không gian</label>
+                                    <select name="filter.size" value={formData.filters.size} onChange={handleChange}>
+                                        {filterOptions.size.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>Tags (ngăn cách bởi dấu phẩy)</label>
+                                    <input
+                                        type="text" name="tags"
+                                        value={formData.tags} onChange={handleChange}
+                                        placeholder="gaming, minimal, rgb..."
+                                    />
+                                </div>
                             </div>
                         </div>
 
