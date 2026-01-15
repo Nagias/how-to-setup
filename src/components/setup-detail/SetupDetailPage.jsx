@@ -151,7 +151,6 @@ const SetupDetailPage = () => {
     const [touchEnd, setTouchEnd] = useState(null);
     const [showAllComments, setShowAllComments] = useState(false);
     const [zoomLevel, setZoomLevel] = useState(1);
-    const [showZoomControls, setShowZoomControls] = useState(false);
     const [replyingTo, setReplyingTo] = useState(null); // { id, author } of comment being replied to
     const commentInputRef = useRef(null);
 
@@ -419,12 +418,7 @@ const SetupDetailPage = () => {
                                 onTouchMove={isMobile ? onTouchMove : undefined}
                                 onTouchEnd={isMobile ? onTouchEnd : undefined}
                                 onClick={handleImageClick}
-                                onMouseEnter={() => !isMobile && setShowZoomControls(true)}
-                                onMouseLeave={() => {
-                                    if (!isMobile && !isPanning) {
-                                        setShowZoomControls(false);
-                                    }
-                                }}
+
                                 ref={imageContainerRef}
                                 onMouseDown={(e) => {
                                     if (zoomLevel > 1 && !isMobile) {
@@ -486,53 +480,57 @@ const SetupDetailPage = () => {
                                     ))}
                                 </div>
 
-                                {/* Toggle Products Button - Bottom Right with Text */}
-                                {currentMedia.products && currentMedia.products.length > 0 && (
-                                    <button
-                                        className="toggle-products-btn"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setShowProducts(!showProducts);
-                                        }}
-                                    >
-                                        <div className="toggle-content">
-                                            <span>{showProducts ? 'Ẩn sản phẩm' : 'Hiện sản phẩm'}</span>
+                                {/* Image Controls Stack - Bottom Right */}
+                                {!isMobile && (
+                                    <div className="image-controls-stack">
+                                        {/* Zoom Controls */}
+                                        <div className="zoom-controls-vertical">
+                                            <button
+                                                className="control-btn zoom-in"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setZoomLevel(prev => Math.min(prev + 0.25, 3));
+                                                }}
+                                                title="Phóng to"
+                                            >
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                    <line x1="12" y1="5" x2="12" y2="19" />
+                                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                className="control-btn zoom-out"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setZoomLevel(prev => {
+                                                        const newZoom = Math.max(prev - 0.25, 1);
+                                                        if (newZoom === 1) setPanPosition({ x: 0, y: 0 });
+                                                        return newZoom;
+                                                    });
+                                                }}
+                                                title="Thu nhỏ"
+                                                disabled={zoomLevel <= 1}
+                                            >
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                                </svg>
+                                            </button>
                                         </div>
-                                    </button>
-                                )}
 
-                                {/* Zoom Controls - Desktop only, show on hover */}
-                                {!isMobile && showZoomControls && (
-                                    <div className="zoom-controls">
-                                        <button
-                                            className="zoom-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setZoomLevel(prev => Math.min(prev + 0.25, 3));
-                                            }}
-                                            title="Phóng to"
-                                        >
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                                <line x1="12" y1="5" x2="12" y2="19" />
-                                                <line x1="5" y1="12" x2="19" y2="12" />
-                                            </svg>
-                                        </button>
-                                        <button
-                                            className="zoom-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setZoomLevel(prev => {
-                                                    const newZoom = Math.max(prev - 0.25, 1);
-                                                    if (newZoom === 1) setPanPosition({ x: 0, y: 0 });
-                                                    return newZoom;
-                                                });
-                                            }}
-                                            title="Thu nhỏ"
-                                        >
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                                <line x1="5" y1="12" x2="19" y2="12" />
-                                            </svg>
-                                        </button>
+                                        {/* Toggle Products Button */}
+                                        {currentMedia.products && currentMedia.products.length > 0 && (
+                                            <button
+                                                className="toggle-products-btn"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setShowProducts(!showProducts);
+                                                }}
+                                            >
+                                                <div className="toggle-content">
+                                                    <span>{showProducts ? 'Ẩn sản phẩm' : 'Hiện sản phẩm'}</span>
+                                                </div>
+                                            </button>
+                                        )}
                                     </div>
                                 )}
 

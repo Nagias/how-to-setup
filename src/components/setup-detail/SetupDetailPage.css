@@ -401,69 +401,39 @@
 
 
 
-/* Zoom Controls */
-.zoom-controls {
+/* Image Controls Stack */
+.image-controls-stack {
     position: absolute;
     bottom: 20px;
     right: 20px;
     display: flex;
+    flex-direction: column;
     gap: 8px;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(8px);
-    padding: 6px;
-    border-radius: var(--radius-full);
-    z-index: 20;
+    z-index: 30;
+    align-items: flex-end;
     opacity: 0;
     transform: translateY(10px);
     transition: all var(--transition-fast);
 }
 
-/* Toggle Products Button - New Style */
-.toggle-products-btn {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    top: auto;
-    /* Reset top */
-    width: auto;
-    height: auto;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(4px);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-lg);
-    cursor: pointer;
-    z-index: 25;
-    transition: all var(--transition-fast);
-    padding: 0;
-    overflow: hidden;
-}
-
-.toggle-content {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    padding: 6px 12px;
-    font-size: 11px;
-    font-weight: 500;
-}
-
-.toggle-products-btn:hover {
-    background: rgba(0, 0, 0, 0.6);
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.2);
-}
-
-.toggle-products-btn svg {
-    display: none;
-}
-
-.setup-main-image-container:hover .zoom-controls {
+.setup-main-image-container:hover .image-controls-stack {
     opacity: 1;
     transform: translateY(0);
 }
 
-.zoom-btn {
+/* Zoom Vertical Group */
+.zoom-controls-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    padding: 4px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.control-btn {
     width: 32px;
     height: 32px;
     display: flex;
@@ -473,19 +443,37 @@
     border: none;
     color: white;
     cursor: pointer;
-    border-radius: var(--radius-full);
+    border-radius: 50%;
     transition: all var(--transition-fast);
+    opacity: 0.9;
 }
 
-.zoom-btn:hover {
+.control-btn:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.2);
+    opacity: 1;
 }
 
-.zoom-reset {
+.control-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+/* Toggle Products Button - Updated for Stack */
+.toggle-products-btn {
+    position: static;
+    /* Position managed by stack */
     width: auto;
-    padding: 0 8px;
-    font-size: 12px;
-    font-weight: 600;
+    height: auto;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    padding: 0;
+    overflow: hidden;
+    margin-top: 4px;
 }
 
 .similar-setup-card {
