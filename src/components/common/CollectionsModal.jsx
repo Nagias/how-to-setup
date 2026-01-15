@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
 import './CollectionsModal.css';
 
@@ -9,13 +10,15 @@ const CollectionsModal = () => {
 
     const savedSetups = getSavedSetups();
 
+    const navigate = useNavigate();
+
     const handleClose = () => {
         setShowCollectionsModal(false);
     };
 
     const handleSetupClick = (setup) => {
-        setSelectedSetup(setup);
         handleClose();
+        navigate(`/setup/${setup.id}`);
     };
 
     return (
