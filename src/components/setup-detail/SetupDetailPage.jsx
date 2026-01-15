@@ -215,6 +215,26 @@ const SetupDetailPage = () => {
         }
     }, [isMobile, setup, mediaItems.length]);
 
+    // Handle wheel zoom with non-passive event listener to prevent page scroll
+    useEffect(() => {
+        const container = imageContainerRef.current;
+        if (!container || isMobile) return;
+
+        const handleWheel = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const delta = e.deltaY > 0 ? -0.15 : 0.15;
+            setZoomLevel(prev => {
+                const newZoom = Math.max(1, Math.min(3, prev + delta));
+                if (newZoom === 1) setPanPosition({ x: 0, y: 0 });
+                return newZoom;
+            });
+        };
+
+        container.addEventListener('wheel', handleWheel, { passive: false });
+        return () => container.removeEventListener('wheel', handleWheel);
+    }, [isMobile]);
+
     // NOW we can have conditional returns AFTER all hooks
 
     // Show loading if data is still being fetched OR if we have no setups yet
@@ -427,17 +447,6 @@ const SetupDetailPage = () => {
                                 }}
                                 onMouseUp={() => setIsPanning(false)}
                                 onMouseLeaveCapture={() => setIsPanning(false)}
-                                onWheel={(e) => {
-                                    if (!isMobile) {
-                                        e.preventDefault();
-                                        const delta = e.deltaY > 0 ? -0.15 : 0.15;
-                                        setZoomLevel(prev => {
-                                            const newZoom = Math.max(1, Math.min(3, prev + delta));
-                                            if (newZoom === 1) setPanPosition({ x: 0, y: 0 });
-                                            return newZoom;
-                                        });
-                                    }
-                                }}
                                 style={{ cursor: zoomLevel > 1 ? (isPanning ? 'grabbing' : 'grab') : 'default' }}
                             >
                                 {/* Back button - INSIDE image container for mobile positioning */}
