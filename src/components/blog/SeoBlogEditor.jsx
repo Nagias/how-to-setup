@@ -7,6 +7,8 @@ import { defaultSeoBlogPost, searchIntentConfig } from '../../types/blogTypes';
 import TipTapEditor from './editor/TipTapEditor';
 import SeoPanel from './seo/SeoPanel';
 import { KeywordAnalyzer, ReadabilityChecker, PublishChecklist } from './seo/SeoAnalyzers';
+import OutlineBuilder from './seo/OutlineBuilder';
+import ContentOptimizer from './seo/ContentOptimizer';
 import { uploadToCloudinary } from '../../config/cloudinary';
 import './SeoBlogEditor.css';
 
@@ -296,6 +298,55 @@ const SeoBlogEditor = () => {
                                 className="slug-input"
                             />
                         </div>
+
+                        {/* 301 Redirects */}
+                        {isEditMode && (
+                            <details className="redirects-details">
+                                <summary>🔄 Quản lý Redirect 301 ({(blogData.redirectsFrom || []).length})</summary>
+                                <div className="redirects-content">
+                                    <p className="redirects-hint">
+                                        Thêm URL cũ để tự động redirect về bài viết này
+                                    </p>
+                                    {(blogData.redirectsFrom || []).map((oldSlug, idx) => (
+                                        <div key={idx} className="redirect-item">
+                                            <span className="old-url">/blog/{oldSlug}</span>
+                                            <span className="redirect-arrow">→</span>
+                                            <span className="new-url">/blog/{blogData.slug}</span>
+                                            <button
+                                                type="button"
+                                                className="remove-redirect"
+                                                onClick={() => setBlogData(prev => ({
+                                                    ...prev,
+                                                    redirectsFrom: prev.redirectsFrom.filter((_, i) => i !== idx)
+                                                }))}
+                                            >✕</button>
+                                        </div>
+                                    ))}
+                                    <div className="add-redirect">
+                                        <input
+                                            type="text"
+                                            id="new-redirect-slug"
+                                            placeholder="old-url-slug"
+                                            className="redirect-input"
+                                        />
+                                        <button
+                                            type="button"
+                                            className="add-redirect-btn"
+                                            onClick={() => {
+                                                const input = document.getElementById('new-redirect-slug');
+                                                if (input.value.trim()) {
+                                                    setBlogData(prev => ({
+                                                        ...prev,
+                                                        redirectsFrom: [...(prev.redirectsFrom || []), vietnameseToSlug(input.value.trim())]
+                                                    }));
+                                                    input.value = '';
+                                                }
+                                            }}
+                                        >+ Thêm</button>
+                                    </div>
+                                </div>
+                            </details>
+                        )}
                     </div>
 
                     {/* ========== ESSENTIAL SEO FIELDS - ALWAYS VISIBLE ========== */}
@@ -433,6 +484,14 @@ const SeoBlogEditor = () => {
                         </div>
                     )}
 
+                    {/* Outline Builder */}
+                    <OutlineBuilder
+                        searchIntent={blogData.searchIntent}
+                        primaryKeyword={blogData.keywords?.primaryKeyword}
+                        onOutlineChange={(outline) => setBlogData(prev => ({ ...prev, outline }))}
+                        existingOutline={blogData.outline || []}
+                    />
+
                     {/* Rich Text Editor */}
                     <div className="content-section">
                         <TipTapEditor
@@ -440,6 +499,7 @@ const SeoBlogEditor = () => {
                             onUpdate={handleContentUpdate}
                             onImageAdd={handleImageAdd}
                             placeholder="Bắt đầu viết nội dung bài viết..."
+                            primaryKeyword={blogData.keywords?.primaryKeyword}
                         />
                     </div>
 
@@ -783,6 +843,18 @@ const SeoBlogEditor = () => {
                         title={blogData.title}
                         content={blogData.contentHtml}
                         contentJson={contentJson}
+                        primaryKeyword={blogData.keywords?.primaryKeyword}
+                    />
+
+                    {/* Content Optimizer */}
+                    <ContentOptimizer
+                        title={blogData.title}
+                        content={blogData.contentHtml}
+                        contentJson={contentJson}
+                        seoData={blogData.seo}
+                        keywords={blogData.keywords}
+                        images={images}
+                        wordCount={blogData.contentHtml ? blogData.contentHtml.replace(/<[^>]+>/g, '').split(/\s+/).filter(Boolean).length : 0}
                     />
 
                     {/* Publishing Checklist */}

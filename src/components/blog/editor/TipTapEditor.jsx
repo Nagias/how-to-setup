@@ -23,7 +23,8 @@ const TipTapEditor = ({
     content,
     onUpdate,
     onImageAdd,
-    placeholder = 'Bắt đầu viết bài tại đây...'
+    placeholder = 'Bắt đầu viết bài tại đây...',
+    primaryKeyword = ''
 }) => {
     const editor = useEditor({
         extensions: [
@@ -131,8 +132,9 @@ const TipTapEditor = ({
             const file = e.target.files[0];
             if (file) {
                 try {
-                    // Get alt text first
-                    const alt = prompt('Nhập Alt text cho ảnh (bắt buộc cho SEO):') || '';
+                    // Suggest keyword in alt text
+                    const suggestion = primaryKeyword ? `Đề xuất: "${primaryKeyword}"\n\n` : '';
+                    const alt = prompt(`${suggestion}Nhập Alt text cho ảnh (bắt buộc cho SEO):`) || '';
 
                     // Upload to Cloudinary
                     const result = await uploadToCloudinary(file, 'blog-content');

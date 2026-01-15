@@ -125,7 +125,8 @@ const KeywordAnalyzer = ({
 const ReadabilityChecker = ({
     title,
     content,
-    contentJson
+    contentJson,
+    primaryKeyword = ''
 }) => {
     const analysis = useMemo(() => {
         const plainText = stripHtml(content || '');
@@ -187,6 +188,23 @@ const ReadabilityChecker = ({
         return { checks, wordCount, h2Count, h3Count };
     }, [title, content, contentJson]);
 
+    // Extract all headings for display
+    const allHeadings = useMemo(() => {
+        const headings = [];
+        const extractHeadingsRecursive = (node, level = 0) => {
+            if (!node) return;
+            if (node.type === 'heading' && node.attrs?.level) {
+                const text = node.content?.map(c => c.text || '').join('') || '';
+                headings.push({ level: node.attrs.level, text });
+            }
+            if (node.content) {
+                node.content.forEach(child => extractHeadingsRecursive(child, level + 1));
+            }
+        };
+        extractHeadingsRecursive(contentJson);
+        return headings;
+    }, [contentJson]);
+
     const passedCount = analysis.checks.filter(c => c.passed).length;
     const totalChecks = analysis.checks.length;
     const score = Math.round((passedCount / totalChecks) * 100);
@@ -217,6 +235,30 @@ const ReadabilityChecker = ({
                     </div>
                 ))}
             </div>
+
+            {/* Heading Overview with Keyword Highlighting */}
+            {allHeadings.length > 0 && (
+                <div className="heading-overview">
+                    <div className="heading-overview-title">
+                        Cấu trúc Heading {primaryKeyword && <span className="keyword-indicator">🔑 = có keyword</span>}
+                    </div>
+                    <div className="heading-list">
+                        {allHeadings.map((h, idx) => {
+                            const hasKeyword = primaryKeyword && h.text.toLowerCase().includes(primaryKeyword.toLowerCase());
+                            return (
+                                <div
+                                    key={idx}
+                                    className={`heading-item h${h.level} ${hasKeyword ? 'has-keyword' : ''}`}
+                                >
+                                    <span className="h-level">H{h.level}</span>
+                                    <span className="h-text">{h.text || '(trống)'}</span>
+                                    {hasKeyword && <span className="keyword-badge">🔑</span>}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
