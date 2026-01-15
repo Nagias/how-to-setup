@@ -456,26 +456,35 @@ const SetupDetailPage = () => {
                                     </svg>
                                 </button>
 
-                                <img
-                                    src={currentMedia.url}
-                                    alt={setup.title}
-                                    className="setup-main-image"
+                                {/* Zoomable wrapper - contains both image AND markers */}
+                                <div
+                                    className="zoomable-wrapper"
                                     style={{
                                         transform: `scale(${zoomLevel}) translate(${panPosition.x / zoomLevel}px, ${panPosition.y / zoomLevel}px)`,
                                         transition: isPanning ? 'none' : 'transform 0.2s ease',
-                                        pointerEvents: 'none'
+                                        transformOrigin: 'center center',
+                                        position: 'relative',
+                                        width: '100%',
+                                        height: '100%'
                                     }}
-                                />
-
-                                {/* Product Markers with full tooltip functionality */}
-                                {showProducts && currentMedia.products && currentMedia.products.map((product, index) => (
-                                    <ProductMarker
-                                        key={index}
-                                        product={product}
-                                        isActive={activeProduct === product}
-                                        onActivate={setActiveProduct}
+                                >
+                                    <img
+                                        src={currentMedia.url}
+                                        alt={setup.title}
+                                        className="setup-main-image"
+                                        style={{ pointerEvents: 'none' }}
                                     />
-                                ))}
+
+                                    {/* Product Markers - now inside zoomable wrapper */}
+                                    {showProducts && currentMedia.products && currentMedia.products.map((product, index) => (
+                                        <ProductMarker
+                                            key={index}
+                                            product={product}
+                                            isActive={activeProduct === product}
+                                            onActivate={setActiveProduct}
+                                        />
+                                    ))}
+                                </div>
 
                                 {/* Toggle Products Button - Bottom Right with Text */}
                                 {currentMedia.products && currentMedia.products.length > 0 && (
