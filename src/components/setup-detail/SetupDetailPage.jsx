@@ -155,6 +155,12 @@ const SetupDetailPage = () => {
     const [replyingTo, setReplyingTo] = useState(null); // { id, author } of comment being replied to
     const commentInputRef = useRef(null);
 
+    // Pan/drag state for zoomed images
+    const [isPanning, setIsPanning] = useState(false);
+    const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
+    const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+    const imageContainerRef = useRef(null);
+
     const minSwipeDistance = 50;
 
     // Get setup by ID
@@ -394,7 +400,34 @@ const SetupDetailPage = () => {
                                 onTouchEnd={isMobile ? onTouchEnd : undefined}
                                 onClick={handleImageClick}
                                 onMouseEnter={() => !isMobile && setShowZoomControls(true)}
-                                onMouseLeave={() => !isMobile && setShowZoomControls(false)}
+                                onMouseLeave={() => {
+                                    if (!isMobile && !isPanning) {
+                                        setShowZoomControls(false);
+                                    }
+                                }}
+                                ref={imageContainerRef}
+                                onMouseDown={(e) => {
+                                    if (zoomLevel > 1 && !isMobile) {
+                                        e.preventDefault();
+                                        setIsPanning(true);
+                                        setPanStart({ x: e.clientX - panPosition.x, y: e.clientY - panPosition.y });
+                                    }
+                                }}
+                                onMouseMove={(e) => {
+                                    if (isPanning && zoomLevel > 1) {
+                                        const newX = e.clientX - panStart.x;
+                                        const newY = e.clientY - panStart.y;
+                                        // Limit pan range based on zoom level
+                                        const maxPan = (zoomLevel - 1) * 200;
+                                        setPanPosition({
+                                            x: Math.max(-maxPan, Math.min(maxPan, newX)),
+                                            y: Math.max(-maxPan, Math.min(maxPan, newY))
+                                        });
+                                    }
+                                }}
+                                onMouseUp={() => setIsPanning(false)}
+                                onMouseLeaveCapture={() => setIsPanning(false)}
+                                style={{ cursor: zoomLevel > 1 ? (isPanning ? 'grabbing' : 'grab') : 'default' }}
                             >
                                 {/* Back button - INSIDE image container for mobile positioning */}
                                 <button className="back-btn" onClick={() => navigate(-1)} aria-label="Quay lại">
@@ -407,7 +440,11 @@ const SetupDetailPage = () => {
                                     src={currentMedia.url}
                                     alt={setup.title}
                                     className="setup-main-image"
-                                    style={{ transform: `scale(${zoomLevel})`, transition: 'transform 0.2s ease' }}
+                                    style={{
+                                        transform: `scale(${zoomLevel}) translate(${panPosition.x / zoomLevel}px, ${panPosition.y / zoomLevel}px)`,
+                                        transition: isPanning ? 'none' : 'transform 0.2s ease',
+                                        pointerEvents: 'none'
+                                    }}
                                 />
 
                                 {/* Product Markers with full tooltip functionality */}
@@ -455,7 +492,11 @@ const SetupDetailPage = () => {
                                             className="zoom-btn"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                setZoomLevel(prev => Math.max(prev - 0.25, 0.5));
+                                                setZoomLevel(prev => {
+                                                    const newZoom = Math.max(prev - 0.25, 1);
+                                                    if (newZoom === 1) setPanPosition({ x: 0, y: 0 });
+                                                    return newZoom;
+                                                });
                                             }}
                                             title="Thu nhỏ"
                                         >
@@ -469,10 +510,14 @@ const SetupDetailPage = () => {
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setZoomLevel(1);
+                                                    setPanPosition({ x: 0, y: 0 });
                                                 }}
-                                                title="Reset"
+                                                title="Reset zoom"
                                             >
-                                                {Math.round(zoomLevel * 100)}%
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                                    <path d="M3 3v5h5" />
+                                                </svg>
                                             </button>
                                         )}
                                     </div>
@@ -483,7 +528,11 @@ const SetupDetailPage = () => {
                                     <>
                                         <button
                                             className="nav-arrow prev"
-                                            onClick={() => setCurrentImageIndex(prev => Math.max(0, prev - 1))}
+                                            onClick={() => {
+                                                setCurrentImageIndex(prev => Math.max(0, prev - 1));
+                                                setZoomLevel(1);
+                                                setPanPosition({ x: 0, y: 0 });
+                                            }}
                                             disabled={currentImageIndex === 0}
                                         >
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -492,7 +541,11 @@ const SetupDetailPage = () => {
                                         </button>
                                         <button
                                             className="nav-arrow next"
-                                            onClick={() => setCurrentImageIndex(prev => Math.min(mediaItems.length - 1, prev + 1))}
+                                            onClick={() => {
+                                                setCurrentImageIndex(prev => Math.min(mediaItems.length - 1, prev + 1));
+                                                setZoomLevel(1);
+                                                setPanPosition({ x: 0, y: 0 });
+                                            }}
                                             disabled={currentImageIndex === mediaItems.length - 1}
                                         >
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
