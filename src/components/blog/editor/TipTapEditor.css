@@ -169,6 +169,37 @@
     outline: 3px solid var(--color-primary);
 }
 
+/* Videos */
+.tiptap-content .ProseMirror .blog-video,
+.tiptap-content .ProseMirror iframe[src*="youtube"] {
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-lg);
+    margin: var(--space-lg) 0;
+    border: none;
+}
+
+.tiptap-content .ProseMirror div[data-youtube-video] {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    /* 16:9 aspect ratio */
+    margin: var(--space-lg) 0;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--color-bg-tertiary);
+}
+
+.tiptap-content .ProseMirror div[data-youtube-video] iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
 /* Tables */
 .tiptap-content .ProseMirror table {
     width: 100%;

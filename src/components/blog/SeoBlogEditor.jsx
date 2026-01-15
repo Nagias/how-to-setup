@@ -310,8 +310,8 @@ const SeoBlogEditor = () => {
                             <label htmlFor="main-seo-title">
                                 SEO Title <span className="required-star">*</span>
                                 <span className={`field-counter ${(blogData.seo?.seoTitle?.length || 0) === 0 ? 'empty' :
-                                        (blogData.seo?.seoTitle?.length || 0) < 30 ? 'warning' :
-                                            (blogData.seo?.seoTitle?.length || 0) > 60 ? 'warning' : 'good'
+                                    (blogData.seo?.seoTitle?.length || 0) < 30 ? 'warning' :
+                                        (blogData.seo?.seoTitle?.length || 0) > 60 ? 'warning' : 'good'
                                     }`}>
                                     {blogData.seo?.seoTitle?.length || 0}/60
                                 </span>
@@ -328,6 +328,15 @@ const SeoBlogEditor = () => {
                             {(blogData.seo?.seoTitle?.length || 0) > 0 && (blogData.seo?.seoTitle?.length || 0) < 30 && (
                                 <span className="field-hint warning">⚠️ Cần tối thiểu 30 ký tự</span>
                             )}
+                            {/* NEW: Keyword in Title warning */}
+                            {blogData.keywords?.primaryKeyword && blogData.seo?.seoTitle &&
+                                !blogData.seo.seoTitle.toLowerCase().includes(blogData.keywords.primaryKeyword.toLowerCase()) && (
+                                    <span className="field-hint warning">⚠️ Keyword "{blogData.keywords.primaryKeyword}" chưa có trong Title</span>
+                                )}
+                            {blogData.keywords?.primaryKeyword && blogData.seo?.seoTitle &&
+                                blogData.seo.seoTitle.toLowerCase().includes(blogData.keywords.primaryKeyword.toLowerCase()) && (
+                                    <span className="field-hint success">✅ Keyword có trong Title</span>
+                                )}
                         </div>
 
                         {/* Meta Description */}
@@ -335,8 +344,8 @@ const SeoBlogEditor = () => {
                             <label htmlFor="main-meta-desc">
                                 Meta Description <span className="required-star">*</span>
                                 <span className={`field-counter ${(blogData.seo?.metaDescription?.length || 0) === 0 ? 'empty' :
-                                        (blogData.seo?.metaDescription?.length || 0) < 120 ? 'warning' :
-                                            (blogData.seo?.metaDescription?.length || 0) > 155 ? 'warning' : 'good'
+                                    (blogData.seo?.metaDescription?.length || 0) < 120 ? 'warning' :
+                                        (blogData.seo?.metaDescription?.length || 0) > 155 ? 'warning' : 'good'
                                     }`}>
                                     {blogData.seo?.metaDescription?.length || 0}/155
                                 </span>
@@ -353,6 +362,15 @@ const SeoBlogEditor = () => {
                             {(blogData.seo?.metaDescription?.length || 0) > 0 && (blogData.seo?.metaDescription?.length || 0) < 120 && (
                                 <span className="field-hint warning">⚠️ Cần tối thiểu 120 ký tự</span>
                             )}
+                            {/* NEW: Keyword in Description warning */}
+                            {blogData.keywords?.primaryKeyword && blogData.seo?.metaDescription &&
+                                !blogData.seo.metaDescription.toLowerCase().includes(blogData.keywords.primaryKeyword.toLowerCase()) && (
+                                    <span className="field-hint warning">⚠️ Keyword "{blogData.keywords.primaryKeyword}" chưa có trong Description</span>
+                                )}
+                            {blogData.keywords?.primaryKeyword && blogData.seo?.metaDescription &&
+                                blogData.seo.metaDescription.toLowerCase().includes(blogData.keywords.primaryKeyword.toLowerCase()) && (
+                                    <span className="field-hint success">✅ Keyword có trong Description</span>
+                                )}
                         </div>
 
                         {/* Primary Keyword */}
@@ -372,6 +390,36 @@ const SeoBlogEditor = () => {
                                 <span className="field-hint error">❌ Bắt buộc nhập Primary Keyword</span>
                             )}
                         </div>
+
+                        {/* NEW: URL/Slug SEO Warnings */}
+                        {blogData.slug && (
+                            <div className="seo-warnings-box">
+                                <div className="warnings-header">📋 Kiểm tra URL</div>
+                                <div className="warnings-list">
+                                    {/* URL length check */}
+                                    {blogData.slug.length > 60 ? (
+                                        <div className="warning-item error">❌ URL quá dài ({blogData.slug.length} ký tự). Nên dưới 60.</div>
+                                    ) : blogData.slug.length > 50 ? (
+                                        <div className="warning-item warning">⚠️ URL hơi dài ({blogData.slug.length} ký tự). Nên 30-50.</div>
+                                    ) : (
+                                        <div className="warning-item success">✅ Độ dài URL tốt ({blogData.slug.length} ký tự)</div>
+                                    )}
+
+                                    {/* Keyword in URL check */}
+                                    {blogData.keywords?.primaryKeyword && (
+                                        blogData.slug.toLowerCase().includes(
+                                            blogData.keywords.primaryKeyword.toLowerCase().replace(/\s+/g, '-')
+                                        ) || blogData.slug.toLowerCase().includes(
+                                            blogData.keywords.primaryKeyword.toLowerCase().replace(/\s+/g, '')
+                                        ) ? (
+                                            <div className="warning-item success">✅ URL chứa keyword</div>
+                                        ) : (
+                                            <div className="warning-item warning">⚠️ URL nên chứa keyword "{blogData.keywords.primaryKeyword}"</div>
+                                        )
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                     {/* ========== END ESSENTIAL SEO FIELDS ========== */}
 
@@ -508,6 +556,204 @@ const SeoBlogEditor = () => {
                             <span>No Index (không cho Google index bài này)</span>
                         </label>
                     </div>
+
+                    {/* ========== EXTERNAL REFERENCES (E.E.A.T) ========== */}
+                    <div className="references-section">
+                        <div className="references-header">
+                            <span className="references-icon">📚</span>
+                            <h4>Nguồn tham khảo (E.E.A.T)</h4>
+                        </div>
+                        <p className="references-hint">
+                            Thêm nguồn uy tín để tăng độ tin cậy cho bài viết
+                        </p>
+
+                        {/* Existing references */}
+                        <div className="references-list">
+                            {(blogData.references || []).map((ref, index) => (
+                                <div key={index} className="reference-item">
+                                    <div className="reference-info">
+                                        <a href={ref.url} target="_blank" rel="noopener noreferrer">
+                                            {ref.title || ref.url}
+                                        </a>
+                                        {ref.nofollow && <span className="nofollow-badge">nofollow</span>}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="remove-ref-btn"
+                                        onClick={() => {
+                                            setBlogData(prev => ({
+                                                ...prev,
+                                                references: prev.references.filter((_, i) => i !== index)
+                                            }));
+                                        }}
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Add new reference */}
+                        <div className="add-reference">
+                            <input
+                                type="url"
+                                id="new-ref-url"
+                                placeholder="URL nguồn (https://...)"
+                                className="ref-input"
+                            />
+                            <input
+                                type="text"
+                                id="new-ref-title"
+                                placeholder="Tiêu đề nguồn"
+                                className="ref-input"
+                            />
+                            <div className="ref-options">
+                                <label className="nofollow-toggle">
+                                    <input type="checkbox" id="new-ref-nofollow" />
+                                    <span>nofollow</span>
+                                </label>
+                                <button
+                                    type="button"
+                                    className="add-ref-btn"
+                                    onClick={() => {
+                                        const urlInput = document.getElementById('new-ref-url');
+                                        const titleInput = document.getElementById('new-ref-title');
+                                        const nofollowInput = document.getElementById('new-ref-nofollow');
+
+                                        if (urlInput.value.trim()) {
+                                            setBlogData(prev => ({
+                                                ...prev,
+                                                references: [
+                                                    ...(prev.references || []),
+                                                    {
+                                                        url: urlInput.value.trim(),
+                                                        title: titleInput.value.trim() || urlInput.value.trim(),
+                                                        nofollow: nofollowInput.checked
+                                                    }
+                                                ]
+                                            }));
+                                            urlInput.value = '';
+                                            titleInput.value = '';
+                                            nofollowInput.checked = false;
+                                        }
+                                    }}
+                                >
+                                    + Thêm nguồn
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {/* ========== END EXTERNAL REFERENCES ========== */}
+
+                    {/* ========== SCHEMA MARKUP CONTROLS ========== */}
+                    <div className="schema-section">
+                        <div className="schema-header">
+                            <span className="schema-icon">🏷️</span>
+                            <h4>Schema Markup (Rich Results)</h4>
+                        </div>
+                        <p className="schema-hint">
+                            Bật schema để hiển thị rich snippets trên Google
+                        </p>
+
+                        <div className="schema-toggles">
+                            {/* Article Schema - Always enabled */}
+                            <div className="schema-toggle-item enabled">
+                                <div className="toggle-info">
+                                    <span className="toggle-icon">📄</span>
+                                    <div>
+                                        <span className="toggle-name">Article Schema</span>
+                                        <span className="toggle-desc">Luôn bật cho tất cả bài viết</span>
+                                    </div>
+                                </div>
+                                <span className="toggle-status active">✓ Active</span>
+                            </div>
+
+                            {/* FAQ Schema */}
+                            <div className="schema-toggle-item">
+                                <div className="toggle-info">
+                                    <span className="toggle-icon">❓</span>
+                                    <div>
+                                        <span className="toggle-name">FAQ Schema</span>
+                                        <span className="toggle-desc">Hiển thị Q&A trên kết quả tìm kiếm</span>
+                                    </div>
+                                </div>
+                                <label className="toggle-switch">
+                                    <input
+                                        type="checkbox"
+                                        checked={blogData.schema?.enableFaqSchema || false}
+                                        onChange={(e) => setBlogData(prev => ({
+                                            ...prev,
+                                            schema: { ...prev.schema, enableFaqSchema: e.target.checked }
+                                        }))}
+                                    />
+                                    <span className="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            {/* Review Schema */}
+                            <div className="schema-toggle-item">
+                                <div className="toggle-info">
+                                    <span className="toggle-icon">⭐</span>
+                                    <div>
+                                        <span className="toggle-name">Review Schema</span>
+                                        <span className="toggle-desc">Hiển thị đánh giá sao trên Google</span>
+                                    </div>
+                                </div>
+                                <label className="toggle-switch">
+                                    <input
+                                        type="checkbox"
+                                        checked={blogData.schema?.enableReviewSchema || false}
+                                        onChange={(e) => setBlogData(prev => ({
+                                            ...prev,
+                                            schema: { ...prev.schema, enableReviewSchema: e.target.checked }
+                                        }))}
+                                    />
+                                    <span className="toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            {/* Review Data (if Review Schema enabled) */}
+                            {blogData.schema?.enableReviewSchema && (
+                                <div className="review-data-form">
+                                    <div className="review-field">
+                                        <label>Tên sản phẩm/dịch vụ đánh giá:</label>
+                                        <input
+                                            type="text"
+                                            value={blogData.schema?.reviewData?.itemName || ''}
+                                            onChange={(e) => setBlogData(prev => ({
+                                                ...prev,
+                                                schema: {
+                                                    ...prev.schema,
+                                                    reviewData: { ...prev.schema?.reviewData, itemName: e.target.value }
+                                                }
+                                            }))}
+                                            placeholder="VD: Dell UltraSharp U2723QE"
+                                            className="review-input"
+                                        />
+                                    </div>
+                                    <div className="review-field">
+                                        <label>Điểm đánh giá (1-5):</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="5"
+                                            step="0.1"
+                                            value={blogData.schema?.reviewData?.rating || 5}
+                                            onChange={(e) => setBlogData(prev => ({
+                                                ...prev,
+                                                schema: {
+                                                    ...prev.schema,
+                                                    reviewData: { ...prev.schema?.reviewData, rating: parseFloat(e.target.value) }
+                                                }
+                                            }))}
+                                            className="review-input rating-input"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    {/* ========== END SCHEMA MARKUP ========== */}
                 </div>
 
                 {/* Right Column - SEO Panel */}

@@ -8,6 +8,7 @@ import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableHeader } from '@tiptap/extension-table-header';
 import { TableCell } from '@tiptap/extension-table-cell';
+import Youtube from '@tiptap/extension-youtube';
 import { uploadToCloudinary } from '../../../config/cloudinary';
 import './TipTapEditor.css';
 
@@ -48,7 +49,15 @@ const TipTapEditor = ({
             }),
             TableRow,
             TableHeader,
-            TableCell
+            TableCell,
+            Youtube.configure({
+                controls: true,
+                nocookie: true,
+                allowFullscreen: true,
+                HTMLAttributes: {
+                    class: 'blog-video'
+                }
+            })
         ],
         content: content || '',
         onUpdate: ({ editor }) => {
@@ -90,6 +99,26 @@ const TipTapEditor = ({
     const insertTable = useCallback(() => {
         if (editor) {
             editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+        }
+    }, [editor]);
+
+    // Insert YouTube video
+    const insertVideo = useCallback(() => {
+        const url = prompt('Nhập URL YouTube hoặc Vimeo:');
+        if (url && editor) {
+            // Extract YouTube video ID and embed
+            const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+            const match = url.match(youtubeRegex);
+
+            if (match) {
+                editor.commands.setYoutubeVideo({
+                    src: url,
+                    width: 640,
+                    height: 360
+                });
+            } else {
+                alert('URL YouTube không hợp lệ. Vui lòng sử dụng link YouTube.');
+            }
         }
     }, [editor]);
 
@@ -230,6 +259,14 @@ const TipTapEditor = ({
                         title="Chèn ảnh"
                     >
                         📷 Ảnh
+                    </button>
+                    <button
+                        type="button"
+                        onClick={insertVideo}
+                        className="toolbar-btn"
+                        title="Chèn video YouTube"
+                    >
+                        🎬 Video
                     </button>
                     <button
                         type="button"
