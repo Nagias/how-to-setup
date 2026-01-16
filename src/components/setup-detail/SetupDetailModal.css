@@ -65,6 +65,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%;
     max-width: 100%;
     /* Ensure z-index is high enough to be above other modal content if needed */
     z-index: 1;
@@ -835,7 +836,8 @@
         max-height: 100vh;
         border-radius: 0;
         background: black;
-        /* Dark background for immersive feel */
+        overflow-x: hidden;
+        /* Dark background for immersive feel, no horizontal overflow */
     }
 
     /* Mobile back button - positioned fixed to stay on top during scroll */
@@ -864,7 +866,9 @@
         flex-direction: column;
         gap: 0;
         height: 100%;
+        width: 100%;
         overflow-y: auto;
+        overflow-x: hidden;
         /* Scroll the whole layout if needed, but image should fit */
     }
 
@@ -873,6 +877,8 @@
         padding: 0;
         background: black;
         flex-shrink: 0;
+        width: 100%;
+        overflow-x: hidden;
     }
 
     /* Details Section - Pushed below */
@@ -935,19 +941,29 @@
         /* Maximize height for mobile vertical viewing - NO top gap */
         max-height: 75vh;
         min-height: 50vh;
+        width: 100%;
         background: black;
         display: flex;
         align-items: flex-start;
         justify-content: center;
         padding-top: 0;
+        overflow-x: hidden;
+        /* Prevent horizontal overflow that causes image cut-off */
     }
 
     .main-image {
         max-height: 70vh;
-        width: auto;
+        width: 100%;
         max-width: 100%;
         object-fit: contain;
-        /* Ensure full image is visible */
+        /* Ensure full image is visible without horizontal overflow */
+    }
+
+    /* Ensure image-wrapper-relative doesn't overflow on mobile */
+    .image-wrapper-relative {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
     }
 
     .main-image-container video,
