@@ -527,6 +527,9 @@
     .setup-detail-page {
         padding-top: 0;
         background: var(--color-bg-primary);
+        overflow-x: hidden;
+        width: 100%;
+        max-width: 100vw;
     }
 
     /* Back button - Positioned INSIDE the image container */
@@ -563,6 +566,15 @@
     .setup-content {
         padding: 0;
         gap: 0;
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+
+    .setup-left-column {
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
     }
 
     /* Gallery section - Full width, no background */
@@ -571,29 +583,41 @@
         padding: 0;
         display: block;
         position: relative;
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
     }
 
     /* Image container - Full width, no padding/margin, acts as positioning parent */
     .setup-main-image-container {
         position: relative;
         width: 100%;
+        max-width: 100vw;
         margin: 0;
         padding: 0;
         background: transparent;
         box-shadow: none;
         border-radius: 0;
-        overflow: visible;
+        overflow: hidden;
         display: block;
     }
 
     /* Image - Full width with rounded corners, no gaps */
     .setup-main-image {
         width: 100%;
+        max-width: 100%;
         max-height: none;
         height: auto;
         display: block;
-        object-fit: cover;
+        object-fit: contain;
         border-radius: var(--radius-xl);
+    }
+
+    /* Zoomable wrapper - constrain on mobile */
+    .zoomable-wrapper {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: hidden;
     }
 
     /* Mobile Masonry Grid for Similar Setups */
