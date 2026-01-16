@@ -534,6 +534,19 @@ const SetupDetailPage = () => {
                                     </div>
                                 )}
 
+                                {/* Mobile Toggle Products Button */}
+                                {isMobile && currentMedia.products && currentMedia.products.length > 0 && (
+                                    <button
+                                        className="toggle-products-btn-mobile"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setShowProducts(!showProducts);
+                                        }}
+                                    >
+                                        {showProducts ? 'Ẩn' : 'Hiện'}
+                                    </button>
+                                )}
+
                                 {/* Navigation Arrows - Desktop only */}
                                 {!isMobile && mediaItems.length > 1 && (
                                     <>

@@ -105,11 +105,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(4px);
-    border: 1.5px solid rgba(255, 255, 255, 0.4);
+    border: 1.5px solid rgba(255, 255, 255, 0.9);
     border-radius: var(--radius-full);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     cursor: pointer;
     transition: all var(--transition-fast);
     animation: pulse 2s infinite;
@@ -117,14 +117,14 @@
 
 .marker-btn svg {
     color: var(--color-primary);
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
 }
 
 .marker-btn:hover {
     transform: scale(1.2);
-    background: rgba(255, 255, 255, 0.4);
-    border-color: rgba(255, 255, 255, 0.6);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(255, 255, 255, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes pulse {
@@ -139,13 +139,15 @@
     }
 }
 
-/* Mobile: Even smaller and more transparent */
+/* Mobile: Visible on dark images */
 @media (max-width: 768px) {
     .marker-btn {
-        width: 24px;
-        height: 24px;
-        background: rgba(255, 255, 255, 0.2);
-        border-width: 1px;
+        width: 26px;
+        height: 26px;
+        background: rgba(255, 255, 255, 0.85);
+        border-width: 1.5px;
+        border-color: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .marker-btn svg {
@@ -974,6 +976,26 @@
     /* Hide thumbnails on mobile - use arrows instead */
     .image-thumbnails {
         display: none;
+    }
+
+    /* Mobile toggle products button - top right positioning */
+    .toggle-products-btn {
+        position: absolute;
+        top: 60px;
+        right: var(--space-md);
+        bottom: auto;
+        padding: 8px 14px;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(8px);
+        color: #333;
+        border-radius: 20px;
+        font-size: 13px;
+        opacity: 1;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .toggle-products-btn:hover {
+        background: rgba(255, 255, 255, 1);
     }
 
     .similar-grid {
