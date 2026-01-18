@@ -8,6 +8,9 @@ import './SetupDetailPage.css';
 // ProductMarker Component with tooltip (same as SetupDetailModal)
 const ProductMarker = ({ product, isActive, onActivate }) => {
     const [isMobile, setIsMobile] = useState(false);
+    const tooltipRef = useRef(null);
+    const markerRef = useRef(null);
+    const [tooltipPosition, setTooltipPosition] = useState({ horizontal: 'center', vertical: 'top' });
 
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth <= 768);
@@ -16,14 +19,117 @@ const ProductMarker = ({ product, isActive, onActivate }) => {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
+    // Calculate optimal tooltip position based on marker location in image
+    useEffect(() => {
+        if (!isActive || isMobile) return;
+
+        // Use product.x and product.y percentages to determine position
+        const x = product.x;
+        const y = product.y;
+
+        // Determine horizontal position
+        let horizontal = 'center';
+        if (x < 25) {
+            horizontal = 'left'; // Marker is near left edge, show tooltip to the right
+        } else if (x > 75) {
+            horizontal = 'right'; // Marker is near right edge, show tooltip to the left
+        }
+
+        // Determine vertical position
+        let vertical = 'top';
+        if (y < 30) {
+            vertical = 'bottom'; // Marker is near top edge, show tooltip below
+        }
+
+        setTooltipPosition({ horizontal, vertical });
+    }, [isActive, isMobile, product.x, product.y]);
+
     const handleClick = (e) => {
         e.stopPropagation();
         onActivate(isActive ? null : product);
     };
 
+    // Calculate tooltip styles based on position
+    const getTooltipStyles = () => {
+        const baseStyles = {
+            position: 'absolute',
+            background: 'white',
+            color: '#333',
+            padding: '16px',
+            borderRadius: '12px',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)',
+            minWidth: '260px',
+            maxWidth: '300px',
+            zIndex: 10000,
+            animation: 'fadeIn 0.2s ease-out',
+            border: '1px solid rgba(0, 0, 0, 0.08)',
+            whiteSpace: 'normal'
+        };
+
+        // Vertical positioning
+        if (tooltipPosition.vertical === 'top') {
+            baseStyles.bottom = '100%';
+            baseStyles.marginBottom = '12px';
+        } else {
+            baseStyles.top = '100%';
+            baseStyles.marginTop = '12px';
+        }
+
+        // Horizontal positioning
+        if (tooltipPosition.horizontal === 'center') {
+            baseStyles.left = '50%';
+            baseStyles.transform = 'translateX(-50%)';
+        } else if (tooltipPosition.horizontal === 'left') {
+            baseStyles.left = '0';
+            baseStyles.transform = 'translateX(0)';
+        } else {
+            baseStyles.right = '0';
+            baseStyles.left = 'auto';
+            baseStyles.transform = 'translateX(0)';
+        }
+
+        return baseStyles;
+    };
+
+    // Get arrow styles based on tooltip position
+    const getArrowStyles = () => {
+        const baseArrow = {
+            position: 'absolute',
+            width: 0,
+            height: 0,
+            borderLeft: '8px solid transparent',
+            borderRight: '8px solid transparent'
+        };
+
+        // Arrow position depends on tooltip position
+        if (tooltipPosition.vertical === 'top') {
+            // Arrow at bottom of tooltip pointing down
+            baseArrow.top = '100%';
+            baseArrow.borderTop = '8px solid white';
+        } else {
+            // Arrow at top of tooltip pointing up
+            baseArrow.bottom = '100%';
+            baseArrow.borderBottom = '8px solid white';
+        }
+
+        // Horizontal arrow position
+        if (tooltipPosition.horizontal === 'center') {
+            baseArrow.left = '50%';
+            baseArrow.transform = 'translateX(-50%)';
+        } else if (tooltipPosition.horizontal === 'left') {
+            baseArrow.left = '16px';
+        } else {
+            baseArrow.right = '16px';
+            baseArrow.left = 'auto';
+        }
+
+        return baseArrow;
+    };
+
     return (
         <div
             className="product-marker"
+            ref={markerRef}
             style={{ left: `${product.x}%`, top: `${product.y}%` }}
             onClick={handleClick}
         >
@@ -34,27 +140,12 @@ const ProductMarker = ({ product, isActive, onActivate }) => {
                 </svg>
             </button>
 
-            {/* Desktop Tooltip - Show inline next to marker */}
+            {/* Desktop Tooltip - Dynamically positioned */}
             {!isMobile && isActive && (
                 <div
+                    ref={tooltipRef}
                     className="product-tooltip-desktop"
-                    style={{
-                        position: 'absolute',
-                        left: '50%',
-                        bottom: '100%',
-                        transform: 'translateX(-50%) translateY(-8px)',
-                        marginBottom: '8px',
-                        background: 'white',
-                        color: '#333',
-                        padding: '16px',
-                        borderRadius: '12px',
-                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)',
-                        minWidth: '280px',
-                        maxWidth: '320px',
-                        zIndex: 10000,
-                        animation: 'fadeIn 0.2s ease-out',
-                        border: '1px solid rgba(0, 0, 0, 0.08)'
-                    }}
+                    style={getTooltipStyles()}
                     onClick={(e) => e.stopPropagation()}
                 >
                     <h3 style={{
@@ -106,17 +197,8 @@ const ProductMarker = ({ product, isActive, onActivate }) => {
                         </a>
                     )}
 
-                    <div style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        width: 0,
-                        height: 0,
-                        borderLeft: '8px solid transparent',
-                        borderRight: '8px solid transparent',
-                        borderTop: '8px solid white'
-                    }}></div>
+                    {/* Dynamic arrow */}
+                    <div style={getArrowStyles()}></div>
                 </div>
             )}
         </div>
