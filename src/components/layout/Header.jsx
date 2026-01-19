@@ -18,8 +18,7 @@ const Header = () => {
         setShowNewsletterModal,
         setShowCollectionsModal,
         setShowAddSetupModal,
-        setShowMobileFilter,
-        forceRefresh
+        setShowMobileFilter
     } = useApp();
     const [searchExpanded, setSearchExpanded] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
@@ -313,22 +312,6 @@ const Header = () => {
 
                         <button className="mobile-action-btn" onClick={toggleTheme}>
                             {theme === 'light' ? 'Chế Độ Tối' : 'Chế Độ Sáng'}
-                        </button>
-
-                        <button
-                            className="mobile-action-btn"
-                            onClick={async () => {
-                                const result = await forceRefresh();
-                                if (result.success) {
-                                    alert('✅ ' + result.message);
-                                } else {
-                                    alert('❌ ' + result.message);
-                                }
-                                closeMobileMenu();
-                            }}
-                            style={{ color: 'var(--color-primary)' }}
-                        >
-                            🔄 Làm Mới Dữ Liệu
                         </button>
                     </div>
                 </div>

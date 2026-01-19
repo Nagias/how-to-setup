@@ -112,28 +112,8 @@ export const AppProvider = ({ children }) => {
     });
 
     const loadData = async () => {
-        // Check localStorage directly (not state) to avoid stale closure
-        let hasData = false;
-        try {
-            const cached = localStorage.getItem(CACHE_KEY_SETUPS);
-            if (cached) {
-                const parsed = JSON.parse(cached);
-                hasData = parsed && parsed.length > 0;
-            }
-        } catch (e) {
-            // Ignore
-        }
-
-        const cacheFresh = isCacheFresh();
-
-        if (hasData && cacheFresh) {
-            console.log('✅ Cache is fresh with data, skipping network');
-            setLoading(false);
-            return;
-        }
-
-        // Need to fetch from Firestore
-        console.log('🔄 Fetching data from Firestore...', { hasData, cacheFresh });
+        // Stale-While-Revalidate: Always fetch fresh data, cache is only for instant display
+        console.log('🔄 Fetching fresh data from Firestore...');
 
         try {
             const data = await api.getData();
@@ -147,13 +127,14 @@ export const AppProvider = ({ children }) => {
                 } catch (e) {
                     console.warn('Cache storage failed:', e);
                 }
-            } else if (!hasData) {
-                // No data from Firestore and no cache - use sample data as fallback
+            } else {
+                // No data from Firestore - use sample data as fallback
                 console.warn('⚠️ No data from Firestore, using sample data');
                 setSetups(sampleSetups);
             }
 
             if (data.blogs && data.blogs.length > 0) {
+                console.log('📰 Loaded', data.blogs.length, 'blogs from Firestore');
                 setBlogs(data.blogs);
                 try {
                     localStorage.setItem(CACHE_KEY_BLOGS, JSON.stringify(data.blogs));
@@ -170,12 +151,8 @@ export const AppProvider = ({ children }) => {
             setAllComments(data.comments || {});
         } catch (error) {
             console.error('❌ Error loading data from Firestore:', error);
-            // On error, use sample data as fallback if we have no data
-            if (!hasData) {
-                console.log('📌 Using sample data as fallback');
-                setSetups(sampleSetups);
-                setBlogs(sampleBlogs);
-            }
+            // On error, keep showing cached data (already loaded from state initialization)
+            console.log('📌 Keeping cached data due to network error');
         } finally {
             setLoading(false);
         }
