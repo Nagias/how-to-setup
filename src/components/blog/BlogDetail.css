@@ -18,27 +18,79 @@
 }
 
 .blog-detail-actions {
-    margin-bottom: var(--space-xl);
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100%;
+    padding: 1rem 0;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
 }
 
-.back-btn {
+.blog-detail-actions .back-btn {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) var(--space-lg);
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
     background: var(--color-bg-secondary);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-full);
+    border-radius: 999px;
     color: var(--color-text-secondary);
     font-weight: 500;
     transition: all 0.2s;
     cursor: pointer;
+    flex-shrink: 0;
 }
 
-.back-btn:hover {
+.blog-detail-actions .back-btn:hover {
     background: var(--color-bg-tertiary);
     color: var(--color-text-primary);
-    transform: translateX(-4px);
+}
+
+.blog-admin-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.blog-edit-btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1px solid #3b82f6;
+    border-radius: 999px;
+    color: #3b82f6;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.blog-edit-btn:hover {
+    background: #3b82f6;
+    color: white;
+}
+
+.blog-delete-btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1px solid #ef4444;
+    border-radius: 999px;
+    color: #ef4444;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.blog-delete-btn:hover {
+    background: #ef4444;
+    color: white;
 }
 
 .blog-article {

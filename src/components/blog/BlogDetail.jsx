@@ -112,7 +112,7 @@ const BlogDetail = () => {
 
             <SchemaGenerator blogData={blog} />
 
-            <div className="blog-detail-actions" style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-md)' }}>
+            <div className="blog-detail-actions">
                 <button className="back-btn" onClick={handleBack}>
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                         <path d="M12.5 15L7.5 10l5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -121,14 +121,14 @@ const BlogDetail = () => {
                 </button>
 
                 {currentUser && currentUser.role === 'admin' && (
-                    <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
-                        <button className="back-btn" style={{ color: '#3b82f6', borderColor: '#3b82f6' }} onClick={handleEdit}>
+                    <div className="blog-admin-actions">
+                        <button className="blog-edit-btn" onClick={handleEdit}>
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                             Chỉnh sửa
                         </button>
-                        <button className="back-btn" style={{ color: '#ef4444', borderColor: '#ef4444' }} onClick={handleDelete}>
+                        <button className="blog-delete-btn" onClick={handleDelete}>
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                                 <path d="M5 7h10M8 7V5a1 1 0 011-1h2a1 1 0 011 1v2m-5 0h6M6 7v10a1 1 0 001 1h6a1 1 0 001-1V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                             </svg>
