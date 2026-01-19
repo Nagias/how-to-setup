@@ -60,14 +60,17 @@ export const api = {
             const setupSnapshot = await getDocs(setupsQuery);
             const setups = setupSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            // Blogs - Limit to 20 most recent
-            const blogsQuery = query(
-                blogsCol,
-                orderBy('createdAt', 'desc'),
-                limit(20)
-            );
+            // Blogs - Fetch all, sort client-side (some old blogs may not have createdAt)
+            const blogsQuery = query(blogsCol, limit(50));
             const blogSnapshot = await getDocs(blogsQuery);
-            const blogs = blogSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const blogs = blogSnapshot.docs
+                .map(doc => ({ id: doc.id, ...doc.data() }))
+                .sort((a, b) => {
+                    // Sort by createdAt or publishedAt, newest first
+                    const dateA = new Date(a.createdAt || a.publishedAt || 0);
+                    const dateB = new Date(b.createdAt || b.publishedAt || 0);
+                    return dateB - dateA;
+                });
 
             // Comments - Only fetch when needed, not on initial load
             // Skip comments for faster initial load

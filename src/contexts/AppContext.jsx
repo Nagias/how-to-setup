@@ -592,8 +592,58 @@ export const AppProvider = ({ children }) => {
 
     const refreshData = loadData;
 
+    // Force refresh - clears ALL cache and fetches fresh data
+    const forceRefresh = async () => {
+        console.log('🔄 Force refreshing all data...');
+        try {
+            // Clear localStorage cache
+            localStorage.removeItem(CACHE_KEY_SETUPS);
+            localStorage.removeItem(CACHE_KEY_BLOGS);
+            localStorage.removeItem(CACHE_TIMESTAMP);
+            console.log('✅ LocalStorage cache cleared');
+
+            // Clear IndexedDB (Firestore offline cache)
+            if ('indexedDB' in window) {
+                const databases = await window.indexedDB.databases?.();
+                if (databases) {
+                    for (const dbInfo of databases) {
+                        if (dbInfo.name && dbInfo.name.includes('firestore')) {
+                            window.indexedDB.deleteDatabase(dbInfo.name);
+                            console.log('✅ Cleared IndexedDB:', dbInfo.name);
+                        }
+                    }
+                }
+            }
+
+            // Force fetch fresh data
+            setLoading(true);
+            const data = await api.getData();
+
+            if (data.setups && data.setups.length > 0) {
+                setSetups(data.setups);
+                localStorage.setItem(CACHE_KEY_SETUPS, JSON.stringify(data.setups));
+            }
+
+            if (data.blogs && data.blogs.length > 0) {
+                setBlogs(data.blogs);
+                localStorage.setItem(CACHE_KEY_BLOGS, JSON.stringify(data.blogs));
+            }
+
+            localStorage.setItem(CACHE_TIMESTAMP, Date.now().toString());
+            console.log('✅ Fresh data loaded:', data.setups?.length, 'setups,', data.blogs?.length, 'blogs');
+
+            return { success: true, message: 'Đã tải lại dữ liệu mới!' };
+        } catch (error) {
+            console.error('❌ Force refresh failed:', error);
+            return { success: false, message: 'Lỗi khi tải lại dữ liệu' };
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const value = {
         refreshData,
+        forceRefresh,
         theme,
         toggleTheme,
         setups,
