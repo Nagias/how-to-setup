@@ -356,6 +356,27 @@
     border-radius: 4px;
 }
 
+/* Hyperlink in text - blue color, no underline */
+.text-link {
+    color: #2563eb;
+    text-decoration: none;
+    word-break: break-all;
+    transition: color var(--transition-fast);
+}
+
+.text-link:hover {
+    color: #1d4ed8;
+}
+
+/* Dark mode support for text links */
+[data-theme="dark"] .text-link {
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .text-link:hover {
+    color: #93c5fd;
+}
+
 /* Show more comments button */
 .show-more-comments {
     width: 100%;

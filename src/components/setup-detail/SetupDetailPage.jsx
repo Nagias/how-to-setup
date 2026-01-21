@@ -454,6 +454,43 @@ const SetupDetailPage = () => {
         }
     };
 
+    // Helper function to convert URLs to clickable links
+    const renderTextWithLinks = (text) => {
+        if (!text || typeof text !== 'string') return text;
+
+        const urlRegex = /(https?:\/\/[^\s<>"']+)/gi;
+        const parts = [];
+        let lastIndex = 0;
+        let match;
+        let keyIndex = 0;
+
+        while ((match = urlRegex.exec(text)) !== null) {
+            // Add text before URL
+            if (match.index > lastIndex) {
+                parts.push(text.substring(lastIndex, match.index));
+            }
+            // Add clickable link
+            parts.push(
+                <a
+                    key={`caption-link-${keyIndex++}`}
+                    href={match[1]}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-link"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {match[1]}
+                </a>
+            );
+            lastIndex = match.index + match[0].length;
+        }
+        // Add remaining text
+        if (lastIndex < text.length) {
+            parts.push(text.substring(lastIndex));
+        }
+        return parts.length > 0 ? parts : text;
+    };
+
     // SEO Schema
     const schema = {
         '@context': 'https://schema.org',
@@ -745,7 +782,7 @@ const SetupDetailPage = () => {
                                 </div>
                             </div>
 
-                            <p className="setup-caption">{setup.caption}</p>
+                            <p className="setup-caption">{renderTextWithLinks(setup.caption)}</p>
 
                             {/* Tags */}
                             {setup.tags && setup.tags.length > 0 && (
@@ -798,22 +835,41 @@ const SetupDetailPage = () => {
                                                 const commentAvatar = typeof comment.avatar === 'string' ? comment.avatar :
                                                     (comment.avatar?.url || 'https://ui-avatars.com/api/?name=User&background=random');
 
-                                                // Parse @mentions in comment text
-                                                const renderTextWithMentions = (text) => {
-                                                    const mentionRegex = /@(\S+)/g;
+                                                // Parse @mentions and links in comment text
+                                                const renderTextWithMentionsAndLinks = (text) => {
+                                                    // Combined regex for URLs and @mentions
+                                                    const combinedRegex = /(https?:\/\/[^\s<>"']+)|(@\S+)/gi;
                                                     const parts = [];
                                                     let lastIndex = 0;
                                                     let match;
+                                                    let keyIndex = 0;
 
-                                                    while ((match = mentionRegex.exec(text)) !== null) {
-                                                        // Add text before mention
+                                                    while ((match = combinedRegex.exec(text)) !== null) {
+                                                        // Add text before match
                                                         if (match.index > lastIndex) {
                                                             parts.push(text.substring(lastIndex, match.index));
                                                         }
-                                                        // Add highlighted mention
-                                                        parts.push(
-                                                            <span key={match.index} className="mention-tag">@{match[1]}</span>
-                                                        );
+
+                                                        if (match[1]) {
+                                                            // It's a URL
+                                                            parts.push(
+                                                                <a
+                                                                    key={`link-${keyIndex++}`}
+                                                                    href={match[1]}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-link"
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                >
+                                                                    {match[1]}
+                                                                </a>
+                                                            );
+                                                        } else if (match[2]) {
+                                                            // It's a @mention
+                                                            parts.push(
+                                                                <span key={`mention-${keyIndex++}`} className="mention-tag">{match[2]}</span>
+                                                            );
+                                                        }
                                                         lastIndex = match.index + match[0].length;
                                                     }
                                                     // Add remaining text
@@ -842,7 +898,7 @@ const SetupDetailPage = () => {
                                                                     ↳ Trả lời <span className="mention-tag">@{comment.replyTo.author}</span>
                                                                 </p>
                                                             )}
-                                                            <p className="comment-text">{renderTextWithMentions(rawText)}</p>
+                                                            <p className="comment-text">{renderTextWithMentionsAndLinks(rawText)}</p>
                                                         </div>
                                                     </div>
                                                 );
