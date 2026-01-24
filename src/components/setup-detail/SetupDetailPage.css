@@ -4,7 +4,7 @@
     padding-top: 30px;
 }
 
-.back-btn {
+.setup-back-btn {
     position: fixed;
     top: calc(var(--header-height) + 10px);
     left: var(--space-lg);
@@ -20,7 +20,7 @@
     font-weight: 600;
 }
 
-.back-btn:hover {
+.setup-back-btn:hover {
     transform: translateX(-4px);
     box-shadow: var(--shadow-xl);
 }
@@ -580,17 +580,15 @@
         max-width: 100vw;
     }
 
-    /* Back button - Positioned INSIDE the image container, pushed down to avoid Header */
-    .back-btn {
+    /* Back button - Positioned INSIDE the image container */
+    .setup-back-btn {
         position: absolute;
-        top: calc(60px + var(--space-md));
-        /* Header height approx 60px */
+        top: var(--space-md);
         left: var(--space-md);
         z-index: 100;
-        /* Enable text display */
-        width: auto;
-        height: auto;
-        padding: 8px 16px;
+        width: 40px;
+        height: 40px;
+        padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -598,19 +596,16 @@
         backdrop-filter: blur(8px);
         color: #333;
         border: none;
-        border-radius: 999px;
-        /* Pill shape */
+        border-radius: 12px;
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-        font-size: 14px;
-        font-weight: 600;
-        gap: 6px;
+        font-size: 0;
     }
 
-    .back-btn span {
-        display: inline-block;
+    .setup-back-btn span {
+        display: none;
     }
 
-    .back-btn:hover {
+    .setup-back-btn:hover {
         transform: none;
         background: white;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
