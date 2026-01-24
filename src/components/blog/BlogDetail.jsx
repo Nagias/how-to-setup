@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
 import { sampleBlogs } from '../../data/sampleData';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 import SchemaGenerator, { generateMetaTags, generateCanonicalLink } from './seo/SchemaGenerator';
 import './BlogDetail.css';
 

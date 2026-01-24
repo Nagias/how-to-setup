@@ -580,15 +580,17 @@
         max-width: 100vw;
     }
 
-    /* Back button - Positioned INSIDE the image container */
+    /* Back button - Positioned INSIDE the image container, pushed down to avoid Header */
     .back-btn {
         position: absolute;
-        top: var(--space-md);
+        top: calc(60px + var(--space-md));
+        /* Header height approx 60px */
         left: var(--space-md);
         z-index: 100;
-        width: 40px;
-        height: 40px;
-        padding: 0;
+        /* Enable text display */
+        width: auto;
+        height: auto;
+        padding: 8px 16px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -596,13 +598,16 @@
         backdrop-filter: blur(8px);
         color: #333;
         border: none;
-        border-radius: 12px;
+        border-radius: 999px;
+        /* Pill shape */
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-        font-size: 0;
+        font-size: 14px;
+        font-weight: 600;
+        gap: 6px;
     }
 
     .back-btn span {
-        display: none;
+        display: inline-block;
     }
 
     .back-btn:hover {

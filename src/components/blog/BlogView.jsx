@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
 import SeoHead from '../common/SeoHead';
@@ -6,6 +6,20 @@ import './BlogView.css';
 
 const BlogView = () => {
     const { blogs } = useApp();
+    const [displayedBlogs, setDisplayedBlogs] = useState([]);
+    const [page, setPage] = useState(1);
+    const BLOGS_PER_PAGE = 5;
+
+    useEffect(() => {
+        // Initial load or when blogs change
+        setDisplayedBlogs(blogs.slice(0, page * BLOGS_PER_PAGE));
+    }, [blogs, page]);
+
+    const handleLoadMore = () => {
+        setPage(prev => prev + 1);
+    };
+
+    const hasMore = displayedBlogs.length < blogs.length;
 
     return (
         <div className="blog-view">
@@ -19,7 +33,7 @@ const BlogView = () => {
             </div>
 
             <div className="blog-grid">
-                {blogs.map(blog => (
+                {displayedBlogs.map(blog => (
                     <Link to={`/blog/${blog.slug || blog.id}`} key={blog.id} className="blog-card-link">
                         <article className="blog-card">
                             <div className="blog-card-image">
@@ -56,6 +70,15 @@ const BlogView = () => {
                     </Link>
                 ))}
             </div>
+
+            {hasMore && (
+                <div className="load-more-container">
+                    <button className="load-more-btn" onClick={handleLoadMore}>
+                        Xem thêm
+                        <span className="chevron-icon">»</span>
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
