@@ -180,6 +180,20 @@ const BlogEditor = () => {
         execCommand('foreColor', color);
     };
 
+    const changeFontSize = (size) => {
+        if (!size) return;
+        // Use fontSize command with 1-7 scale, then override with specific px
+        document.execCommand('fontSize', false, '7');
+        // Find and update the font elements
+        const fonts = contentRef.current?.querySelectorAll('font[size="7"]');
+        fonts?.forEach(font => {
+            font.removeAttribute('size');
+            font.style.fontSize = size;
+        });
+        contentRef.current?.focus();
+        updateContent();
+    };
+
     const updateContent = () => {
         if (contentRef.current) {
             setContent(contentRef.current.innerHTML);
@@ -333,6 +347,17 @@ const BlogEditor = () => {
                                 <option value="Courier New">Courier New</option>
                                 <option value="Times New Roman">Times New Roman</option>
                                 <option value="System-ui">System UI</option>
+                            </select>
+                            <select onChange={(e) => changeFontSize(e.target.value)} className="toolbar-select" title="Cỡ chữ">
+                                <option value="">Cỡ chữ</option>
+                                <option value="12px">12px</option>
+                                <option value="14px">14px</option>
+                                <option value="16px">16px</option>
+                                <option value="18px">18px</option>
+                                <option value="20px">20px</option>
+                                <option value="24px">24px</option>
+                                <option value="28px">28px</option>
+                                <option value="32px">32px</option>
                             </select>
                         </div>
 

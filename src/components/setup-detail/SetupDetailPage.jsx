@@ -559,7 +559,7 @@ const SetupDetailPage = () => {
                                     }
                                 }}
                                 onMouseUp={() => setIsPanning(false)}
-                                onMouseLeaveCapture={() => setIsPanning(false)}
+                                onMouseLeave={() => setIsPanning(false)}
                                 style={{ cursor: zoomLevel > 1 ? (isPanning ? 'grabbing' : 'grab') : 'default' }}
                             >
                                 {/* Back button - INSIDE image container for mobile positioning */}

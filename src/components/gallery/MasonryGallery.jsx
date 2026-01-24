@@ -6,11 +6,11 @@ import './MasonryGallery.css';
 
 
 const MasonryGallery = () => {
-    const { getFilteredSetups, loading, filters, setups } = useApp();
+    const { getFilteredSetups, loading, filters, setups, galleryPage, setGalleryPage } = useApp();
     const [displayedSetups, setDisplayedSetups] = useState([]);
-    const [page, setPage] = useState(1);
+    // Local page state removed in favor of context state
+
     const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const observerRef = useRef(null);
     const loadMoreRef = useRef(null);
 
     const ITEMS_PER_PAGE = 12;
@@ -19,55 +19,42 @@ const MasonryGallery = () => {
     const filteredSetups = useMemo(() => getFilteredSetups(), [getFilteredSetups]);
 
     useEffect(() => {
-        loadSetups(1);
-    }, [filteredSetups]);
+        // Load based on current galleryPage from context
+        // This ensures when we return, we render up to the saved page
+        loadSetups(galleryPage);
+    }, [filteredSetups, galleryPage]);
 
-    useEffect(() => {
-        // Intersection Observer for infinite scroll
-        const options = {
-            root: null,
-            rootMargin: '200px',
-            threshold: 0.1
-        };
-
-        observerRef.current = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && !isLoadingMore) {
-                loadMore();
-            }
-        }, options);
-
-        if (loadMoreRef.current) {
-            observerRef.current.observe(loadMoreRef.current);
-        }
-
-        return () => {
-            if (observerRef.current) {
-                observerRef.current.disconnect();
-            }
-        };
-    }, [isLoadingMore, page]);
+    // Infinite scroll observer removed in favor of manual "Load More" button
+    // useEffect(() => { ... }) replaced by manual button click
 
     const loadSetups = (pageNum) => {
-        setIsLoadingMore(true);
+        // We don't set loading true here to avoid flickering on back navigation
+        // setIsLoadingMore(true); 
+
         const startIndex = 0;
+        // Load ALL items up to the current page (e.g., page 3 = load 36 items)
         const endIndex = pageNum * ITEMS_PER_PAGE;
         const newSetups = filteredSetups.slice(startIndex, endIndex);
 
         setDisplayedSetups(newSetups);
-        setPage(pageNum);
-        setIsLoadingMore(false);
+        // setGalleryPage(pageNum); // Already set in context
+        // setIsLoadingMore(false);
     };
 
     const loadMore = () => {
-        const nextPage = page + 1;
+        const nextPage = galleryPage + 1;
         const endIndex = nextPage * ITEMS_PER_PAGE;
 
         if (displayedSetups.length < filteredSetups.length) {
             setIsLoadingMore(true);
-            const newSetups = filteredSetups.slice(0, endIndex);
-            setDisplayedSetups(newSetups);
-            setPage(nextPage);
-            setIsLoadingMore(false);
+
+            // Artificial delay to show loading state (optional, can remove)
+            setTimeout(() => {
+                const newSetups = filteredSetups.slice(0, endIndex);
+                setDisplayedSetups(newSetups);
+                setGalleryPage(nextPage); // Update context
+                setIsLoadingMore(false);
+            }, 300);
         }
     };
 
@@ -124,14 +111,19 @@ const MasonryGallery = () => {
                         ))}
                     </div>
 
-                    {/* Load More Trigger */}
+                    {/* Load More Button - Replaces Infinite Scroll */}
                     {hasMore && (
-                        <div ref={loadMoreRef} className="load-more-trigger">
-                            {isLoadingMore && (
-                                <div style={{ textAlign: 'center', padding: '2rem' }}>
-                                    <p>Đang tải...</p>
-                                </div>
-                            )}
+                        <div className="load-more-container">
+                            <button className="load-more-btn" onClick={loadMore} disabled={isLoadingMore}>
+                                {isLoadingMore ? (
+                                    'Đang tải...'
+                                ) : (
+                                    <>
+                                        Xem thêm
+                                        <span className="chevron-icon">»</span>
+                                    </>
+                                )}
+                            </button>
                         </div>
                     )}
 

@@ -176,6 +176,9 @@ export const AppProvider = ({ children }) => {
     const [showMobileFilter, setShowMobileFilter] = useState(false);
     const [allComments, setAllComments] = useState({});
 
+    // Pagination state (moved from MasonryGallery to persist navigation)
+    const [galleryPage, setGalleryPage] = useState(1);
+
     // Initialize data on mount
     useEffect(() => {
         // initializeAdmin(); // No longer needed with real Auth
@@ -666,7 +669,9 @@ export const AppProvider = ({ children }) => {
         deleteSetup,
         logout,
         getSimilarSetups,
-        setBlogs
+        setBlogs,
+        galleryPage,
+        setGalleryPage
     };
 
     return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

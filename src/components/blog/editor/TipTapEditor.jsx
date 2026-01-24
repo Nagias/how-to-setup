@@ -9,8 +9,52 @@ import { TableRow } from '@tiptap/extension-table-row';
 import { TableHeader } from '@tiptap/extension-table-header';
 import { TableCell } from '@tiptap/extension-table-cell';
 import Youtube from '@tiptap/extension-youtube';
+import { TextStyle } from '@tiptap/extension-text-style';
+import { FontFamily } from '@tiptap/extension-font-family';
+import { Extension } from '@tiptap/core';
 import { uploadToCloudinary } from '../../../config/cloudinary';
 import './TipTapEditor.css';
+
+// Custom FontSize extension
+const FontSize = Extension.create({
+    name: 'fontSize',
+    addOptions() {
+        return {
+            types: ['textStyle'],
+        };
+    },
+    addGlobalAttributes() {
+        return [
+            {
+                types: this.options.types,
+                attributes: {
+                    fontSize: {
+                        default: null,
+                        parseHTML: element => element.style.fontSize?.replace(/['"]+/g, ''),
+                        renderHTML: attributes => {
+                            if (!attributes.fontSize) {
+                                return {};
+                            }
+                            return {
+                                style: `font-size: ${attributes.fontSize}`,
+                            };
+                        },
+                    },
+                },
+            },
+        ];
+    },
+    addCommands() {
+        return {
+            setFontSize: fontSize => ({ chain }) => {
+                return chain().setMark('textStyle', { fontSize }).run();
+            },
+            unsetFontSize: () => ({ chain }) => {
+                return chain().setMark('textStyle', { fontSize: null }).removeEmptyTextStyle().run();
+            },
+        };
+    },
+});
 
 // Custom heading extension that enforces hierarchy
 const HeadingEnforcer = StarterKit.configure({
@@ -58,7 +102,10 @@ const TipTapEditor = ({
                 HTMLAttributes: {
                     class: 'blog-video'
                 }
-            })
+            }),
+            TextStyle,
+            FontFamily,
+            FontSize
         ],
         content: content || '',
         onUpdate: ({ editor }) => {
@@ -182,6 +229,38 @@ const TipTapEditor = ({
                     >
                         H4
                     </button>
+                </div>
+
+                {/* Font Family & Size */}
+                <div className="toolbar-group">
+                    <select
+                        className="toolbar-select"
+                        onChange={(e) => editor.chain().focus().setFontFamily(e.target.value).run()}
+                        title="Font"
+                    >
+                        <option value="">Font</option>
+                        <option value="Arial">Arial</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Courier New">Courier New</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="system-ui">System UI</option>
+                    </select>
+                    <select
+                        className="toolbar-select"
+                        onChange={(e) => e.target.value && editor.chain().focus().setFontSize(e.target.value).run()}
+                        title="Cỡ chữ"
+                    >
+                        <option value="">Cỡ chữ</option>
+                        <option value="12px">12px</option>
+                        <option value="14px">14px</option>
+                        <option value="16px">16px</option>
+                        <option value="18px">18px</option>
+                        <option value="20px">20px</option>
+                        <option value="24px">24px</option>
+                        <option value="28px">28px</option>
+                        <option value="32px">32px</option>
+                    </select>
                 </div>
 
                 {/* Text Formatting */}
