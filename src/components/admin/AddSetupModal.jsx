@@ -324,6 +324,20 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
             const thumbnailVideo = videoItem?.url || null;
             const videoThumbnail = videoItem?.thumbnail || null;
 
+            // If only video (no images), use video thumbnail as main image for display
+            let finalImages = imagesArray;
+            let mainImageUrl = imagesArray[0]?.url || '';
+
+            if (imagesArray.length === 0 && videoThumbnail) {
+                // Use video thumbnail as the main display image
+                mainImageUrl = videoThumbnail;
+                finalImages = [{
+                    url: videoThumbnail,
+                    products: [],
+                    isVideoThumbnail: true // Mark this as auto-generated from video
+                }];
+            }
+
             const setupData = {
                 title: formData.caption.substring(0, 50) || 'Setup', // Auto-generate from caption
                 caption: formData.caption,
@@ -338,11 +352,11 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                 thumbnailVideo: thumbnailVideo,
                 videoThumbnail: videoThumbnail,
                 // Media
-                images: imagesArray,
+                images: finalImages,
                 media: processedMedia,
-                mainImage: processedMedia[0]?.url || '',
-                image: processedMedia[0]?.url || '',    // Legacy
-                products: imagesArray[0]?.products || [], // Legacy - from first image
+                mainImage: mainImageUrl,
+                image: mainImageUrl,    // Legacy
+                products: finalImages[0]?.products || [], // Legacy - from first image
                 updatedAt: new Date().toISOString()
             };
 
