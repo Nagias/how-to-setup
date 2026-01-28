@@ -13,6 +13,10 @@ const SetupCard = ({ setup, index }) => {
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
+    // Detect video-only setup: either has flag, or has no images but has video
+    const isVideoOnlySetup = setup.isVideoOnly ||
+        (setup.thumbnailVideo && (!setup.images || setup.images.length === 0));
+
     const isLiked = hasUserLiked(setup.id);
     const isSaved = hasUserSaved(setup.id);
 
@@ -193,7 +197,7 @@ const SetupCard = ({ setup, index }) => {
                 {/* Image Container */}
                 <div className="setup-card-image-container">
                     {/* Video-only setup: Show video directly */}
-                    {setup.isVideoOnly && setup.thumbnailVideo && (
+                    {isVideoOnlySetup && setup.thumbnailVideo && (
                         <video
                             ref={videoRef}
                             className={`setup-card-video video-only ${isVideoPlaying ? 'playing' : ''}`}
@@ -208,7 +212,7 @@ const SetupCard = ({ setup, index }) => {
                     )}
 
                     {/* Setup with images + optional video preview */}
-                    {!setup.isVideoOnly && (
+                    {!isVideoOnlySetup && (
                         <>
                             {/* Thumbnail Video for hover preview */}
                             {setup.thumbnailVideo && (
@@ -255,12 +259,12 @@ const SetupCard = ({ setup, index }) => {
                     )}
 
                     {/* Loading Skeleton */}
-                    {!imageLoaded && !imageError && !setup.isVideoOnly && (
+                    {!imageLoaded && !imageError && !isVideoOnlySetup && (
                         <div className="skeleton-image-placeholder"></div>
                     )}
 
                     {/* Video Play Indicator - Shows when video exists and not playing */}
-                    {setup.thumbnailVideo && !isVideoPlaying && !setup.isVideoOnly && (
+                    {setup.thumbnailVideo && !isVideoPlaying && !isVideoOnlySetup && (
                         <div className="video-play-indicator">
                             <div className="video-play-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="white">

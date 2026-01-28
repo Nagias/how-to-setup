@@ -248,8 +248,12 @@ const SetupDetailPage = () => {
     const setup = setups.find(s => s.id === setupId);
 
     // Build media items - safe even if setup is undefined
-    const mediaItems = setup?.isVideoOnly
-        // Video-only setup: Only show the video
+    // Detect video-only: either has flag, or has no images but has video
+    const isVideoOnlySetup = setup?.isVideoOnly ||
+        (setup?.thumbnailVideo && (!setup?.images || setup?.images?.length === 0));
+
+    const mediaItems = isVideoOnlySetup
+        // Video-only setup: Only show the video (no thumbnail image)
         ? [{
             type: 'video',
             url: setup.thumbnailVideo,
@@ -263,7 +267,7 @@ const SetupDetailPage = () => {
                     url: img.url,
                     products: img.products || []
                 })),
-                // Add video if exists (for mixed setups)
+                // Add video if exists (for mixed setups with both images and video)
                 ...(setup.thumbnailVideo ? [{
                     type: 'video',
                     url: setup.thumbnailVideo,

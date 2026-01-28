@@ -322,7 +322,6 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
             // Get video data if exists (first video in list)
             const videoItem = processedMedia.find(item => item.type === 'video');
             const thumbnailVideo = videoItem?.url || null;
-            const videoThumbnail = videoItem?.thumbnail || null;
 
             // Keep images array as is - don't create fake images from video
             const finalImages = imagesArray;
@@ -338,15 +337,14 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                     name: formData.authorName || 'Anonymous',
                     avatar: avatarUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(formData.authorName || 'User')
                 },
-                // Video data
+                // Video data - only store video URL, no thumbnail image
                 thumbnailVideo: thumbnailVideo,
-                videoThumbnail: videoThumbnail,
                 isVideoOnly: isVideoOnly, // Flag to indicate this setup has only video
-                // Media
+                // Media - empty images array for video-only
                 images: finalImages,
                 media: processedMedia,
-                mainImage: finalImages[0]?.url || videoThumbnail || '',
-                image: finalImages[0]?.url || videoThumbnail || '',    // Legacy
+                mainImage: isVideoOnly ? '' : (finalImages[0]?.url || ''),
+                image: isVideoOnly ? '' : (finalImages[0]?.url || ''),    // Legacy
                 products: finalImages[0]?.products || [], // Legacy - from first image
                 updatedAt: new Date().toISOString()
             };
