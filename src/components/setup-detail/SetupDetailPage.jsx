@@ -251,16 +251,30 @@ const SetupDetailPage = () => {
     const mediaItems = setup?.images?.length > 0
         ? [
             ...setup.images.map(img => ({
-                type: 'image',
+                type: img.isVideoThumbnail ? 'video-thumbnail' : 'image', // Mark video thumbnails
                 url: img.url,
                 products: img.products || []
             })),
+            // Add the actual video if exists
+            ...(setup.thumbnailVideo ? [{
+                type: 'video',
+                url: setup.thumbnailVideo,
+                poster: setup.videoThumbnail || setup.mainImage,
+                products: []
+            }] : []),
             ...(setup.youtubeVideo ? [{ type: 'youtube', url: setup.youtubeVideo, poster: setup.mainImage }] : [])
         ]
         : setup
             ? [
                 { type: 'image', url: setup.mainImage, products: setup.products || [] },
                 ...(setup.moreImages || []).map(img => ({ type: 'image', url: img })),
+                // Add the actual video if exists
+                ...(setup.thumbnailVideo ? [{
+                    type: 'video',
+                    url: setup.thumbnailVideo,
+                    poster: setup.videoThumbnail || setup.mainImage,
+                    products: []
+                }] : []),
                 ...(setup.youtubeVideo ? [{ type: 'youtube', url: setup.youtubeVideo, poster: setup.mainImage }] : [])
             ]
             : [];
@@ -570,35 +584,60 @@ const SetupDetailPage = () => {
                                     <span>Quay lại</span>
                                 </button>
 
-                                {/* Zoomable wrapper - contains both image AND markers */}
-                                <div
-                                    className="zoomable-wrapper"
-                                    style={{
-                                        transform: `scale(${zoomLevel}) translate(${panPosition.x / zoomLevel}px, ${panPosition.y / zoomLevel}px)`,
-                                        transition: isPanning ? 'none' : 'transform 0.2s ease',
-                                        transformOrigin: 'center center',
-                                        position: 'relative',
-                                        width: '100%',
-                                        height: '100%'
-                                    }}
-                                >
-                                    <img
-                                        src={currentMedia.url}
-                                        alt={setup.title}
-                                        className="setup-main-image"
-                                        style={{ pointerEvents: 'none' }}
-                                    />
-
-                                    {/* Product Markers - now inside zoomable wrapper */}
-                                    {showProducts && currentMedia.products && currentMedia.products.map((product, index) => (
-                                        <ProductMarker
-                                            key={index}
-                                            product={product}
-                                            isActive={activeProduct === product}
-                                            onActivate={setActiveProduct}
+                                {/* Zoomable wrapper - contains both image AND markers OR video player */}
+                                {currentMedia.type === 'video' ? (
+                                    /* Video Player with full controls */
+                                    <div className="video-player-wrapper">
+                                        <video
+                                            src={currentMedia.url}
+                                            poster={currentMedia.poster}
+                                            controls
+                                            playsInline
+                                            className="setup-main-video"
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                maxHeight: '80vh',
+                                                objectFit: 'contain',
+                                                background: '#000',
+                                                borderRadius: '12px'
+                                            }}
+                                        >
+                                            <source src={currentMedia.url} type="video/mp4" />
+                                            Trình duyệt của bạn không hỗ trợ video.
+                                        </video>
+                                    </div>
+                                ) : (
+                                    /* Image with zoom and product markers */
+                                    <div
+                                        className="zoomable-wrapper"
+                                        style={{
+                                            transform: `scale(${zoomLevel}) translate(${panPosition.x / zoomLevel}px, ${panPosition.y / zoomLevel}px)`,
+                                            transition: isPanning ? 'none' : 'transform 0.2s ease',
+                                            transformOrigin: 'center center',
+                                            position: 'relative',
+                                            width: '100%',
+                                            height: '100%'
+                                        }}
+                                    >
+                                        <img
+                                            src={currentMedia.url}
+                                            alt={setup.title}
+                                            className="setup-main-image"
+                                            style={{ pointerEvents: 'none' }}
                                         />
-                                    ))}
-                                </div>
+
+                                        {/* Product Markers - now inside zoomable wrapper */}
+                                        {showProducts && currentMedia.products && currentMedia.products.map((product, index) => (
+                                            <ProductMarker
+                                                key={index}
+                                                product={product}
+                                                isActive={activeProduct === product}
+                                                onActivate={setActiveProduct}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
 
                                 {/* Image Controls Stack - Bottom Right */}
                                 {!isMobile && (

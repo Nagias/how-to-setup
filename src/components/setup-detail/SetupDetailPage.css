@@ -73,6 +73,48 @@
     object-fit: contain;
 }
 
+/* Video Player Wrapper */
+.video-player-wrapper {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+}
+
+.setup-main-video {
+    width: 100%;
+    height: auto;
+    max-height: 80vh;
+    object-fit: contain;
+    background: #000;
+    border-radius: var(--radius-xl);
+}
+
+/* Video in media list - show video icon on thumbnail */
+.video-thumbnail-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.video-thumbnail-indicator svg {
+    width: 20px;
+    height: 20px;
+    margin-left: 2px;
+}
+
 /* Details Section */
 .setup-details-section {
     display: flex;

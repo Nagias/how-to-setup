@@ -55,7 +55,10 @@
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    /* Keep original aspect ratio, don't crop */
+    background: #000;
+    /* Black background for vertical videos */
     opacity: 0;
     transition: opacity 0.2s ease-out;
     z-index: 2;
