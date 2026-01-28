@@ -324,19 +324,9 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
             const thumbnailVideo = videoItem?.url || null;
             const videoThumbnail = videoItem?.thumbnail || null;
 
-            // If only video (no images), use video thumbnail as main image for display
-            let finalImages = imagesArray;
-            let mainImageUrl = imagesArray[0]?.url || '';
-
-            if (imagesArray.length === 0 && videoThumbnail) {
-                // Use video thumbnail as the main display image
-                mainImageUrl = videoThumbnail;
-                finalImages = [{
-                    url: videoThumbnail,
-                    products: [],
-                    isVideoThumbnail: true // Mark this as auto-generated from video
-                }];
-            }
+            // Keep images array as is - don't create fake images from video
+            const finalImages = imagesArray;
+            const isVideoOnly = imagesArray.length === 0 && thumbnailVideo;
 
             const setupData = {
                 title: formData.caption.substring(0, 50) || 'Setup', // Auto-generate from caption
@@ -348,14 +338,15 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                     name: formData.authorName || 'Anonymous',
                     avatar: avatarUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(formData.authorName || 'User')
                 },
-                // Video data for hover preview
+                // Video data
                 thumbnailVideo: thumbnailVideo,
                 videoThumbnail: videoThumbnail,
+                isVideoOnly: isVideoOnly, // Flag to indicate this setup has only video
                 // Media
                 images: finalImages,
                 media: processedMedia,
-                mainImage: mainImageUrl,
-                image: mainImageUrl,    // Legacy
+                mainImage: finalImages[0]?.url || videoThumbnail || '',
+                image: finalImages[0]?.url || videoThumbnail || '',    // Legacy
                 products: finalImages[0]?.products || [], // Legacy - from first image
                 updatedAt: new Date().toISOString()
             };

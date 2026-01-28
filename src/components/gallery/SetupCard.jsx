@@ -192,56 +192,75 @@ const SetupCard = ({ setup, index }) => {
             >
                 {/* Image Container */}
                 <div className="setup-card-image-container">
-                    {/* Thumbnail Video (if exists) - Pinterest-style hover preview */}
-                    {setup.thumbnailVideo && (
+                    {/* Video-only setup: Show video directly */}
+                    {setup.isVideoOnly && setup.thumbnailVideo && (
                         <video
                             ref={videoRef}
-                            className={`setup-card-video ${isVideoPlaying ? 'playing' : ''}`}
+                            className={`setup-card-video video-only ${isVideoPlaying ? 'playing' : ''}`}
                             muted
                             loop
                             playsInline
                             preload="metadata"
-                            poster={setup.videoThumbnail || ''}
+                            autoPlay={isMobile ? undefined : false}
                         >
                             <source src={setup.thumbnailVideo} type="video/mp4" />
                         </video>
                     )}
 
-                    {/* Main Image */}
-                    {setup.images && setup.images.length > 0 ? (
-                        <img
-                            src={typeof setup.images[0] === 'string' ? setup.images[0] : setup.images[0]?.url || setup.images[0]?.src}
-                            alt={setup.title || 'Setup image'}
-                            className={`setup-card-image ${imageLoaded ? 'loaded' : ''} ${setup.thumbnailVideo && isVideoPlaying ? 'hidden' : ''}`}
-                            loading="lazy"
-                            decoding="async"
-                            onLoad={() => setImageLoaded(true)}
-                            onError={(e) => {
-                                console.error('Image load error:', {
-                                    raw: setup.images[0],
-                                    type: typeof setup.images[0],
-                                    url: typeof setup.images[0] === 'string' ? setup.images[0] : setup.images[0]?.url
-                                });
-                                setImageError(true);
-                            }}
-                        />
-                    ) : (
-                        <div className="image-error">
-                            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                                <path d="M24 4L4 44h40L24 4z" stroke="currentColor" strokeWidth="2" />
-                                <path d="M24 18v12M24 34v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                            </svg>
-                            <span>Không có ảnh</span>
-                        </div>
+                    {/* Setup with images + optional video preview */}
+                    {!setup.isVideoOnly && (
+                        <>
+                            {/* Thumbnail Video for hover preview */}
+                            {setup.thumbnailVideo && (
+                                <video
+                                    ref={videoRef}
+                                    className={`setup-card-video ${isVideoPlaying ? 'playing' : ''}`}
+                                    muted
+                                    loop
+                                    playsInline
+                                    preload="metadata"
+                                >
+                                    <source src={setup.thumbnailVideo} type="video/mp4" />
+                                </video>
+                            )}
+
+                            {/* Main Image */}
+                            {setup.images && setup.images.length > 0 ? (
+                                <img
+                                    src={typeof setup.images[0] === 'string' ? setup.images[0] : setup.images[0]?.url || setup.images[0]?.src}
+                                    alt={setup.title || 'Setup image'}
+                                    className={`setup-card-image ${imageLoaded ? 'loaded' : ''} ${setup.thumbnailVideo && isVideoPlaying ? 'hidden' : ''}`}
+                                    loading="lazy"
+                                    decoding="async"
+                                    onLoad={() => setImageLoaded(true)}
+                                    onError={(e) => {
+                                        console.error('Image load error:', {
+                                            raw: setup.images[0],
+                                            type: typeof setup.images[0],
+                                            url: typeof setup.images[0] === 'string' ? setup.images[0] : setup.images[0]?.url
+                                        });
+                                        setImageError(true);
+                                    }}
+                                />
+                            ) : (
+                                <div className="image-error">
+                                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                        <path d="M24 4L4 44h40L24 4z" stroke="currentColor" strokeWidth="2" />
+                                        <path d="M24 18v12M24 34v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                                    </svg>
+                                    <span>Không có ảnh</span>
+                                </div>
+                            )}
+                        </>
                     )}
 
                     {/* Loading Skeleton */}
-                    {!imageLoaded && !imageError && (
+                    {!imageLoaded && !imageError && !setup.isVideoOnly && (
                         <div className="skeleton-image-placeholder"></div>
                     )}
 
-                    {/* Video Play Indicator - Shows when not playing */}
-                    {setup.thumbnailVideo && !isVideoPlaying && (
+                    {/* Video Play Indicator - Shows when video exists and not playing */}
+                    {setup.thumbnailVideo && !isVideoPlaying && !setup.isVideoOnly && (
                         <div className="video-play-indicator">
                             <div className="video-play-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="white">

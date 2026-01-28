@@ -248,36 +248,41 @@ const SetupDetailPage = () => {
     const setup = setups.find(s => s.id === setupId);
 
     // Build media items - safe even if setup is undefined
-    const mediaItems = setup?.images?.length > 0
-        ? [
-            ...setup.images.map(img => ({
-                type: img.isVideoThumbnail ? 'video-thumbnail' : 'image', // Mark video thumbnails
-                url: img.url,
-                products: img.products || []
-            })),
-            // Add the actual video if exists
-            ...(setup.thumbnailVideo ? [{
-                type: 'video',
-                url: setup.thumbnailVideo,
-                poster: setup.videoThumbnail || setup.mainImage,
-                products: []
-            }] : []),
-            ...(setup.youtubeVideo ? [{ type: 'youtube', url: setup.youtubeVideo, poster: setup.mainImage }] : [])
-        ]
-        : setup
+    const mediaItems = setup?.isVideoOnly
+        // Video-only setup: Only show the video
+        ? [{
+            type: 'video',
+            url: setup.thumbnailVideo,
+            products: []
+        }]
+        // Normal setup with images
+        : setup?.images?.length > 0
             ? [
-                { type: 'image', url: setup.mainImage, products: setup.products || [] },
-                ...(setup.moreImages || []).map(img => ({ type: 'image', url: img })),
-                // Add the actual video if exists
+                ...setup.images.map(img => ({
+                    type: 'image',
+                    url: img.url,
+                    products: img.products || []
+                })),
+                // Add video if exists (for mixed setups)
                 ...(setup.thumbnailVideo ? [{
                     type: 'video',
                     url: setup.thumbnailVideo,
-                    poster: setup.videoThumbnail || setup.mainImage,
                     products: []
                 }] : []),
                 ...(setup.youtubeVideo ? [{ type: 'youtube', url: setup.youtubeVideo, poster: setup.mainImage }] : [])
             ]
-            : [];
+            : setup
+                ? [
+                    { type: 'image', url: setup.mainImage, products: setup.products || [] },
+                    ...(setup.moreImages || []).map(img => ({ type: 'image', url: img })),
+                    ...(setup.thumbnailVideo ? [{
+                        type: 'video',
+                        url: setup.thumbnailVideo,
+                        products: []
+                    }] : []),
+                    ...(setup.youtubeVideo ? [{ type: 'youtube', url: setup.youtubeVideo, poster: setup.mainImage }] : [])
+                ]
+                : [];
 
     // ALL HOOKS MUST BE CALLED BEFORE ANY RETURNS - React Rules of Hooks!
 

@@ -79,7 +79,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #000;
     border-radius: var(--radius-xl);
     overflow: hidden;
 }
@@ -89,7 +88,6 @@
     height: auto;
     max-height: 80vh;
     object-fit: contain;
-    background: #000;
     border-radius: var(--radius-xl);
 }
 
