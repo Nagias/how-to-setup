@@ -70,6 +70,71 @@ export const getOptimizedImageUrl = (publicId, options = {}) => {
     return `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_${width},q_${quality},f_${format},c_${crop},g_${gravity}/${publicId}`;
 };
 
+// Upload video to Cloudinary
+export const uploadVideoToCloudinary = async (file, folder = 'desk-setups-videos') => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', cloudinaryConfig.uploadPreset);
+    formData.append('folder', folder);
+    formData.append('cloud_name', cloudinaryConfig.cloudName);
+    formData.append('resource_type', 'video');
+
+    try {
+        const response = await fetch(
+            `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/video/upload`,
+            {
+                method: 'POST',
+                body: formData,
+            }
+        );
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('❌ Cloudinary Video Upload Error:', {
+                status: response.status,
+                statusText: response.statusText,
+                error: errorData,
+            });
+            throw new Error(`Video upload failed: ${errorData.error?.message || response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        // Generate thumbnail URL from video (Cloudinary auto-generates)
+        const thumbnailUrl = data.secure_url
+            .replace('/video/upload/', '/video/upload/so_0,w_800,h_600,c_fill,f_jpg/')
+            .replace(/\.[^.]+$/, '.jpg');
+
+        return {
+            url: data.secure_url,
+            publicId: data.public_id,
+            thumbnailUrl: thumbnailUrl,
+            duration: data.duration,
+            width: data.width,
+            height: data.height,
+            format: data.format,
+        };
+    } catch (error) {
+        console.error('Cloudinary video upload error:', error);
+        throw error;
+    }
+};
+
+// Get video thumbnail URL with custom options
+export const getVideoThumbnailUrl = (videoUrl, options = {}) => {
+    const {
+        width = 800,
+        height = 600,
+        startOffset = 0, // seconds from start
+        quality = 'auto',
+    } = options;
+
+    // Convert video URL to thumbnail
+    return videoUrl
+        .replace('/video/upload/', `/video/upload/so_${startOffset},w_${width},h_${height},c_fill,q_${quality},f_jpg/`)
+        .replace(/\.[^.]+$/, '.jpg');
+};
+
 // Delete image from Cloudinary (requires backend API)
 export const deleteFromCloudinary = async (publicId) => {
     // Note: Deletion requires authentication and should be done from backend

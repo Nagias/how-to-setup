@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { api } from '../../utils/api';
 import './AddSetupModal.css';
 import { filterOptions } from '../../data/sampleData';
-import { uploadToCloudinary } from '../../config/cloudinary';
+import { uploadToCloudinary, uploadVideoToCloudinary } from '../../config/cloudinary';
 
 const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
     const [formData, setFormData] = useState({
@@ -20,8 +20,8 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
         tags: initialData?.tags?.join(', ') || ''
     });
 
-    // Media State management - IMAGES ONLY
-    // items: { id, type: 'image', url, file, products: [] }
+    // Media State management - IMAGES AND VIDEOS
+    // items: { id, type: 'image'|'video', url, file, products: [], thumbnail?: string }
     const [mediaList, setMediaList] = useState(() => {
         if (initialData?.media && initialData.media.length > 0) {
             return initialData.media;
@@ -90,10 +90,25 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
         if (files.length === 0) return;
 
         const newItems = files.map(file => {
-            // Only accept images now (no video upload)
-            if (file.size > 10 * 1024 * 1024) {
-                alert(`Ảnh ${file.name} quá lớn (>10MB).`);
+            const isVideo = file.type.startsWith('video/');
+            const maxSize = isVideo ? 100 * 1024 * 1024 : 10 * 1024 * 1024; // 100MB for video, 10MB for image
+
+            if (file.size > maxSize) {
+                alert(`${isVideo ? 'Video' : 'Ảnh'} ${file.name} quá lớn (>${isVideo ? '100' : '10'}MB).`);
                 return null;
+            }
+
+            if (isVideo) {
+                // Create video thumbnail preview
+                const videoUrl = URL.createObjectURL(file);
+                return {
+                    id: Date.now() + Math.random().toString(),
+                    type: 'video',
+                    url: videoUrl,
+                    file: file,
+                    thumbnail: null, // Will be generated on upload
+                    products: []
+                };
             }
 
             return {
@@ -262,14 +277,29 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
             const processedMedia = await Promise.all(mediaList.map(async (item) => {
                 if (item.file) {
                     try {
-                        console.log(`🟡 Uploading image to Cloudinary: ${item.file.name}`);
-                        const result = await uploadToCloudinary(item.file, 'desk-setups');
-                        console.log(`✅ Image uploaded to Cloudinary:`, result.url);
+                        if (item.type === 'video') {
+                            console.log(`🟡 Uploading video to Cloudinary: ${item.file.name}`);
+                            const result = await uploadVideoToCloudinary(item.file, 'desk-setups-videos');
+                            console.log(`✅ Video uploaded to Cloudinary:`, result.url);
+                            console.log(`✅ Video thumbnail:`, result.thumbnailUrl);
 
-                        return { ...item, url: result.url, file: null };
+                            return {
+                                ...item,
+                                url: result.url,
+                                thumbnail: result.thumbnailUrl,
+                                duration: result.duration,
+                                file: null
+                            };
+                        } else {
+                            console.log(`🟡 Uploading image to Cloudinary: ${item.file.name}`);
+                            const result = await uploadToCloudinary(item.file, 'desk-setups');
+                            console.log(`✅ Image uploaded to Cloudinary:`, result.url);
+
+                            return { ...item, url: result.url, file: null };
+                        }
                     } catch (err) {
-                        console.error('❌ Image upload failed:', err);
-                        throw new Error(`Không thể tải ảnh "${item.file.name}": ${err.message}`);
+                        console.error(`❌ ${item.type === 'video' ? 'Video' : 'Image'} upload failed:`, err);
+                        throw new Error(`Không thể tải ${item.type === 'video' ? 'video' : 'ảnh'} "${item.file.name}": ${err.message}`);
                     }
                 }
 
@@ -289,6 +319,11 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                     products: item.products || []
                 }));
 
+            // Get video data if exists (first video in list)
+            const videoItem = processedMedia.find(item => item.type === 'video');
+            const thumbnailVideo = videoItem?.url || null;
+            const videoThumbnail = videoItem?.thumbnail || null;
+
             const setupData = {
                 title: formData.caption.substring(0, 50) || 'Setup', // Auto-generate from caption
                 caption: formData.caption,
@@ -299,6 +334,9 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                     name: formData.authorName || 'Anonymous',
                     avatar: avatarUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(formData.authorName || 'User')
                 },
+                // Video data for hover preview
+                thumbnailVideo: thumbnailVideo,
+                videoThumbnail: videoThumbnail,
                 // Media
                 images: imagesArray,
                 media: processedMedia,
@@ -368,7 +406,14 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                                     <div className="video-icon" style={{ fontSize: '12px' }}>🔴</div>
                                                 </>
                                             ) : item.type === 'video' ? (
-                                                <div className="video-icon">▶️</div>
+                                                <>
+                                                    <video
+                                                        src={item.url}
+                                                        muted
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    />
+                                                    <div className="video-icon">▶️</div>
+                                                </>
                                             ) : (
                                                 <img src={item.url} alt="thumb" />
                                             )}
@@ -389,7 +434,9 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                                 </div>
 
                                 <small style={{ display: 'block', marginTop: '5px', color: '#888' }}>
-                                    Hỗ trợ tối đa 8 ảnh (Max 10MB/ảnh).
+                                    Hỗ trợ tối đa 8 ảnh (Max 10MB/ảnh) hoặc 1 video (Max 100MB).
+                                    <br />
+                                    <span style={{ color: 'var(--color-primary)' }}>💡 Video sẽ tự động phát khi người xem di chuyển chuột qua thumbnail.</span>
                                 </small>
                             </div>
 

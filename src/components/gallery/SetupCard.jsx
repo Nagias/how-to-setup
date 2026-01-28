@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
 import './SetupCard.css';
@@ -8,11 +8,61 @@ const SetupCard = ({ setup, index }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
     const [imageError, setImageError] = useState(false);
     const videoRef = useRef(null);
+    const cardRef = useRef(null);
     const [isVideoPlaying, setIsVideoPlaying] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
 
     const isLiked = hasUserLiked(setup.id);
     const isSaved = hasUserSaved(setup.id);
+
+    // Detect mobile viewport
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // Mobile: Intersection Observer for scroll-based autoplay
+    useEffect(() => {
+        if (!isMobile || !setup.thumbnailVideo || !cardRef.current) return;
+
+        const options = {
+            root: null, // viewport
+            rootMargin: '-20% 0px -20% 0px', // Play when card is in center 60% of screen
+            threshold: 0.5 // 50% of card visible
+        };
+
+        const handleIntersection = (entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Card is in view - play video
+                    if (videoRef.current) {
+                        videoRef.current.currentTime = 0;
+                        const playPromise = videoRef.current.play();
+                        if (playPromise !== undefined) {
+                            playPromise
+                                .then(() => setIsVideoPlaying(true))
+                                .catch(() => { });
+                        }
+                    }
+                } else {
+                    // Card is out of view - pause video
+                    if (videoRef.current) {
+                        setIsVideoPlaying(false);
+                        videoRef.current.pause();
+                        videoRef.current.currentTime = 0;
+                    }
+                }
+            });
+        };
+
+        const observer = new IntersectionObserver(handleIntersection, options);
+        observer.observe(cardRef.current);
+
+        return () => observer.disconnect();
+    }, [isMobile, setup.thumbnailVideo]);
 
     const handleLike = (e) => {
         e.preventDefault();
@@ -101,8 +151,12 @@ const SetupCard = ({ setup, index }) => {
         }
     }, [showMobileMenu]);
 
+    // Desktop: Mouse hover handlers (only for desktop)
     const handleMouseEnter = () => {
+        if (isMobile) return; // Mobile uses Intersection Observer
         if (setup.thumbnailVideo && videoRef.current) {
+            // Reset video to beginning for smooth preview
+            videoRef.current.currentTime = 0;
             const playPromise = videoRef.current.play();
             if (playPromise !== undefined) {
                 playPromise
@@ -113,16 +167,23 @@ const SetupCard = ({ setup, index }) => {
     };
 
     const handleMouseLeave = () => {
+        if (isMobile) return; // Mobile uses Intersection Observer
         if (setup.thumbnailVideo && videoRef.current) {
-            videoRef.current.pause();
-            videoRef.current.currentTime = 0;
+            // Smooth fade out before pausing
             setIsVideoPlaying(false);
+            setTimeout(() => {
+                if (videoRef.current) {
+                    videoRef.current.pause();
+                    videoRef.current.currentTime = 0;
+                }
+            }, 200); // Match CSS transition duration
         }
     };
 
     return (
         <>
             <Link
+                ref={cardRef}
                 to={`/setup/${setup.id}`}
                 className="setup-card"
                 data-setup-id={setup.id}
@@ -131,17 +192,16 @@ const SetupCard = ({ setup, index }) => {
             >
                 {/* Image Container */}
                 <div className="setup-card-image-container">
-                    {/* Thumbnail Video (if exists) */}
+                    {/* Thumbnail Video (if exists) - Pinterest-style hover preview */}
                     {setup.thumbnailVideo && (
                         <video
                             ref={videoRef}
-                            className="setup-card-image"
+                            className={`setup-card-video ${isVideoPlaying ? 'playing' : ''}`}
                             muted
                             loop
                             playsInline
-                            style={{
-                                display: isVideoPlaying ? 'block' : 'none'
-                            }}
+                            preload="metadata"
+                            poster={setup.videoThumbnail || ''}
                         >
                             <source src={setup.thumbnailVideo} type="video/mp4" />
                         </video>
@@ -152,7 +212,7 @@ const SetupCard = ({ setup, index }) => {
                         <img
                             src={typeof setup.images[0] === 'string' ? setup.images[0] : setup.images[0]?.url || setup.images[0]?.src}
                             alt={setup.title || 'Setup image'}
-                            className={`setup-card-image ${imageLoaded ? 'loaded' : ''}`}
+                            className={`setup-card-image ${imageLoaded ? 'loaded' : ''} ${setup.thumbnailVideo && isVideoPlaying ? 'hidden' : ''}`}
                             loading="lazy"
                             decoding="async"
                             onLoad={() => setImageLoaded(true)}
@@ -163,9 +223,6 @@ const SetupCard = ({ setup, index }) => {
                                     url: typeof setup.images[0] === 'string' ? setup.images[0] : setup.images[0]?.url
                                 });
                                 setImageError(true);
-                            }}
-                            style={{
-                                display: setup.thumbnailVideo && isVideoPlaying ? 'none' : 'block'
                             }}
                         />
                     ) : (
@@ -183,13 +240,14 @@ const SetupCard = ({ setup, index }) => {
                         <div className="skeleton-image-placeholder"></div>
                     )}
 
-                    {/* Video Play Indicator */}
+                    {/* Video Play Indicator - Shows when not playing */}
                     {setup.thumbnailVideo && !isVideoPlaying && (
                         <div className="video-play-indicator">
-                            <svg width="48" height="48" viewBox="0 0 48 48" fill="white">
-                                <circle cx="24" cy="24" r="24" opacity="0.9" />
-                                <path d="M18 14l16 10-16 10V14z" fill="black" />
-                            </svg>
+                            <div className="video-play-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                                    <path d="M8 5v14l11-7L8 5z" />
+                                </svg>
+                            </div>
                         </div>
                     )}
 
