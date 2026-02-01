@@ -281,13 +281,13 @@ const AddSetupModal = ({ onClose, onSave, initialData = null }) => {
                             console.log(`🟡 Uploading video to Cloudinary: ${item.file.name}`);
                             const result = await uploadVideoToCloudinary(item.file, 'desk-setups-videos');
                             console.log(`✅ Video uploaded to Cloudinary:`, result.url);
-                            console.log(`✅ Video thumbnail:`, result.thumbnailUrl);
 
                             return {
                                 ...item,
                                 url: result.url,
-                                thumbnail: result.thumbnailUrl,
                                 duration: result.duration,
+                                width: result.width,
+                                height: result.height,
                                 file: null
                             };
                         } else {

@@ -100,15 +100,10 @@ export const uploadVideoToCloudinary = async (file, folder = 'desk-setups-videos
 
         const data = await response.json();
 
-        // Generate thumbnail URL from video (Cloudinary auto-generates)
-        const thumbnailUrl = data.secure_url
-            .replace('/video/upload/', '/video/upload/so_0,w_800,h_600,c_fill,f_jpg/')
-            .replace(/\.[^.]+$/, '.jpg');
-
+        // Return video data only - no thumbnail image needed
         return {
             url: data.secure_url,
             publicId: data.public_id,
-            thumbnailUrl: thumbnailUrl,
             duration: data.duration,
             width: data.width,
             height: data.height,

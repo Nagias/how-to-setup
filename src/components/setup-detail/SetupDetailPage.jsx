@@ -595,22 +595,14 @@ const SetupDetailPage = () => {
 
                                 {/* Zoomable wrapper - contains both image AND markers OR video player */}
                                 {currentMedia.type === 'video' ? (
-                                    /* Video Player with full controls */
+                                    /* Video Player - simple display like images, no zoom/markers */
                                     <div className="video-player-wrapper">
                                         <video
                                             src={currentMedia.url}
-                                            poster={currentMedia.poster}
                                             controls
                                             playsInline
+                                            autoPlay
                                             className="setup-main-video"
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                maxHeight: '80vh',
-                                                objectFit: 'contain',
-                                                background: '#000',
-                                                borderRadius: '12px'
-                                            }}
                                         >
                                             <source src={currentMedia.url} type="video/mp4" />
                                             Trình duyệt của bạn không hỗ trợ video.
