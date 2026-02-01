@@ -252,33 +252,29 @@ const SetupDetailPage = () => {
     const isVideoOnlySetup = setup?.isVideoOnly ||
         (setup?.thumbnailVideo && (!setup?.images || setup?.images?.length === 0));
 
+    // Use setup.media if available (keeps original upload order), otherwise fallback to legacy format
     const mediaItems = isVideoOnlySetup
-        // Video-only setup: Only show the video (no thumbnail image)
+        // Video-only setup: Only show the video
         ? [{
             type: 'video',
             url: setup.thumbnailVideo,
             products: []
         }]
-        // Normal setup with images
-        : setup?.images?.length > 0
-            ? [
-                ...setup.images.map(img => ({
-                    type: 'image',
-                    url: img.url,
-                    products: img.products || []
-                })),
-                // Add video if exists (for mixed setups with both images and video)
-                ...(setup.thumbnailVideo ? [{
-                    type: 'video',
-                    url: setup.thumbnailVideo,
-                    products: []
-                }] : []),
-                ...(setup.youtubeVideo ? [{ type: 'youtube', url: setup.youtubeVideo, poster: setup.mainImage }] : [])
-            ]
-            : setup
+        // Use media array if available (preserves upload order)
+        : setup?.media?.length > 0
+            ? setup.media.map(item => ({
+                type: item.type,
+                url: item.url,
+                products: item.products || []
+            }))
+            // Fallback: Legacy format with separate images array
+            : setup?.images?.length > 0
                 ? [
-                    { type: 'image', url: setup.mainImage, products: setup.products || [] },
-                    ...(setup.moreImages || []).map(img => ({ type: 'image', url: img })),
+                    ...setup.images.map(img => ({
+                        type: 'image',
+                        url: img.url,
+                        products: img.products || []
+                    })),
                     ...(setup.thumbnailVideo ? [{
                         type: 'video',
                         url: setup.thumbnailVideo,
@@ -286,7 +282,18 @@ const SetupDetailPage = () => {
                     }] : []),
                     ...(setup.youtubeVideo ? [{ type: 'youtube', url: setup.youtubeVideo, poster: setup.mainImage }] : [])
                 ]
-                : [];
+                : setup
+                    ? [
+                        { type: 'image', url: setup.mainImage, products: setup.products || [] },
+                        ...(setup.moreImages || []).map(img => ({ type: 'image', url: img })),
+                        ...(setup.thumbnailVideo ? [{
+                            type: 'video',
+                            url: setup.thumbnailVideo,
+                            products: []
+                        }] : []),
+                        ...(setup.youtubeVideo ? [{ type: 'youtube', url: setup.youtubeVideo, poster: setup.mainImage }] : [])
+                    ]
+                    : [];
 
     // ALL HOOKS MUST BE CALLED BEFORE ANY RETURNS - React Rules of Hooks!
 
