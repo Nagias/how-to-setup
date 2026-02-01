@@ -5,6 +5,7 @@ import { useApp } from '../../contexts/AppContext';
 import { sampleBlogs } from '../../data/sampleData';
 import { Helmet } from 'react-helmet-async';
 import SchemaGenerator, { generateMetaTags, generateCanonicalLink } from './seo/SchemaGenerator';
+import BlogContent from './BlogContent';
 import './BlogDetail.css';
 
 import { api } from '../../utils/api';
@@ -183,11 +184,8 @@ const BlogDetail = () => {
                     </div>
                 </header>
 
-                {/* Article Content */}
-                <div
-                    className="blog-content"
-                    dangerouslySetInnerHTML={{ __html: contentToRender }}
-                />
+                {/* Article Content with Video Embedding */}
+                <BlogContent htmlContent={contentToRender} />
 
                 {/* Tags */}
                 <div className="blog-tags">
