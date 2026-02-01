@@ -647,8 +647,8 @@ const SetupDetailPage = () => {
                                     </div>
                                 )}
 
-                                {/* Image Controls Stack - Bottom Right */}
-                                {!isMobile && (
+                                {/* Image Controls Stack - Bottom Right (Only for images, not video) */}
+                                {!isMobile && currentMedia.type !== 'video' && (
                                     <div className="image-controls-stack">
                                         {/* Zoom Controls */}
                                         <div className="zoom-controls-vertical">
