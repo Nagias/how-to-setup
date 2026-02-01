@@ -196,44 +196,29 @@ const SetupCard = ({ setup, index }) => {
             >
                 {/* Image Container */}
                 <div className="setup-card-image-container">
-                    {/* Video-only setup: Show video directly */}
-                    {isVideoOnlySetup && setup.thumbnailVideo && (
+                    {/* If has video (either video-only or mixed), show video as thumbnail */}
+                    {setup.thumbnailVideo && (
                         <video
                             ref={videoRef}
-                            className={`setup-card-video video-only ${isVideoPlaying ? 'playing' : ''}`}
+                            className={`setup-card-video ${isVideoOnlySetup ? 'video-only' : ''} ${isVideoPlaying ? 'playing' : ''}`}
                             muted
                             loop
                             playsInline
                             preload="metadata"
-                            autoPlay={isMobile ? undefined : false}
+                            autoPlay={isMobile && isVideoOnlySetup ? undefined : false}
                         >
                             <source src={setup.thumbnailVideo} type="video/mp4" />
                         </video>
                     )}
 
-                    {/* Setup with images + optional video preview */}
-                    {!isVideoOnlySetup && (
+                    {/* Only show image if NO video exists */}
+                    {!setup.thumbnailVideo && (
                         <>
-                            {/* Thumbnail Video for hover preview */}
-                            {setup.thumbnailVideo && (
-                                <video
-                                    ref={videoRef}
-                                    className={`setup-card-video ${isVideoPlaying ? 'playing' : ''}`}
-                                    muted
-                                    loop
-                                    playsInline
-                                    preload="metadata"
-                                >
-                                    <source src={setup.thumbnailVideo} type="video/mp4" />
-                                </video>
-                            )}
-
-                            {/* Main Image */}
                             {setup.images && setup.images.length > 0 ? (
                                 <img
                                     src={typeof setup.images[0] === 'string' ? setup.images[0] : setup.images[0]?.url || setup.images[0]?.src}
                                     alt={setup.title || 'Setup image'}
-                                    className={`setup-card-image ${imageLoaded ? 'loaded' : ''} ${setup.thumbnailVideo && isVideoPlaying ? 'hidden' : ''}`}
+                                    className={`setup-card-image ${imageLoaded ? 'loaded' : ''}`}
                                     loading="lazy"
                                     decoding="async"
                                     onLoad={() => setImageLoaded(true)}
