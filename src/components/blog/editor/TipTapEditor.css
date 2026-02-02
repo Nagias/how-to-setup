@@ -58,6 +58,43 @@
     cursor: not-allowed;
 }
 
+/* Table Controls */
+.toolbar-group.table-controls {
+    background: rgba(var(--color-primary-rgb), 0.1);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-md);
+    margin-left: var(--space-sm);
+}
+
+.toolbar-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-primary);
+    padding: 0 var(--space-xs);
+    display: flex;
+    align-items: center;
+}
+
+.toolbar-btn.danger {
+    color: #ef4444;
+}
+
+.toolbar-btn.danger:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.toolbar-select {
+    height: 36px;
+    padding: 0 var(--space-sm);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
 /* Editor Content */
 .tiptap-content {
     min-height: 400px;

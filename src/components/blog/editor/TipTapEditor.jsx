@@ -388,6 +388,69 @@ const TipTapEditor = ({
                         ↪
                     </button>
                 </div>
+
+                {/* Table Controls - Only show when cursor is in table */}
+                {editor.isActive('table') && (
+                    <div className="toolbar-group table-controls">
+                        <span className="toolbar-label">Bảng:</span>
+                        <button
+                            type="button"
+                            onClick={() => editor.chain().focus().addColumnBefore().run()}
+                            className="toolbar-btn"
+                            title="Thêm cột trước"
+                        >
+                            ← Cột
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => editor.chain().focus().addColumnAfter().run()}
+                            className="toolbar-btn"
+                            title="Thêm cột sau"
+                        >
+                            Cột →
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => editor.chain().focus().addRowBefore().run()}
+                            className="toolbar-btn"
+                            title="Thêm hàng trên"
+                        >
+                            ↑ Hàng
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => editor.chain().focus().addRowAfter().run()}
+                            className="toolbar-btn"
+                            title="Thêm hàng dưới"
+                        >
+                            Hàng ↓
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => editor.chain().focus().deleteColumn().run()}
+                            className="toolbar-btn danger"
+                            title="Xóa cột"
+                        >
+                            ✕ Cột
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => editor.chain().focus().deleteRow().run()}
+                            className="toolbar-btn danger"
+                            title="Xóa hàng"
+                        >
+                            ✕ Hàng
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => editor.chain().focus().deleteTable().run()}
+                            className="toolbar-btn danger"
+                            title="Xóa bảng"
+                        >
+                            🗑 Bảng
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Editor Content */}
