@@ -979,14 +979,25 @@ const SetupDetailPage = () => {
                                                     key={similar.id}
                                                     className="similar-setup-card"
                                                     onClick={() => navigate(`/setup/${similar.id}`)}
+                                                    onMouseEnter={(e) => {
+                                                        const video = e.currentTarget.querySelector('video');
+                                                        if (video) video.play();
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        const video = e.currentTarget.querySelector('video');
+                                                        if (video) {
+                                                            video.pause();
+                                                            video.currentTime = 0;
+                                                        }
+                                                    }}
                                                 >
                                                     {isVideoOnly && videoSrc ? (
                                                         <video
                                                             src={videoSrc}
                                                             muted
+                                                            loop
                                                             playsInline
                                                             preload="metadata"
-                                                            style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
                                                         />
                                                     ) : (
                                                         <img src={similar.mainImage || similar.images?.[0]?.url} alt={similar.title} />
@@ -1016,14 +1027,25 @@ const SetupDetailPage = () => {
                                                 key={similar.id}
                                                 className="similar-setup-card"
                                                 onClick={() => navigate(`/setup/${similar.id}`)}
+                                                onMouseEnter={(e) => {
+                                                    const video = e.currentTarget.querySelector('video');
+                                                    if (video) video.play();
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    const video = e.currentTarget.querySelector('video');
+                                                    if (video) {
+                                                        video.pause();
+                                                        video.currentTime = 0;
+                                                    }
+                                                }}
                                             >
                                                 {isVideoOnly && videoSrc ? (
                                                     <video
                                                         src={videoSrc}
                                                         muted
+                                                        loop
                                                         playsInline
                                                         preload="metadata"
-                                                        style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
                                                     />
                                                 ) : (
                                                     <img src={similar.mainImage || similar.images?.[0]?.url} alt={similar.title} />

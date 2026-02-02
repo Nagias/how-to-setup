@@ -565,7 +565,7 @@
 }
 
 .similar-setup-card {
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     overflow: hidden;
     cursor: pointer;
     transition: transform var(--transition-fast);
@@ -580,10 +580,12 @@
     transform: scale(1.02);
 }
 
-.similar-setup-card img {
+.similar-setup-card img,
+.similar-setup-card video {
     width: 100%;
     height: auto;
     display: block;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 /* Setup not found */
