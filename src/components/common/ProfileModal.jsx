@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { updateProfile } from 'firebase/auth';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebase';
 import { useApp } from '../../contexts/AppContext';
 import { updateGuestProfile, getCurrentUser } from '../../utils/ipUtils';
+import { uploadToCloudinary } from '../../config/cloudinary';
 import './ProfileModal.css';
 
 const ProfileModal = () => {
     const { showProfileModal, setShowProfileModal, refreshUser, currentUser, logout } = useApp();
     const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
+    const [username, setUsername] = useState(currentUser?.username || '');
     const [avatar, setAvatar] = useState(currentUser?.avatar || '');
     const [message, setMessage] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
 
     if (!showProfileModal) return null;
 
@@ -30,43 +33,55 @@ const ProfileModal = () => {
             setTimeout(() => handleClose(), 1500);
         } else {
             try {
-                // Check for Base64 image (too long for Firebase Auth profile, limit ~2kb)
-                const isBase64 = avatar && avatar.startsWith('data:');
-
                 if (auth.currentUser) {
                     const authUpdates = { displayName };
-                    // Skip photoURL update in Auth if it's Base64
-                    if (!isBase64) {
+                    // Only update photoURL if it's a URL (not Base64)
+                    if (avatar && !avatar.startsWith('data:')) {
                         authUpdates.photoURL = avatar;
                     }
                     await updateProfile(auth.currentUser, authUpdates);
                 }
 
-                // Update Firestore (supports large Base64 strings)
+                // Use setDoc with merge to create document if not exists
                 const userRef = doc(db, 'users', currentUser.id);
-                await updateDoc(userRef, {
+                await setDoc(userRef, {
                     displayName: displayName,
-                    avatar: avatar
-                });
+                    username: username || null,
+                    avatar: avatar,
+                    email: currentUser.email,
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
 
                 setMessage('Cập nhật thành công! Đang tải lại...');
-                setTimeout(() => window.location.reload(), 500); // Faster reload
+                setTimeout(() => window.location.reload(), 500);
             } catch (error) {
-                console.error(error);
+                console.error('Profile update error:', error);
                 setMessage('Lỗi: ' + error.message);
             }
         }
     };
 
-    const handleAvatarUpload = (e) => {
+    const handleAvatarUpload = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            if (file.size > 2000000) return alert('File quá lớn (>2MB)');
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setAvatar(reader.result);
-            };
-            reader.readAsDataURL(file);
+            if (file.size > 5000000) {
+                return alert('File quá lớn (>5MB)');
+            }
+
+            try {
+                setIsUploading(true);
+                setMessage('Đang tải ảnh lên...');
+
+                // Upload to Cloudinary
+                const result = await uploadToCloudinary(file, 'avatars');
+                setAvatar(result.url);
+                setMessage('Tải ảnh thành công! Nhấn "Lưu Thay Đổi" để cập nhật.');
+            } catch (error) {
+                console.error('Avatar upload error:', error);
+                setMessage('Lỗi tải ảnh: ' + error.message);
+            } finally {
+                setIsUploading(false);
+            }
         }
     };
 
@@ -119,10 +134,12 @@ const ProfileModal = () => {
                             <div className="form-group profile-avatar-edit">
                                 <label>Ảnh Đại Diện</label>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <img src={avatar || currentUser.photoURL} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-color)' }} alt="Avatar" />
+                                    <img src={avatar || currentUser.photoURL || currentUser.avatar} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-color)' }} alt="Avatar" />
                                     <div>
-                                        <label htmlFor="avatar-upload" className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>Thay đổi</label>
-                                        <input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} />
+                                        <label htmlFor="avatar-upload" className={`btn btn-primary ${isUploading ? 'disabled' : ''}`} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', cursor: isUploading ? 'not-allowed' : 'pointer', opacity: isUploading ? 0.6 : 1 }}>
+                                            {isUploading ? 'Đang tải...' : 'Thay đổi'}
+                                        </label>
+                                        <input id="avatar-upload" type="file" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} disabled={isUploading} />
                                     </div>
                                 </div>
                             </div>
@@ -137,14 +154,27 @@ const ProfileModal = () => {
                                     required
                                 />
                             </div>
+                            <div className="form-group">
+                                <label>Username <span style={{ color: 'var(--color-text-tertiary)', fontSize: '0.8rem' }}>(tùy chọn)</span></label>
+                                <input
+                                    type="text"
+                                    className="input"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                                    placeholder="username_cua_ban"
+                                    pattern="[a-z0-9_]+"
+                                    title="Chỉ cho phép chữ thường, số và dấu gạch dưới"
+                                />
+                                <small style={{ color: 'var(--color-text-tertiary)', fontSize: '0.75rem' }}>Chỉ cho phép chữ thường, số và dấu gạch dưới (_)</small>
+                            </div>
 
                             <div className="profile-info-readonly" style={{ margin: '1rem 0', opacity: 0.8, fontSize: '0.9rem', background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '8px' }}>
                                 <div style={{ marginBottom: '0.5rem' }}><strong>Email:</strong> {currentUser.email}</div>
                                 <div><strong>Vai trò:</strong> {currentUser?.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}</div>
                             </div>
 
-                            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-                                Lưu Thay Đổi
+                            <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={isUploading}>
+                                {isUploading ? 'Đang xử lý...' : 'Lưu Thay Đổi'}
                             </button>
                         </form>
                     )}
