@@ -795,7 +795,7 @@
 
 .similar-card {
     cursor: pointer;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-radius: var(--radius-lg);
     overflow: hidden;
     transition: all var(--transition-fast);
 }

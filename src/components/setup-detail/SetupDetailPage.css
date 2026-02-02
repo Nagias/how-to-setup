@@ -565,7 +565,7 @@
 }
 
 .similar-setup-card {
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-radius: var(--radius-lg);
     overflow: hidden;
     cursor: pointer;
     transition: transform var(--transition-fast);
@@ -585,7 +585,7 @@
     width: 100%;
     height: auto;
     display: block;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-radius: var(--radius-lg);
 }
 
 /* Setup not found */
