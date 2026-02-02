@@ -8,7 +8,7 @@ const BlogView = () => {
     const { blogs } = useApp();
     const [displayedBlogs, setDisplayedBlogs] = useState([]);
     const [page, setPage] = useState(1);
-    const BLOGS_PER_PAGE = 5;
+    const BLOGS_PER_PAGE = 6;
 
     useEffect(() => {
         // Initial load or when blogs change
