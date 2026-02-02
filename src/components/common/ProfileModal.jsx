@@ -10,7 +10,6 @@ import './ProfileModal.css';
 const ProfileModal = () => {
     const { showProfileModal, setShowProfileModal, refreshUser, currentUser, logout } = useApp();
     const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
-    const [username, setUsername] = useState(currentUser?.username || '');
     const [avatar, setAvatar] = useState(currentUser?.avatar || '');
     const [message, setMessage] = useState('');
     const [isUploading, setIsUploading] = useState(false);
@@ -27,30 +26,39 @@ const ProfileModal = () => {
         setMessage(''); // Clear previous messages
 
         if (currentUser?.isGuest) {
-            updateGuestProfile(displayName);
+            if (displayName) {
+                updateGuestProfile(displayName);
+            }
             refreshUser();
-            setMessage('Đã cập nhật tên hiển thị!');
+            setMessage('Đã cập nhật!');
             setTimeout(() => handleClose(), 1500);
         } else {
             try {
-                if (auth.currentUser) {
+                // Only update displayName in Auth if provided
+                if (auth.currentUser && displayName) {
                     const authUpdates = { displayName };
-                    // Only update photoURL if it's a URL (not Base64)
                     if (avatar && !avatar.startsWith('data:')) {
                         authUpdates.photoURL = avatar;
                     }
                     await updateProfile(auth.currentUser, authUpdates);
                 }
 
-                // Use setDoc with merge to create document if not exists
-                const userRef = doc(db, 'users', currentUser.id);
-                await setDoc(userRef, {
-                    displayName: displayName,
-                    username: username || null,
-                    avatar: avatar,
+                // Build update object - only include fields that have values
+                const updateData = {
                     email: currentUser.email,
                     updatedAt: new Date().toISOString()
-                }, { merge: true });
+                };
+
+                if (displayName) {
+                    updateData.displayName = displayName;
+                }
+                if (avatar) {
+                    updateData.avatar = avatar;
+                }
+
+                // Use setDoc with merge to create document if not exists
+                const userRef = doc(db, 'users', currentUser.id);
+                await setDoc(userRef, updateData, { merge: true });
 
                 setMessage('Cập nhật thành công! Đang tải lại...');
                 setTimeout(() => window.location.reload(), 500);
@@ -151,21 +159,7 @@ const ProfileModal = () => {
                                     value={displayName}
                                     onChange={(e) => setDisplayName(e.target.value)}
                                     placeholder="Tên của bạn"
-                                    required
                                 />
-                            </div>
-                            <div className="form-group">
-                                <label>Username <span style={{ color: 'var(--color-text-tertiary)', fontSize: '0.8rem' }}>(tùy chọn)</span></label>
-                                <input
-                                    type="text"
-                                    className="input"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                                    placeholder="username_cua_ban"
-                                    pattern="[a-z0-9_]+"
-                                    title="Chỉ cho phép chữ thường, số và dấu gạch dưới"
-                                />
-                                <small style={{ color: 'var(--color-text-tertiary)', fontSize: '0.75rem' }}>Chỉ cho phép chữ thường, số và dấu gạch dưới (_)</small>
                             </div>
 
                             <div className="profile-info-readonly" style={{ margin: '1rem 0', opacity: 0.8, fontSize: '0.9rem', background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '8px' }}>
