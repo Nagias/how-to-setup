@@ -13,9 +13,13 @@ const SetupCard = ({ setup, index }) => {
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
+    // Find video URL - prefer thumbnailVideo, fallback to media array
+    const videoUrl = setup.thumbnailVideo ||
+        setup.media?.find(item => item.type === 'video')?.url || null;
+
     // Detect video-only setup: either has flag, or has no images but has video
     const isVideoOnlySetup = setup.isVideoOnly ||
-        (setup.thumbnailVideo && (!setup.images || setup.images.length === 0));
+        (videoUrl && (!setup.images || setup.images.length === 0));
 
     const isLiked = hasUserLiked(setup.id);
     const isSaved = hasUserSaved(setup.id);
@@ -197,7 +201,7 @@ const SetupCard = ({ setup, index }) => {
                 {/* Image Container */}
                 <div className="setup-card-image-container">
                     {/* If has video (either video-only or mixed), show video as thumbnail */}
-                    {setup.thumbnailVideo && (
+                    {videoUrl && (
                         <video
                             ref={videoRef}
                             className={`setup-card-video ${isVideoOnlySetup ? 'video-only' : ''} ${isVideoPlaying ? 'playing' : ''}`}
@@ -207,12 +211,12 @@ const SetupCard = ({ setup, index }) => {
                             preload="metadata"
                             autoPlay={isMobile && isVideoOnlySetup ? undefined : false}
                         >
-                            <source src={setup.thumbnailVideo} type="video/mp4" />
+                            <source src={videoUrl} type="video/mp4" />
                         </video>
                     )}
 
                     {/* Only show image if NO video exists */}
-                    {!setup.thumbnailVideo && (
+                    {!videoUrl && (
                         <>
                             {setup.images && setup.images.length > 0 ? (
                                 <img
