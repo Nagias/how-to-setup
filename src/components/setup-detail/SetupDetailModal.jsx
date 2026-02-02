@@ -568,20 +568,37 @@ const SetupDetailModal = () => {
                             <div className="similar-setups">
                                 <h4>Setup Tương Tự</h4>
                                 <div className="similar-grid">
-                                    {similarSetups.map(setup => (
-                                        <div
-                                            key={setup.id}
-                                            className="similar-card"
-                                            onClick={() => {
-                                                setSelectedSetup(setup);
-                                                setCurrentImageIndex(0);
-                                                setCommentText(''); // Clear comment input
-                                            }}
-                                        >
-                                            <img src={setup.mainImage} alt={setup.title} />
-                                            <p className="similar-title">{setup.title}</p>
-                                        </div>
-                                    ))}
+                                    {similarSetups.map(setup => {
+                                        const isVideoOnly = setup.isVideoOnly ||
+                                            (setup.thumbnailVideo && (!setup.images || setup.images.length === 0));
+                                        const videoSrc = setup.thumbnailVideo ||
+                                            setup.media?.find(item => item.type === 'video')?.url;
+
+                                        return (
+                                            <div
+                                                key={setup.id}
+                                                className="similar-card"
+                                                onClick={() => {
+                                                    setSelectedSetup(setup);
+                                                    setCurrentImageIndex(0);
+                                                    setCommentText(''); // Clear comment input
+                                                }}
+                                            >
+                                                {isVideoOnly && videoSrc ? (
+                                                    <video
+                                                        src={videoSrc}
+                                                        muted
+                                                        playsInline
+                                                        preload="metadata"
+                                                        style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+                                                    />
+                                                ) : (
+                                                    <img src={setup.mainImage || setup.images?.[0]?.url} alt={setup.title} />
+                                                )}
+                                                <p className="similar-title">{setup.title}</p>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}

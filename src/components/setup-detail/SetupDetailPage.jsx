@@ -968,15 +968,32 @@ const SetupDetailPage = () => {
                             {isMobile && similarSetups.length > 0 && (
                                 <div className="similar-setups-section mobile-similar">
                                     <div className="similar-setups-grid">
-                                        {similarSetups.slice(0, 6).map(similar => (
-                                            <div
-                                                key={similar.id}
-                                                className="similar-setup-card"
-                                                onClick={() => navigate(`/setup/${similar.id}`)}
-                                            >
-                                                <img src={similar.mainImage} alt={similar.title} />
-                                            </div>
-                                        ))}
+                                        {similarSetups.slice(0, 6).map(similar => {
+                                            const isVideoOnly = similar.isVideoOnly ||
+                                                (similar.thumbnailVideo && (!similar.images || similar.images.length === 0));
+                                            const videoSrc = similar.thumbnailVideo ||
+                                                similar.media?.find(item => item.type === 'video')?.url;
+
+                                            return (
+                                                <div
+                                                    key={similar.id}
+                                                    className="similar-setup-card"
+                                                    onClick={() => navigate(`/setup/${similar.id}`)}
+                                                >
+                                                    {isVideoOnly && videoSrc ? (
+                                                        <video
+                                                            src={videoSrc}
+                                                            muted
+                                                            playsInline
+                                                            preload="metadata"
+                                                            style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+                                                        />
+                                                    ) : (
+                                                        <img src={similar.mainImage || similar.images?.[0]?.url} alt={similar.title} />
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}
@@ -988,15 +1005,32 @@ const SetupDetailPage = () => {
                         <div className="setup-right-column">
                             <div className="similar-setups-section-desktop">
                                 <div className="similar-setups-grid-desktop">
-                                    {similarSetups.map(similar => (
-                                        <div
-                                            key={similar.id}
-                                            className="similar-setup-card"
-                                            onClick={() => navigate(`/setup/${similar.id}`)}
-                                        >
-                                            <img src={similar.mainImage} alt={similar.title} />
-                                        </div>
-                                    ))}
+                                    {similarSetups.map(similar => {
+                                        const isVideoOnly = similar.isVideoOnly ||
+                                            (similar.thumbnailVideo && (!similar.images || similar.images.length === 0));
+                                        const videoSrc = similar.thumbnailVideo ||
+                                            similar.media?.find(item => item.type === 'video')?.url;
+
+                                        return (
+                                            <div
+                                                key={similar.id}
+                                                className="similar-setup-card"
+                                                onClick={() => navigate(`/setup/${similar.id}`)}
+                                            >
+                                                {isVideoOnly && videoSrc ? (
+                                                    <video
+                                                        src={videoSrc}
+                                                        muted
+                                                        playsInline
+                                                        preload="metadata"
+                                                        style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+                                                    />
+                                                ) : (
+                                                    <img src={similar.mainImage || similar.images?.[0]?.url} alt={similar.title} />
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
