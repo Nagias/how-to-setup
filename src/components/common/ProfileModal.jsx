@@ -5,6 +5,7 @@ import { auth, db } from '../../firebase';
 import { useApp } from '../../contexts/AppContext';
 import { updateGuestProfile, getCurrentUser } from '../../utils/ipUtils';
 import { uploadToCloudinary } from '../../config/cloudinary';
+import AvatarCropper from './AvatarCropper';
 import './ProfileModal.css';
 
 const ProfileModal = () => {
@@ -14,10 +15,14 @@ const ProfileModal = () => {
     const [message, setMessage] = useState('');
     const [isUploading, setIsUploading] = useState(false);
 
+    // Crop state
+    const [cropImage, setCropImage] = useState(null);
+
     if (!showProfileModal) return null;
 
     const handleClose = () => {
         setShowProfileModal(false);
+        setCropImage(null); // Reset crop if closed
         setMessage('');
     };
 
@@ -69,29 +74,43 @@ const ProfileModal = () => {
         }
     };
 
-    const handleAvatarUpload = async (e) => {
+    const handleFileSelect = (e) => {
         const file = e.target.files[0];
         if (file) {
-            if (file.size > 5000000) {
-                return alert('File quá lớn (>5MB)');
-            }
+            if (file.size > 5000000) return alert('File quá lớn (>5MB)');
 
-            try {
-                setIsUploading(true);
-                setMessage('Đang tải ảnh lên...');
+            // Read file as DataURL for cropper
+            const reader = new FileReader();
+            reader.onload = () => {
+                setCropImage(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+        // Reset input so same file can be selected again
+        e.target.value = '';
+    };
 
-                // Upload to Cloudinary
-                const result = await uploadToCloudinary(file, 'avatars');
-                setAvatar(result.url);
-                setMessage('Tải ảnh thành công! Nhấn "Lưu Thay Đổi" để cập nhật.');
-            } catch (error) {
-                console.error('Avatar upload error:', error);
-                setMessage('Lỗi tải ảnh: ' + error.message);
-            } finally {
-                setIsUploading(false);
-            }
+    const handleCropComplete = async (croppedBlob) => {
+        setCropImage(null); // Close cropper
+
+        try {
+            setIsUploading(true);
+            setMessage('Đang tải ảnh lên...');
+
+            // Upload blob to Cloudinary
+            const result = await uploadToCloudinary(croppedBlob, 'avatars');
+            setAvatar(result.url);
+            setMessage('Ảnh đã được xử lý! Nhấn "Lưu Thay Đổi" để cập nhật.');
+        } catch (error) {
+            console.error('Avatar upload error:', error);
+            setMessage('Lỗi tải ảnh: ' + error.message);
+        } finally {
+            setIsUploading(false);
         }
     };
+
+    // Replace original handleAvatarUpload with handleFileSelect for UI binding
+    const handleAvatarUpload = handleFileSelect;
 
     const handleLogout = async () => {
         if (confirm('Bạn có chắc muốn đăng xuất?')) {
@@ -187,6 +206,19 @@ const ProfileModal = () => {
                         </small>
                     </div>
                 </div>
+
+                {cropImage && (
+                    <AvatarCropper
+                        imageSrc={cropImage}
+                        onCancel={() => {
+                            setCropImage(null);
+                            // Clear file input value
+                            const fileInput = document.getElementById('avatar-upload');
+                            if (fileInput) fileInput.value = '';
+                        }}
+                        onCropComplete={handleCropComplete}
+                    />
+                )}
             </div>
         </div>
     );
