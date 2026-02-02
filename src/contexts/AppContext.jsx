@@ -208,10 +208,14 @@ export const AppProvider = ({ children }) => {
                             // Update state with full data
                             // IMPORTANT: Enforce admin role if whitelisted, even if Firestore says 'user'
                             const isStillAdmin = ADMIN_EMAILS.includes(user.email);
+                            // Get avatar from Firestore, fallback to Auth photoURL
+                            const userAvatar = userData.avatar || user.photoURL ||
+                                `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.displayName || user.displayName || 'User')}&background=random`;
                             setCurrentUser(prev => ({
                                 ...prev,
                                 displayName: userData.displayName || prev.displayName,
-                                photoURL: userData.avatar || prev.photoURL,
+                                photoURL: userAvatar,
+                                avatar: userAvatar, // Sync avatar field for components that use it
                                 role: isStillAdmin ? 'admin' : (userData.role || prev.role)
                             }));
                         }
