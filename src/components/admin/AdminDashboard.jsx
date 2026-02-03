@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { api } from '../../utils/api';
 import AddSetupModal from './AddSetupModal';
 import './AdminDashboard.css';
 
@@ -7,10 +8,37 @@ const AdminDashboard = () => {
     const { setups, blogs, getComments, currentUser, addSetup, updateSetup, deleteSetup, refreshData } = useApp();
     const [editingSetup, setEditingSetup] = useState(null);
     const [selectedSetups, setSelectedSetups] = useState(new Set());
+    const [isClaiming, setIsClaiming] = useState(false);
     const [dateRange, setDateRange] = useState({
         startDate: '',
         endDate: ''
     });
+
+    // Claim tất cả blogs/setups cũ không có userId
+    const handleClaimContent = async () => {
+        if (!confirm('Gán userId của bạn vào TẤT CẢ blogs/setups chưa có userId?\n\nĐiều này sẽ cập nhật avatar và tên tác giả cho các bài viết cũ.')) {
+            return;
+        }
+
+        setIsClaiming(true);
+        try {
+            const result = await api.claimAllContent(currentUser.id, {
+                displayName: currentUser.displayName,
+                avatar: currentUser.avatar || currentUser.photoURL
+            });
+
+            if (result.success) {
+                alert(`✅ Đã claim ${result.count} bài viết!\n\nTải lại trang để thấy thay đổi.`);
+                window.location.reload();
+            } else {
+                alert('❌ Lỗi: ' + result.error);
+            }
+        } catch (error) {
+            alert('❌ Lỗi: ' + error.message);
+        } finally {
+            setIsClaiming(false);
+        }
+    };
 
     const handleSelectAll = (e) => {
         if (e.target.checked) {
@@ -177,7 +205,15 @@ const AdminDashboard = () => {
                     <p>Welcome back, {currentUser.displayName}</p>
                 </div>
 
-                <div className="header-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div className="header-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <button
+                        className="btn"
+                        onClick={handleClaimContent}
+                        disabled={isClaiming}
+                        style={{ background: '#f59e0b', color: 'white', padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', cursor: isClaiming ? 'not-allowed' : 'pointer', opacity: isClaiming ? 0.6 : 1 }}
+                    >
+                        {isClaiming ? '⏳ Đang xử lý...' : '🔧 Claim Bài Viết Cũ'}
+                    </button>
                     <button className="btn" onClick={async () => { if (confirm('Tải lại dữ liệu từ server/local?')) { await refreshData(); alert('Đã cập nhật!'); } }} style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', cursor: 'pointer' }}>🔄 Khôi phục Dữ liệu</button>
                     <div className="dashboard-filter">
                         <span className="filter-label">Lọc:</span>

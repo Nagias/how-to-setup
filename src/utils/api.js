@@ -644,5 +644,60 @@ export const api = {
             console.error('❌ Sync user profile failed:', error);
             return { success: false, error: error.message };
         }
+    },
+
+    // Migration: Admin claim tất cả blogs/setups không có userId
+    // Dùng khi có content cũ chưa có userId
+    claimAllContent: async (userId, userData) => {
+        const { displayName, avatar } = userData;
+        console.log(`🔧 Admin claiming all content for user ${userId}...`);
+
+        let totalUpdated = 0;
+
+        try {
+            // 1. Claim tất cả blogs không có userId
+            const allBlogsSnap = await getDocs(blogsCol);
+            const unclaimedBlogs = allBlogsSnap.docs.filter(d => !d.data().userId);
+
+            console.log(`📋 Tìm thấy ${unclaimedBlogs.length} blogs chưa có userId`);
+
+            if (unclaimedBlogs.length > 0) {
+                const batch = writeBatch(db);
+                unclaimedBlogs.forEach(docSnap => {
+                    const updates = { userId };
+                    if (displayName) updates['author.name'] = displayName;
+                    if (avatar) updates['author.avatar'] = avatar;
+                    batch.update(docSnap.ref, updates);
+                    totalUpdated++;
+                });
+                await batch.commit();
+                console.log(`✅ Claimed ${unclaimedBlogs.length} blogs`);
+            }
+
+            // 2. Claim tất cả setups không có userId
+            const allSetupsSnap = await getDocs(setupsCol);
+            const unclaimedSetups = allSetupsSnap.docs.filter(d => !d.data().userId);
+
+            console.log(`📋 Tìm thấy ${unclaimedSetups.length} setups chưa có userId`);
+
+            if (unclaimedSetups.length > 0) {
+                const batch = writeBatch(db);
+                unclaimedSetups.forEach(docSnap => {
+                    const updates = { userId };
+                    if (displayName) updates['author.name'] = displayName;
+                    if (avatar) updates['author.avatar'] = avatar;
+                    batch.update(docSnap.ref, updates);
+                    totalUpdated++;
+                });
+                await batch.commit();
+                console.log(`✅ Claimed ${unclaimedSetups.length} setups`);
+            }
+
+            console.log(`🎉 Total claimed: ${totalUpdated} documents`);
+            return { success: true, count: totalUpdated };
+        } catch (error) {
+            console.error('❌ Claim content failed:', error);
+            return { success: false, error: error.message };
+        }
     }
 };
