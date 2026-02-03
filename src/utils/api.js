@@ -15,7 +15,8 @@ import {
     serverTimestamp,
     arrayUnion,
     arrayRemove,
-    increment
+    increment,
+    writeBatch
 } from 'firebase/firestore';
 import {
     signInWithEmailAndPassword,
@@ -505,5 +506,78 @@ export const api = {
                 }
             );
         });
+    },
+
+    // Đồng bộ thông tin user (avatar, tên) trên tất cả nội dung của họ
+    syncUserProfile: async (userId, newData) => {
+        const { displayName, avatar } = newData;
+        console.log(`🔄 Syncing user profile for ${userId}...`);
+
+        let totalUpdated = 0;
+
+        try {
+            // 1. Update tất cả comments của user
+            const commentsQuery = query(commentsCol, where('userId', '==', userId));
+            const commentsSnap = await getDocs(commentsQuery);
+
+            if (commentsSnap.docs.length > 0) {
+                const batch = writeBatch(db);
+                commentsSnap.docs.forEach(docSnap => {
+                    const updates = {};
+                    if (displayName) updates.author = displayName;
+                    if (avatar) updates.avatar = avatar;
+                    if (Object.keys(updates).length > 0) {
+                        batch.update(docSnap.ref, updates);
+                        totalUpdated++;
+                    }
+                });
+                await batch.commit();
+                console.log(`✅ Updated ${commentsSnap.docs.length} comments`);
+            }
+
+            // 2. Update tất cả blogs của user (query theo userId field)
+            const blogsQuery = query(blogsCol, where('userId', '==', userId));
+            const blogsSnap = await getDocs(blogsQuery);
+
+            if (blogsSnap.docs.length > 0) {
+                const batch = writeBatch(db);
+                blogsSnap.docs.forEach(docSnap => {
+                    const updates = {};
+                    if (displayName) updates['author.name'] = displayName;
+                    if (avatar) updates['author.avatar'] = avatar;
+                    if (Object.keys(updates).length > 0) {
+                        batch.update(docSnap.ref, updates);
+                        totalUpdated++;
+                    }
+                });
+                await batch.commit();
+                console.log(`✅ Updated ${blogsSnap.docs.length} blogs`);
+            }
+
+            // 3. Update tất cả setups của user (query theo userId field)
+            const setupsQuery = query(setupsCol, where('userId', '==', userId));
+            const setupsSnap = await getDocs(setupsQuery);
+
+            if (setupsSnap.docs.length > 0) {
+                const batch = writeBatch(db);
+                setupsSnap.docs.forEach(docSnap => {
+                    const updates = {};
+                    if (displayName) updates['author.name'] = displayName;
+                    if (avatar) updates['author.avatar'] = avatar;
+                    if (Object.keys(updates).length > 0) {
+                        batch.update(docSnap.ref, updates);
+                        totalUpdated++;
+                    }
+                });
+                await batch.commit();
+                console.log(`✅ Updated ${setupsSnap.docs.length} setups`);
+            }
+
+            console.log(`🎉 Total synced: ${totalUpdated} documents`);
+            return { success: true, count: totalUpdated };
+        } catch (error) {
+            console.error('❌ Sync user profile failed:', error);
+            return { success: false, error: error.message };
+        }
     }
 };

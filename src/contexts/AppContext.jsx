@@ -442,6 +442,7 @@ export const AppProvider = ({ children }) => {
 
         const blogToSave = {
             ...blogData,
+            userId: user.id, // Lưu userId để đồng bộ profile sau này
             author: {
                 name: authorName,
                 avatar: authorAvatar
@@ -504,6 +505,7 @@ export const AppProvider = ({ children }) => {
 
         const setupToSave = {
             ...setupData,
+            userId: user.id, // Lưu userId để đồng bộ profile sau này
             author: {
                 name: user.displayName || user.email || 'Anonymous',
                 avatar: authorAvatar

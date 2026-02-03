@@ -3,6 +3,7 @@ import { updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebase';
 import { useApp } from '../../contexts/AppContext';
+import { api } from '../../utils/api';
 import { updateGuestProfile, getCurrentUser } from '../../utils/ipUtils';
 import { uploadToCloudinary } from '../../config/cloudinary';
 import AvatarCropper from './AvatarCropper';
@@ -65,8 +66,20 @@ const ProfileModal = () => {
                 const userRef = doc(db, 'users', currentUser.id);
                 await setDoc(userRef, updateData, { merge: true });
 
-                setMessage('Cập nhật thành công! Đang tải lại...');
-                setTimeout(() => window.location.reload(), 500);
+                // Đồng bộ avatar/tên vào tất cả comments, blogs, setups của user
+                setMessage('Đang đồng bộ thông tin...');
+                const syncResult = await api.syncUserProfile(currentUser.id, {
+                    displayName: displayName || currentUser.displayName,
+                    avatar: avatar || currentUser.avatar
+                });
+
+                if (syncResult.success) {
+                    setMessage(`Cập nhật thành công! Đã đồng bộ ${syncResult.count} mục.`);
+                } else {
+                    setMessage('Cập nhật hồ sơ thành công!');
+                }
+
+                setTimeout(() => window.location.reload(), 1500);
             } catch (error) {
                 console.error('Profile update error:', error);
                 setMessage('Lỗi: ' + error.message);
