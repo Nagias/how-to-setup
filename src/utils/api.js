@@ -577,22 +577,13 @@ export const api = {
 
             // 2b. Tìm blogs CŨ theo author.name (fetch all, filter client-side để tránh cần index)
             if (currentDisplayName) {
-                // Fetch tất cả blogs (không có filter)
                 const allBlogsSnap = await getDocs(blogsCol);
-                console.log(`📋 Tổng số blogs: ${allBlogsSnap.docs.length}, đang tìm author.name = "${currentDisplayName}"`);
-
-                // Log author names để debug
-                allBlogsSnap.docs.forEach(d => {
-                    const data = d.data();
-                    console.log(`   Blog: author.name = "${data.author?.name}"`);
-                });
 
                 // Filter những blog có author.name khớp VÀ chưa được xử lý
                 const matchingBlogs = allBlogsSnap.docs.filter(docSnap => {
                     const data = docSnap.data();
                     return data.author?.name === currentDisplayName && !processedIds.has(docSnap.id);
                 });
-                console.log(`🔍 Blogs khớp: ${matchingBlogs.length}`);
 
                 if (matchingBlogs.length > 0) {
                     const batch = writeBatch(db);
@@ -629,20 +620,14 @@ export const api = {
 
             // 3b. Tìm setups CŨ theo author.name (fetch all, filter client-side)
             if (currentDisplayName) {
-                // Fetch tất cả setups
                 const allSetupsSnap = await getDocs(setupsCol);
-                console.log(`📋 Tổng số setups: ${allSetupsSnap.docs.length}, đang tìm author.name = "${currentDisplayName}"`);
-                allSetupsSnap.docs.forEach(d => {
-                    const data = d.data();
-                    console.log(`   Setup: author.name = "${data.author?.name}"`);
-                });
 
                 // Filter những setup có author.name khớp VÀ chưa được xử lý
                 const matchingSetups = allSetupsSnap.docs.filter(docSnap => {
                     const data = docSnap.data();
                     return data.author?.name === currentDisplayName && !processedIds.has(docSnap.id);
                 });
-                console.log(`🔍 Setups khớp: ${matchingSetups.length}`);
+
                 if (matchingSetups.length > 0) {
                     const batch = writeBatch(db);
                     matchingSetups.forEach(docSnap => {
