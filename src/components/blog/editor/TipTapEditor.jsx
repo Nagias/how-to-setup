@@ -135,13 +135,57 @@ const TipTapEditor = ({
         }
     }, [editor, onImageAdd]);
 
-    // Insert link
+    // Insert/Toggle link - Ctrl+K
     const insertLink = useCallback(() => {
-        const url = prompt('Nhập URL:');
-        if (url && editor) {
-            editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+        if (!editor) return;
+
+        // Nếu đang có link, hiển thị option để unlink
+        if (editor.isActive('link')) {
+            const currentUrl = editor.getAttributes('link').href;
+            const action = prompt(
+                `Link hiện tại: ${currentUrl}\n\nNhập URL mới hoặc:\n- Để trống và OK để giữ nguyên\n- Nhập "remove" để xóa link`,
+                currentUrl
+            );
+
+            if (action === null) return; // Cancel
+            if (action.toLowerCase() === 'remove' || action === '') {
+                // Unlink
+                editor.chain().focus().unsetLink().run();
+            } else {
+                // Update link
+                editor.chain().focus().extendMarkRange('link').setLink({ href: action }).run();
+            }
+        } else {
+            // Tạo link mới
+            const url = prompt('Nhập URL:');
+            if (url) {
+                editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+            }
         }
     }, [editor]);
+
+    // Remove link
+    const removeLink = useCallback(() => {
+        if (editor) {
+            editor.chain().focus().unsetLink().run();
+        }
+    }, [editor]);
+
+    // Keyboard shortcuts
+    useEffect(() => {
+        if (!editor) return;
+
+        const handleKeyDown = (e) => {
+            // Ctrl+K for hyperlink
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                insertLink();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [editor, insertLink]);
 
     // Insert table
     const insertTable = useCallback(() => {
@@ -353,10 +397,20 @@ const TipTapEditor = ({
                         type="button"
                         onClick={insertLink}
                         className={`toolbar-btn ${editor.isActive('link') ? 'active' : ''}`}
-                        title="Chèn link"
+                        title="Chèn/Sửa link (Ctrl+K)"
                     >
                         🔗 Link
                     </button>
+                    {editor.isActive('link') && (
+                        <button
+                            type="button"
+                            onClick={removeLink}
+                            className="toolbar-btn danger"
+                            title="Xóa link"
+                        >
+                            ✕ Unlink
+                        </button>
+                    )}
                     <button
                         type="button"
                         onClick={insertTable}
