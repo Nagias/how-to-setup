@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
 import { api } from '../../utils/api';
 import AddSetupModal from './AddSetupModal';
@@ -9,10 +9,28 @@ const AdminDashboard = () => {
     const [editingSetup, setEditingSetup] = useState(null);
     const [selectedSetups, setSelectedSetups] = useState(new Set());
     const [isClaiming, setIsClaiming] = useState(false);
+    const [newsletterEmails, setNewsletterEmails] = useState([]);
     const [dateRange, setDateRange] = useState({
         startDate: '',
         endDate: ''
     });
+
+    // Fetch newsletter subscribers khi component mount
+    useEffect(() => {
+        const fetchNewsletter = async () => {
+            const subscribers = await api.getNewsletterSubscribers();
+            setNewsletterEmails(subscribers);
+        };
+        fetchNewsletter();
+    }, []);
+
+    // Copy all emails to clipboard
+    const handleCopyAllEmails = () => {
+        const emails = newsletterEmails.map(s => s.email).join('\n');
+        navigator.clipboard.writeText(emails);
+        alert(`✅ Đã copy ${newsletterEmails.length} email vào clipboard!`);
+    };
+
 
     // Claim tất cả blogs/setups cũ không có userId
     const handleClaimContent = async () => {
@@ -395,6 +413,59 @@ const AdminDashboard = () => {
                             <p className="no-data">Không có dữ liệu.</p>
                         )}
                     </div>
+                </div>
+
+                {/* Newsletter Section */}
+                <div className="dashboard-section" style={{ gridColumn: '1 / -1' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <h2>📧 Newsletter Subscribers ({newsletterEmails.length})</h2>
+                        <button
+                            onClick={handleCopyAllEmails}
+                            disabled={newsletterEmails.length === 0}
+                            style={{
+                                background: newsletterEmails.length > 0 ? '#10b981' : '#6b7280',
+                                color: 'white',
+                                padding: '0.5rem 1rem',
+                                borderRadius: '8px',
+                                border: 'none',
+                                cursor: newsletterEmails.length > 0 ? 'pointer' : 'not-allowed',
+                                fontWeight: 600
+                            }}
+                        >
+                            📋 Copy Tất Cả Email
+                        </button>
+                    </div>
+
+                    {newsletterEmails.length > 0 ? (
+                        <div style={{
+                            background: 'var(--bg-secondary)',
+                            borderRadius: '12px',
+                            padding: '1rem',
+                            maxHeight: '300px',
+                            overflowY: 'auto'
+                        }}>
+                            <table className="ranking-table" style={{ width: '100%' }}>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Email</th>
+                                        <th>Ngày đăng ký</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {newsletterEmails.map((sub, index) => (
+                                        <tr key={sub.id}>
+                                            <td>{index + 1}</td>
+                                            <td style={{ fontFamily: 'monospace' }}>{sub.email}</td>
+                                            <td>{sub.timestamp ? new Date(sub.timestamp).toLocaleDateString('vi-VN') : 'N/A'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <p className="no-data">Chưa có email đăng ký.</p>
+                    )}
                 </div>
             </div>
 

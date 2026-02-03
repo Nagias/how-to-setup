@@ -416,6 +416,26 @@ export const api = {
         }
     },
 
+    // Lấy danh sách email đăng ký newsletter
+    getNewsletterSubscribers: async () => {
+        try {
+            const snapshot = await getDocs(newsletterCol);
+            const subscribers = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            // Sắp xếp theo thời gian đăng ký mới nhất
+            return subscribers.sort((a, b) => {
+                const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+                const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+                return timeB - timeA;
+            });
+        } catch (error) {
+            console.error('Error fetching newsletter:', error);
+            return [];
+        }
+    },
+
     // ImgBB API Key (Free tier: 100 uploads/hour)
     // Get your own key at: https://api.imgbb.com/
     _imgbbApiKey: '2a4945145b81f0e070078eeb4571403c', // Replace with your key
