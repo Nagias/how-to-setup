@@ -67,11 +67,16 @@ const ProfileModal = () => {
                 await setDoc(userRef, updateData, { merge: true });
 
                 // Đồng bộ avatar/tên vào tất cả comments, blogs, setups của user
+                // Truyền tên hiện tại để tìm được các documents cũ không có userId
                 setMessage('Đang đồng bộ thông tin...');
-                const syncResult = await api.syncUserProfile(currentUser.id, {
-                    displayName: displayName || currentUser.displayName,
-                    avatar: avatar || currentUser.avatar
-                });
+                const syncResult = await api.syncUserProfile(
+                    currentUser.id,
+                    {
+                        displayName: displayName || currentUser.displayName,
+                        avatar: avatar || currentUser.avatar
+                    },
+                    currentUser.displayName // Tên hiện tại để tìm documents cũ
+                );
 
                 if (syncResult.success) {
                     setMessage(`Cập nhật thành công! Đã đồng bộ ${syncResult.count} mục.`);

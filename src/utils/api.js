@@ -509,11 +509,13 @@ export const api = {
     },
 
     // Đồng bộ thông tin user (avatar, tên) trên tất cả nội dung của họ
-    syncUserProfile: async (userId, newData) => {
+    // currentDisplayName: tên hiện tại của user (để tìm documents cũ không có userId)
+    syncUserProfile: async (userId, newData, currentDisplayName = null) => {
         const { displayName, avatar } = newData;
         console.log(`🔄 Syncing user profile for ${userId}...`);
 
         let totalUpdated = 0;
+        const processedIds = new Set(); // Tránh update trùng
 
         try {
             // 1. Update tất cả comments của user
@@ -542,16 +544,36 @@ export const api = {
             if (blogsSnap.docs.length > 0) {
                 const batch = writeBatch(db);
                 blogsSnap.docs.forEach(docSnap => {
-                    const updates = {};
+                    const updates = { userId }; // Đảm bảo có userId
                     if (displayName) updates['author.name'] = displayName;
                     if (avatar) updates['author.avatar'] = avatar;
-                    if (Object.keys(updates).length > 0) {
-                        batch.update(docSnap.ref, updates);
-                        totalUpdated++;
-                    }
+                    batch.update(docSnap.ref, updates);
+                    processedIds.add(docSnap.id);
+                    totalUpdated++;
                 });
                 await batch.commit();
-                console.log(`✅ Updated ${blogsSnap.docs.length} blogs`);
+                console.log(`✅ Updated ${blogsSnap.docs.length} blogs (by userId)`);
+            }
+
+            // 2b. Tìm blogs CŨ theo author.name (nếu có currentDisplayName)
+            if (currentDisplayName) {
+                const oldBlogsQuery = query(blogsCol, where('author.name', '==', currentDisplayName));
+                const oldBlogsSnap = await getDocs(oldBlogsQuery);
+
+                const unprocessed = oldBlogsSnap.docs.filter(d => !processedIds.has(d.id));
+                if (unprocessed.length > 0) {
+                    const batch = writeBatch(db);
+                    unprocessed.forEach(docSnap => {
+                        const updates = { userId }; // Thêm userId cho lần sau
+                        if (displayName) updates['author.name'] = displayName;
+                        if (avatar) updates['author.avatar'] = avatar;
+                        batch.update(docSnap.ref, updates);
+                        processedIds.add(docSnap.id);
+                        totalUpdated++;
+                    });
+                    await batch.commit();
+                    console.log(`✅ Updated ${unprocessed.length} OLD blogs (by author.name)`);
+                }
             }
 
             // 3. Update tất cả setups của user (query theo userId field)
@@ -561,16 +583,36 @@ export const api = {
             if (setupsSnap.docs.length > 0) {
                 const batch = writeBatch(db);
                 setupsSnap.docs.forEach(docSnap => {
-                    const updates = {};
+                    const updates = { userId };
                     if (displayName) updates['author.name'] = displayName;
                     if (avatar) updates['author.avatar'] = avatar;
-                    if (Object.keys(updates).length > 0) {
-                        batch.update(docSnap.ref, updates);
-                        totalUpdated++;
-                    }
+                    batch.update(docSnap.ref, updates);
+                    processedIds.add(docSnap.id);
+                    totalUpdated++;
                 });
                 await batch.commit();
-                console.log(`✅ Updated ${setupsSnap.docs.length} setups`);
+                console.log(`✅ Updated ${setupsSnap.docs.length} setups (by userId)`);
+            }
+
+            // 3b. Tìm setups CŨ theo author.name
+            if (currentDisplayName) {
+                const oldSetupsQuery = query(setupsCol, where('author.name', '==', currentDisplayName));
+                const oldSetupsSnap = await getDocs(oldSetupsQuery);
+
+                const unprocessed = oldSetupsSnap.docs.filter(d => !processedIds.has(d.id));
+                if (unprocessed.length > 0) {
+                    const batch = writeBatch(db);
+                    unprocessed.forEach(docSnap => {
+                        const updates = { userId };
+                        if (displayName) updates['author.name'] = displayName;
+                        if (avatar) updates['author.avatar'] = avatar;
+                        batch.update(docSnap.ref, updates);
+                        processedIds.add(docSnap.id);
+                        totalUpdated++;
+                    });
+                    await batch.commit();
+                    console.log(`✅ Updated ${unprocessed.length} OLD setups (by author.name)`);
+                }
             }
 
             console.log(`🎉 Total synced: ${totalUpdated} documents`);
