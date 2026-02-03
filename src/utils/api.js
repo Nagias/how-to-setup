@@ -555,15 +555,20 @@ export const api = {
                 console.log(`✅ Updated ${blogsSnap.docs.length} blogs (by userId)`);
             }
 
-            // 2b. Tìm blogs CŨ theo author.name (nếu có currentDisplayName)
+            // 2b. Tìm blogs CŨ theo author.name (fetch all, filter client-side để tránh cần index)
             if (currentDisplayName) {
-                const oldBlogsQuery = query(blogsCol, where('author.name', '==', currentDisplayName));
-                const oldBlogsSnap = await getDocs(oldBlogsQuery);
+                // Fetch tất cả blogs (không có filter)
+                const allBlogsSnap = await getDocs(blogsCol);
 
-                const unprocessed = oldBlogsSnap.docs.filter(d => !processedIds.has(d.id));
-                if (unprocessed.length > 0) {
+                // Filter những blog có author.name khớp VÀ chưa được xử lý
+                const matchingBlogs = allBlogsSnap.docs.filter(docSnap => {
+                    const data = docSnap.data();
+                    return data.author?.name === currentDisplayName && !processedIds.has(docSnap.id);
+                });
+
+                if (matchingBlogs.length > 0) {
                     const batch = writeBatch(db);
-                    unprocessed.forEach(docSnap => {
+                    matchingBlogs.forEach(docSnap => {
                         const updates = { userId }; // Thêm userId cho lần sau
                         if (displayName) updates['author.name'] = displayName;
                         if (avatar) updates['author.avatar'] = avatar;
@@ -572,7 +577,7 @@ export const api = {
                         totalUpdated++;
                     });
                     await batch.commit();
-                    console.log(`✅ Updated ${unprocessed.length} OLD blogs (by author.name)`);
+                    console.log(`✅ Updated ${matchingBlogs.length} OLD blogs (by author.name)`);
                 }
             }
 
@@ -594,15 +599,20 @@ export const api = {
                 console.log(`✅ Updated ${setupsSnap.docs.length} setups (by userId)`);
             }
 
-            // 3b. Tìm setups CŨ theo author.name
+            // 3b. Tìm setups CŨ theo author.name (fetch all, filter client-side)
             if (currentDisplayName) {
-                const oldSetupsQuery = query(setupsCol, where('author.name', '==', currentDisplayName));
-                const oldSetupsSnap = await getDocs(oldSetupsQuery);
+                // Fetch tất cả setups
+                const allSetupsSnap = await getDocs(setupsCol);
 
-                const unprocessed = oldSetupsSnap.docs.filter(d => !processedIds.has(d.id));
-                if (unprocessed.length > 0) {
+                // Filter những setup có author.name khớp VÀ chưa được xử lý
+                const matchingSetups = allSetupsSnap.docs.filter(docSnap => {
+                    const data = docSnap.data();
+                    return data.author?.name === currentDisplayName && !processedIds.has(docSnap.id);
+                });
+
+                if (matchingSetups.length > 0) {
                     const batch = writeBatch(db);
-                    unprocessed.forEach(docSnap => {
+                    matchingSetups.forEach(docSnap => {
                         const updates = { userId };
                         if (displayName) updates['author.name'] = displayName;
                         if (avatar) updates['author.avatar'] = avatar;
@@ -611,7 +621,7 @@ export const api = {
                         totalUpdated++;
                     });
                     await batch.commit();
-                    console.log(`✅ Updated ${unprocessed.length} OLD setups (by author.name)`);
+                    console.log(`✅ Updated ${matchingSetups.length} OLD setups (by author.name)`);
                 }
             }
 
