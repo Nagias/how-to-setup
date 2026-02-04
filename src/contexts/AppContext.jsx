@@ -574,6 +574,33 @@ export const AppProvider = ({ children }) => {
             .slice(0, limit);
     };
 
+    // Get similar blogs
+    const getSimilarBlogs = (blogId, limit = 3) => {
+        const currentBlog = blogs.find(b => b.id === blogId);
+        if (!currentBlog) return [];
+
+        return blogs
+            .filter(b => b.id !== blogId)
+            .map(blog => {
+                let score = 0;
+                // Same category gets high priority
+                if (blog.category === currentBlog.category) {
+                    score += 2;
+                }
+                // Matching tags
+                if (currentBlog.tags && blog.tags) {
+                    const matchingTags = blog.tags.filter(tag =>
+                        currentBlog.tags.includes(tag)
+                    ).length;
+                    score += matchingTags * 0.5;
+                }
+                return { ...blog, similarityScore: score };
+            })
+            .filter(b => b.similarityScore > 0) // Only return blogs with some relevance
+            .sort((a, b) => b.similarityScore - a.similarityScore)
+            .slice(0, limit);
+    };
+
     const refreshData = loadData;
 
     // Force refresh - clears ALL cache and fetches fresh data
@@ -673,6 +700,7 @@ export const AppProvider = ({ children }) => {
         deleteSetup,
         logout,
         getSimilarSetups,
+        getSimilarBlogs,
         setBlogs,
         galleryPage,
         setGalleryPage

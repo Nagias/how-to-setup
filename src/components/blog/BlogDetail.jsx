@@ -14,7 +14,7 @@ const BlogDetail = () => {
     // Changed id to slug to support both
     const { slug } = useParams();
     const navigate = useNavigate();
-    const { blogs, setBlogs, deleteBlog, currentUser } = useApp();
+    const { blogs, setBlogs, deleteBlog, currentUser, getSimilarBlogs } = useApp();
     const [blog, setBlog] = useState(null);
 
     // Find blog from Slug or ID
@@ -194,6 +194,41 @@ const BlogDetail = () => {
                     ))}
                 </div>
             </article>
+
+            {/* Similar Blogs Section */}
+            {blog && (
+                <div className="similar-blogs-section">
+                    <h3 className="similar-blogs-title">Bài viết liên quan</h3>
+                    <div className="similar-blogs-grid">
+                        {getSimilarBlogs(blog.id, 3).map(similarBlog => (
+                            <div
+                                key={similarBlog.id}
+                                className="similar-blog-card"
+                                onClick={() => {
+                                    navigate(`/blog/${similarBlog.slug || similarBlog.id}`);
+                                    window.scrollTo(0, 0);
+                                }}
+                            >
+                                <div className="similar-blog-image">
+                                    <img src={similarBlog.coverImage} alt={similarBlog.title} />
+                                    <span className="blog-category-tag">{similarBlog.category}</span>
+                                </div>
+                                <div className="similar-blog-content">
+                                    <h4 className="similar-blog-heading">{similarBlog.title}</h4>
+                                    <div className="similar-blog-meta">
+                                        <span>{new Date(similarBlog.publishedAt).toLocaleDateString('vi-VN')}</span>
+                                        <span className="dot">•</span>
+                                        <span>{similarBlog.readTime} phút đọc</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                        {getSimilarBlogs(blog.id, 3).length === 0 && (
+                            <p className="no-similar-blogs">Chưa có bài viết liên quan nào.</p>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
