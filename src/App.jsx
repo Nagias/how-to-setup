@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route, useLocation, useNavigate, Link } from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { AppProvider, useApp } from './contexts/AppContext';
 import Header from './components/layout/Header';
 import FilterSidebar from './components/filters/FilterSidebar';
@@ -83,35 +83,33 @@ const AppContent = () => {
     const navigate = useNavigate();
 
     // Handle scroll to top and URL cleanup (fbclid)
-
+    // Handle scroll to top and URL cleanup (fbclid)
     useEffect(() => {
         window.scrollTo(0, 0);
 
-        // HashRouter fix: Use native browser API to read query params before #
-        const realParams = new URLSearchParams(window.location.search);
+        // Smart fbclid handling:
+        // 1. First visit from Facebook (Session Start): Keep fbclid for analytics.
+        // 2. Subsequent navigation (Internal clicks/reload): Remove fbclid for clean URLs.
 
-        if (realParams.has('fbclid')) {
+        const params = new URLSearchParams(location.search);
+        if (params.has('fbclid')) {
             const isSessionTracked = sessionStorage.getItem('fb_session_tracked');
 
             if (!isSessionTracked) {
-                // FIRST visit from Facebook (any page: Home, Setup, Blog)
-                // -> Keep fbclid for Analytics tracking
+                // First time entering site in this session
                 sessionStorage.setItem('fb_session_tracked', 'true');
-                return; // Don't remove fbclid on first landing
+                // Do NOT delete fbclid yet (let analytics capture it)
+            } else {
+                // Already tracked in this session, so clean the URL
+                params.delete('fbclid');
+
+                navigate({
+                    pathname: location.pathname,
+                    search: params.toString()
+                }, { replace: true });
             }
-
-            // SUBSEQUENT navigation (2nd page onwards) -> Remove fbclid for clean URL
-            realParams.delete('fbclid');
-
-            const cleanSearch = realParams.toString();
-            const newUrl = window.location.origin +
-                window.location.pathname +
-                (cleanSearch ? '?' + cleanSearch : '') +
-                window.location.hash;
-
-            window.history.replaceState(null, '', newUrl);
         }
-    }, [location.pathname, location.hash]);
+    }, [location.pathname, location.search, navigate]);
 
     const handleSaveSetup = async (setupData) => {
         console.log('🔴 App.handleSaveSetup called with:', setupData);
@@ -178,8 +176,8 @@ const AppContent = () => {
                     <div className="footer-section">
                         <h5>Liên Kết</h5>
                         <ul>
-                            <li><Link to="/">Bộ Sưu Tập</Link></li>
-                            <li><Link to="/blog">Blog</Link></li>
+                            <li><a href="/">Bộ Sưu Tập</a></li>
+                            <li><a href="/blog">Blog</a></li>
 
                             <li><a href="#">Giới Thiệu</a></li>
                             <li><a href="#">Liên Hệ</a></li>
