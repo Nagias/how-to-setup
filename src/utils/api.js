@@ -138,7 +138,7 @@ export const api = {
 
     register: async (userData) => {
         try {
-            const { email, password, username, displayName } = userData;
+            const { email, password, displayName } = userData;
             // Create Auth User
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
@@ -149,7 +149,6 @@ export const api = {
 
             // Create Firestore User Doc
             const newUserDoc = {
-                username,
                 displayName,
                 email,
                 role: ADMIN_EMAILS.includes(email) ? 'admin' : 'user', // Tự động set role admin nếu email trong whitelist
