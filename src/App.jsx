@@ -83,31 +83,41 @@ const AppContent = () => {
     const navigate = useNavigate();
 
     // Handle scroll to top and URL cleanup (fbclid)
-    // Handle scroll to top and URL cleanup (fbclid)
+
     useEffect(() => {
         window.scrollTo(0, 0);
 
-        // Smart fbclid handling:
-        // 1. First visit from Facebook (Session Start): Keep fbclid for analytics.
-        // 2. Subsequent navigation (Internal clicks/reload): Remove fbclid for clean URLs.
+        // Advanced URL Cleaning Logic:
+        // 1. Homepage ('/'): Keep fbclid ONLY on first visit (for Tracking). Remove on subsequent visits/reloads.
+        // 2. Deep Links (Setup/Blog): ALWAYS remove fbclid immediately to keep URL clean (User request).
 
         const params = new URLSearchParams(location.search);
         if (params.has('fbclid')) {
-            const isSessionTracked = sessionStorage.getItem('fb_session_tracked');
+            // Check if this is the homepage (or gallery root)
+            const isHomePage = location.pathname === '/' || location.pathname === '/gallery';
 
-            if (!isSessionTracked) {
-                // First time entering site in this session
-                sessionStorage.setItem('fb_session_tracked', 'true');
-                // Do NOT delete fbclid yet (let analytics capture it)
-            } else {
-                // Already tracked in this session, so clean the URL
-                params.delete('fbclid');
-
-                navigate({
-                    pathname: location.pathname,
-                    search: params.toString()
-                }, { replace: true });
+            if (isHomePage) {
+                const isSessionTracked = sessionStorage.getItem('fb_session_tracked');
+                if (!isSessionTracked) {
+                    // First landing on Homepage -> Keep fbclid for Analytics
+                    sessionStorage.setItem('fb_session_tracked', 'true');
+                    return;
+                }
             }
+
+            // If we are here, it means:
+            // - It's a deep link (Setup/Blog) -> Remove fbclid to be clean
+            // - OR it's a Homepage revisit/reload -> Remove fbclid
+
+            params.delete('fbclid');
+
+            navigate({
+                pathname: location.pathname,
+                search: params.toString()
+            }, { replace: true });
+
+            // Ensure session is marked as tracked
+            sessionStorage.setItem('fb_session_tracked', 'true');
         }
     }, [location.pathname, location.search, navigate]);
 
