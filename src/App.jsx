@@ -87,14 +87,16 @@ const AppContent = () => {
     useEffect(() => {
         window.scrollTo(0, 0);
 
-        // Advanced URL Cleaning Logic:
-        // 1. Homepage ('/'): Keep fbclid ONLY on first visit (for Tracking). Remove on subsequent visits/reloads.
-        // 2. Deep Links (Setup/Blog): ALWAYS remove fbclid immediately to keep URL clean (User request).
+        // FIXED: HashRouter puts ?fbclid BEFORE the # symbol.
+        // React Router's location.search only reads AFTER #, so it's always empty.
+        // We must use window.location.search (native browser API) to read the REAL query params.
 
-        const params = new URLSearchParams(location.search);
-        if (params.has('fbclid')) {
-            // Check if this is the homepage (or gallery root)
-            const isHomePage = location.pathname === '/' || location.pathname === '/gallery';
+        const realParams = new URLSearchParams(window.location.search);
+
+        if (realParams.has('fbclid')) {
+            // For HashRouter: Check the hash path (e.g., "#/blog/..." -> "/blog/...")
+            const hashPath = window.location.hash.replace('#', '') || '/';
+            const isHomePage = hashPath === '/' || hashPath === '' || hashPath === '/gallery';
 
             if (isHomePage) {
                 const isSessionTracked = sessionStorage.getItem('fb_session_tracked');
@@ -105,21 +107,22 @@ const AppContent = () => {
                 }
             }
 
-            // If we are here, it means:
-            // - It's a deep link (Setup/Blog) -> Remove fbclid to be clean
-            // - OR it's a Homepage revisit/reload -> Remove fbclid
+            // Remove fbclid from URL using native History API
+            realParams.delete('fbclid');
 
-            params.delete('fbclid');
+            // Rebuild clean URL: origin + pathname + (remaining params) + hash
+            const cleanSearch = realParams.toString();
+            const newUrl = window.location.origin +
+                window.location.pathname +
+                (cleanSearch ? '?' + cleanSearch : '') +
+                window.location.hash;
 
-            navigate({
-                pathname: location.pathname,
-                search: params.toString()
-            }, { replace: true });
+            window.history.replaceState(null, '', newUrl);
 
-            // Ensure session is marked as tracked
+            // Mark session as tracked
             sessionStorage.setItem('fb_session_tracked', 'true');
         }
-    }, [location.pathname, location.search, navigate]);
+    }, [location.pathname, location.hash]); // Listen to hash changes too
 
     const handleSaveSetup = async (setupData) => {
         console.log('🔴 App.handleSaveSetup called with:', setupData);
