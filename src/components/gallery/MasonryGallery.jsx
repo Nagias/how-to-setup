@@ -48,13 +48,13 @@ const MasonryGallery = () => {
         if (displayedSetups.length < filteredSetups.length) {
             setIsLoadingMore(true);
 
-            // Artificial delay to show loading state (optional, can remove)
-            setTimeout(() => {
+            // Execute immediately without artificial delay
+            requestAnimationFrame(() => {
                 const newSetups = filteredSetups.slice(0, endIndex);
                 setDisplayedSetups(newSetups);
                 setGalleryPage(nextPage); // Update context
                 setIsLoadingMore(false);
-            }, 300);
+            });
         }
     };
 
@@ -81,12 +81,18 @@ const MasonryGallery = () => {
                 description="Bộ sưu tập những góc làm việc, setup bàn phím, màn hình đẹp nhất được chia sẻ bởi cộng đồng."
             />
 
-            {/* Loading State with friendly message */}
+            {/* Loading State - Skeleton Grid */}
             {isLoading && (
-                <div className="loading-state">
-                    <div className="loading-spinner"></div>
-                    <h3>Sắp load xong các góc setup, bạn đừng thoát nhé 🥺</h3>
-                    <p>Đang tải dữ liệu từ server...</p>
+                <div className="masonry-grid">
+                    {Array.from({ length: 12 }).map((_, i) => (
+                        <div key={`skeleton-${i}`} className="skeleton-card">
+                            <div className="skeleton-image"></div>
+                            <div className="skeleton-content">
+                                <div className="skeleton-title"></div>
+                                <div className="skeleton-caption"></div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
 
