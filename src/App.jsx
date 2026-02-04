@@ -87,30 +87,22 @@ const AppContent = () => {
     useEffect(() => {
         window.scrollTo(0, 0);
 
-        // FIXED: HashRouter puts ?fbclid BEFORE the # symbol.
-        // React Router's location.search only reads AFTER #, so it's always empty.
-        // We must use window.location.search (native browser API) to read the REAL query params.
-
+        // HashRouter fix: Use native browser API to read query params before #
         const realParams = new URLSearchParams(window.location.search);
 
         if (realParams.has('fbclid')) {
-            // For HashRouter: Check the hash path (e.g., "#/blog/..." -> "/blog/...")
-            const hashPath = window.location.hash.replace('#', '') || '/';
-            const isHomePage = hashPath === '/' || hashPath === '' || hashPath === '/gallery';
+            const isSessionTracked = sessionStorage.getItem('fb_session_tracked');
 
-            if (isHomePage) {
-                const isSessionTracked = sessionStorage.getItem('fb_session_tracked');
-                if (!isSessionTracked) {
-                    // First landing on Homepage -> Keep fbclid for Analytics
-                    sessionStorage.setItem('fb_session_tracked', 'true');
-                    return;
-                }
+            if (!isSessionTracked) {
+                // FIRST visit from Facebook (any page: Home, Setup, Blog)
+                // -> Keep fbclid for Analytics tracking
+                sessionStorage.setItem('fb_session_tracked', 'true');
+                return; // Don't remove fbclid on first landing
             }
 
-            // Remove fbclid from URL using native History API
+            // SUBSEQUENT navigation (2nd page onwards) -> Remove fbclid for clean URL
             realParams.delete('fbclid');
 
-            // Rebuild clean URL: origin + pathname + (remaining params) + hash
             const cleanSearch = realParams.toString();
             const newUrl = window.location.origin +
                 window.location.pathname +
@@ -118,11 +110,8 @@ const AppContent = () => {
                 window.location.hash;
 
             window.history.replaceState(null, '', newUrl);
-
-            // Mark session as tracked
-            sessionStorage.setItem('fb_session_tracked', 'true');
         }
-    }, [location.pathname, location.hash]); // Listen to hash changes too
+    }, [location.pathname, location.hash]);
 
     const handleSaveSetup = async (setupData) => {
         console.log('🔴 App.handleSaveSetup called with:', setupData);
