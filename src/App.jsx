@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { AppProvider, useApp } from './contexts/AppContext';
 import Header from './components/layout/Header';
 import FilterSidebar from './components/filters/FilterSidebar';
@@ -80,11 +80,24 @@ const AppContent = () => {
         setShowNewsletterModal
     } = useApp();
     const location = useLocation();
+    const navigate = useNavigate();
 
-    // Scroll to top on route change
+    // Handle scroll to top and URL cleanup (fbclid)
     useEffect(() => {
         window.scrollTo(0, 0);
-    }, [location.pathname]);
+
+        // Auto remove fbclid from URL on non-home pages to keep URLs clean
+        // (Allows keeping analytics tracking on initial landing, but cleans up for sharing/navigation)
+        const params = new URLSearchParams(location.search);
+        if (params.has('fbclid') && location.pathname !== '/') {
+            params.delete('fbclid'); // Remove only fbclid
+
+            navigate({
+                pathname: location.pathname,
+                search: params.toString()
+            }, { replace: true }); // Replace history entry so back button works nicely
+        }
+    }, [location.pathname, location.search, navigate]);
 
     const handleSaveSetup = async (setupData) => {
         console.log('🔴 App.handleSaveSetup called with:', setupData);
