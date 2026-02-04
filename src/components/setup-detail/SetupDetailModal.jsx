@@ -117,13 +117,13 @@ const SetupDetailModal = () => {
             return;
         }
         if (commentText.trim()) {
-            const userAvatar = currentUser.photoURL || currentUser.avatar ||
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'User')}&background=random`;
+            const userAvatar = currentUser?.photoURL || currentUser?.avatar ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.displayName || 'User')}&background=random`;
 
             const commentData = {
                 text: commentText,
-                author: currentUser.displayName,
-                userId: currentUser.id,
+                author: currentUser?.displayName,
+                userId: currentUser?.id,
                 avatar: userAvatar
             };
 

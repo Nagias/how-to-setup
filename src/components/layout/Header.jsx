@@ -270,10 +270,10 @@ const Header = () => {
 
                     {currentUser && (
                         <div className="mobile-user-profile" onClick={() => { setShowProfileModal(true); closeMobileMenu(); }}>
-                            <img src={currentUser.avatar} alt="Avatar" />
+                            <img src={currentUser?.avatar} alt="Avatar" />
                             <div>
-                                <p className="name">{currentUser.displayName}</p>
-                                <p className="role">{currentUser.role === 'admin' ? 'Admin' : 'Member'}</p>
+                                <p className="name">{currentUser?.displayName}</p>
+                                <p className="role">{currentUser?.role === 'admin' ? 'Admin' : 'Member'}</p>
                             </div>
                         </div>
                     )}

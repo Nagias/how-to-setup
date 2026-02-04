@@ -70,6 +70,39 @@ export const getOptimizedImageUrl = (publicId, options = {}) => {
     return `https://res.cloudinary.com/${cloudinaryConfig.cloudName}/image/upload/w_${width},q_${quality},f_${format},c_${crop},g_${gravity}/${publicId}`;
 };
 
+// Optimize existing Cloudinary URL by adding transformations
+// Works with URLs like: https://res.cloudinary.com/.../image/upload/v123/folder/image.jpg
+export const optimizeCloudinaryUrl = (url, options = {}) => {
+    if (!url || typeof url !== 'string') return url;
+
+    // Only optimize Cloudinary URLs
+    if (!url.includes('cloudinary.com')) return url;
+
+    const {
+        width = 600,
+        quality = 'auto:good',
+        format = 'auto',
+    } = options;
+
+    const transformations = `w_${width},q_${quality},f_${format}`;
+
+    // Insert transformations after /upload/
+    if (url.includes('/upload/')) {
+        // Check if URL already has transformations
+        const parts = url.split('/upload/');
+        if (parts.length === 2) {
+            // Check if there's already a version number (v123456)
+            if (parts[1].match(/^v\d+\//)) {
+                return `${parts[0]}/upload/${transformations}/${parts[1]}`;
+            } else {
+                return `${parts[0]}/upload/${transformations}/${parts[1]}`;
+            }
+        }
+    }
+
+    return url;
+};
+
 // Upload video to Cloudinary
 export const uploadVideoToCloudinary = async (file, folder = 'desk-setups-videos') => {
     const formData = new FormData();

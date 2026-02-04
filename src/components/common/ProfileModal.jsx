@@ -161,7 +161,7 @@ const ProfileModal = () => {
                             <div className="form-group profile-avatar-edit">
                                 <label>Ảnh Đại Diện</label>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <img src={avatar || currentUser.photoURL || currentUser.avatar} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-color)' }} alt="Avatar" />
+                                    <img src={avatar || currentUser?.photoURL || currentUser?.avatar} style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border-color)' }} alt="Avatar" />
                                     <div>
                                         <label htmlFor="avatar-upload" className={`btn btn-primary ${isUploading ? 'disabled' : ''}`} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', cursor: isUploading ? 'not-allowed' : 'pointer', opacity: isUploading ? 0.6 : 1 }}>
                                             {isUploading ? 'Đang tải...' : 'Thay đổi'}

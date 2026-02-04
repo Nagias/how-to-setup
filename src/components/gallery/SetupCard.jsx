@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../../contexts/AppContext';
+import { optimizeCloudinaryUrl } from '../../config/cloudinary';
 import './SetupCard.css';
 
 const SetupCard = ({ setup, index }) => {
@@ -23,6 +24,18 @@ const SetupCard = ({ setup, index }) => {
 
     const isLiked = hasUserLiked(setup.id);
     const isSaved = hasUserSaved(setup.id);
+
+    // Calculate optimized image URL for thumbnail
+    const rawImageUrl = setup.images && setup.images.length > 0
+        ? (typeof setup.images[0] === 'string' ? setup.images[0] : setup.images[0]?.url || setup.images[0]?.src)
+        : null;
+
+    // Optimize: Width 600px, Quality auto, Format auto (WebP/AVIF if supported)
+    const displayImageUrl = optimizeCloudinaryUrl(rawImageUrl, {
+        width: 600,
+        quality: 'auto',
+        format: 'auto'
+    });
 
     // Detect mobile viewport
     useEffect(() => {
@@ -220,7 +233,7 @@ const SetupCard = ({ setup, index }) => {
                         <>
                             {setup.images && setup.images.length > 0 ? (
                                 <img
-                                    src={typeof setup.images[0] === 'string' ? setup.images[0] : setup.images[0]?.url || setup.images[0]?.src}
+                                    src={displayImageUrl}
                                     alt={setup.title || 'Setup image'}
                                     className={`setup-card-image ${imageLoaded ? 'loaded' : ''}`}
                                     loading="lazy"
