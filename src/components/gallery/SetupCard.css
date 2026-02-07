@@ -79,33 +79,35 @@
 /* Video Play Indicator - Pinterest style */
 .video-play-indicator {
     position: absolute;
-    bottom: var(--space-md);
-    left: var(--space-md);
+    bottom: var(--space-sm);
+    left: var(--space-sm);
     z-index: 5;
     pointer-events: none;
 }
 
 .video-play-icon {
-    width: 40px;
-    height: 40px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
     border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
     transition: all 0.2s ease;
 }
 
 .video-play-icon svg {
-    width: 18px;
-    height: 18px;
-    margin-left: 2px;
+    width: 12px;
+    height: 12px;
+    margin-left: 1px;
     /* Visual center adjustment for play icon */
 }
 
 .setup-card:hover .video-play-icon {
     background: var(--color-primary);
+    border-color: var(--color-primary);
     transform: scale(1.1);
 }
 
