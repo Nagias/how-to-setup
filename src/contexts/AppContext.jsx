@@ -231,25 +231,52 @@ export const AppProvider = ({ children }) => {
         return () => unsubscribe();
     }, []);
 
-    // Auto-reconnect Firestore when user returns to tab after being idle
+    // Auto-reconnect Firestore when user returns to tab or network comes back online
     useEffect(() => {
         let lastActiveTime = Date.now();
-        const IDLE_THRESHOLD = 3 * 60 * 1000; // 3 minutes
+        const IDLE_THRESHOLD = 30 * 1000; // 30 seconds - reduced for faster reconnect
 
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
                 const idleTime = Date.now() - lastActiveTime;
+                // Always try to reconnect if idle for more than threshold
                 if (idleTime > IDLE_THRESHOLD) {
                     console.log('🔄 Tab was idle for', Math.round(idleTime / 1000), 'seconds. Reconnecting...');
                     loadData();
                 }
+                // Update active time when becoming visible
+                lastActiveTime = Date.now();
             } else {
+                // Record when tab became hidden
                 lastActiveTime = Date.now();
             }
         };
 
+        // Reconnect when network comes back online
+        const handleOnline = () => {
+            console.log('🌐 Network online. Reconnecting to Firestore...');
+            loadData();
+        };
+
+        // Handle focus event as backup (some browsers don't fire visibilitychange reliably)
+        const handleFocus = () => {
+            const idleTime = Date.now() - lastActiveTime;
+            if (idleTime > IDLE_THRESHOLD) {
+                console.log('🔄 Window focused after', Math.round(idleTime / 1000), 'seconds. Reconnecting...');
+                loadData();
+            }
+            lastActiveTime = Date.now();
+        };
+
         document.addEventListener('visibilitychange', handleVisibilityChange);
-        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('focus', handleFocus);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('focus', handleFocus);
+        };
     }, []);
 
 
