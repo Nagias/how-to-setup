@@ -266,7 +266,7 @@ const SetupCard = ({ setup, index }) => {
                     )}
 
                     {/* Video Play Indicator - Shows when video exists and not playing */}
-                    {setup.thumbnailVideo && !isVideoPlaying && !isVideoOnlySetup && (
+                    {videoUrl && !isVideoPlaying && (
                         <div className="video-play-indicator">
                             <div className="video-play-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
