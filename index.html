@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
-    content="DeskHub - Discover, save, and share inspiring desk setup ideas. Browse curated workspaces, gaming setups, and creative studios." />
+    content="Khám phá hàng ngàn ý tưởng setup góc làm việc, bàn gaming, và không gian sáng tạo từ cộng đồng." />
   <meta name="keywords" content="desk setup, workspace inspiration, home office, gaming setup, productivity" />
   <meta name="version" content="1.0.1" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,26 +13,40 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap"
     rel="stylesheet">
-  <title>DeskHub - Inspiring Desk Setup Gallery</title>
-
-  <!-- Google tag (gtag.js) -->
+  <title>DeskHub - Cộng Đồng Chia Sẻ Góc Làm Việc Đẹp</title>
+  <!-- Google Analytics 4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-QN7W5M8L05"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
-    gtag('config', 'G-QN7W5M8L05', {
-      send_page_view: false
-    });
+    gtag('config', 'G-QN7W5M8L05');
   </script>
-  <script type="module" crossorigin src="/assets/index-DYQWwx0r.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/vendor-react-BadUDqtX.js">
-  <link rel="modulepreload" crossorigin href="/assets/vendor-tiptap-CPIgDqZu.js">
-  <link rel="modulepreload" crossorigin href="/assets/vendor-firebase-D65FIcPE.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-CZY_X7H8.css">
+  <!-- Meta Pixel Code -->
+  <script>
+    !function (f, b, e, v, n, t, s) {
+      if (f.fbq) return; n = f.fbq = function () {
+        n.callMethod ?
+          n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+      };
+      if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+      n.queue = []; t = b.createElement(e); t.async = !0;
+      t.src = v; s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s)
+    }(window, document, 'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '2308768909621305');
+    fbq('track', 'PageView');
+  </script>
+  <!-- End Meta Pixel Code -->
+  <script type="module" crossorigin src="/assets/index-ctW-0zZu.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-BtmUSide.css">
 </head>
 
 <body>
+  <!-- Facebook Pixel noscript fallback -->
+  <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=2308768909621305&ev=PageView&noscript=1" /></noscript>
   <div id="root"></div>
 </body>
 
