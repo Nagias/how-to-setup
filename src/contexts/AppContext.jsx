@@ -231,6 +231,27 @@ export const AppProvider = ({ children }) => {
         return () => unsubscribe();
     }, []);
 
+    // Auto-reconnect Firestore when user returns to tab after being idle
+    useEffect(() => {
+        let lastActiveTime = Date.now();
+        const IDLE_THRESHOLD = 3 * 60 * 1000; // 3 minutes
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                const idleTime = Date.now() - lastActiveTime;
+                if (idleTime > IDLE_THRESHOLD) {
+                    console.log('🔄 Tab was idle for', Math.round(idleTime / 1000), 'seconds. Reconnecting...');
+                    loadData();
+                }
+            } else {
+                lastActiveTime = Date.now();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, []);
+
 
 
     // Load theme preference
