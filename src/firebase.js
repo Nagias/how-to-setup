@@ -6,15 +6,15 @@ import { getStorage } from "firebase/storage";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
+// Your web app's Firebase configuration (from environment variables)
 const firebaseConfig = {
-    apiKey: "AIzaSyAlMyf_NFJ8xrQLt24EhxAzWZTnQbPr6aQ",
-    authDomain: "desksetup-web.firebaseapp.com",
-    projectId: "desksetup-web",
-    storageBucket: "desksetup-web.firebasestorage.app",
-    messagingSenderId: "540303783708",
-    appId: "1:540303783708:web:ef169c5fb08b7d9a822cd9",
-    measurementId: "G-N1ZDZ3JWF0"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
