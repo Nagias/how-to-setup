@@ -128,9 +128,17 @@ export const AppProvider = ({ children }) => {
                     console.warn('Cache storage failed:', e);
                 }
             } else {
-                // No data from Firestore - use sample data as fallback
-                console.warn('⚠️ No data from Firestore, using sample data');
-                setSetups(sampleSetups);
+                // No data from Firestore - keep existing data (cached) or use sample as last resort
+                console.warn('⚠️ No data from Firestore');
+                // Only set sample data if we currently have nothing
+                setSetups(prev => {
+                    if (prev && prev.length > 0) {
+                        console.log('📌 Keeping existing', prev.length, 'setups from cache');
+                        return prev; // Keep cached data
+                    }
+                    console.log('📌 No cache available, using sample data');
+                    return sampleSetups;
+                });
             }
 
             if (data.blogs && data.blogs.length > 0) {
@@ -142,7 +150,13 @@ export const AppProvider = ({ children }) => {
                     console.warn('Cache storage failed:', e);
                 }
             } else {
-                setBlogs(sampleBlogs);
+                // Keep existing blogs or use sample
+                setBlogs(prev => {
+                    if (prev && prev.length > 0) {
+                        return prev;
+                    }
+                    return sampleBlogs;
+                });
             }
 
             // Update cache timestamp
