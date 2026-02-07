@@ -348,8 +348,8 @@ const SetupDetailPage = () => {
 
     // NOW we can have conditional returns AFTER all hooks
 
-    // Show loading if data is still being fetched OR if we have no setups yet
-    if (loading || (setups.length === 0 && !setup)) {
+    // Show loading ONLY when actively fetching data (not based on setups.length to avoid flash)
+    if (loading && !setup) {
         return (
             <div className="setup-detail-page" style={{ paddingTop: '100px', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
                 <div style={{ color: 'var(--color-text-primary)', fontSize: '18px' }}>Đang tải...</div>

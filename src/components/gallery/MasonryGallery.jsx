@@ -68,8 +68,8 @@ const MasonryGallery = () => {
         filters.purpose?.length > 0 ||
         filters.size?.length > 0;
 
-    // Show loading when fetching data OR when we have no setups yet (first load)
-    const isLoading = loading || setups.length === 0;
+    // Show loading ONLY when actively fetching data (not based on setups.length to avoid flash)
+    const isLoading = loading;
 
     // Empty state: ONLY show when NOT loading AND has active filters AND no results
     const showEmptyState = !isLoading && hasActiveFilters && filteredSetups.length === 0;
